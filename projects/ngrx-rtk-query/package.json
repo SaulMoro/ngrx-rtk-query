@@ -1,0 +1,38 @@
+{
+  "name": "ngrx-rtk-query",
+  "version": "1.0.0",
+  "peerDependencies": {
+    "@angular/common": "^11.2.5",
+    "@angular/core": "^11.2.5"
+  },
+  "dependencies": {
+    "tslib": "^2.0.0"
+  },
+  "keywords": [
+    "ngrx-rtk-query",
+    "ngrx",
+    "rtk-query",
+    "angular",
+    "angular 2",
+    "redux"
+  ],
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "bugs": {
+    "url": "https://github.com/SaulMoro/ngrx-rtk-query/issue"
+  },
+  "homepage": "https://github.com/SaulMoro/ngrx-rtk-query#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SaulMoro/ngrx-rtk-query"
+  },
+  "schematics": "./schematics/collection.json",
+  "scripts": {
+    "build": "tsc -p tsconfig.schematics.json",
+    "copy:schemas": "cpx schematics/ng-add ../../dist/ngrx-rtk-query/",
+    "copy:collection": "cpx schematics/collection.json ../../dist/ngrx-rtk-query/schematics/",
+    "postbuild": "npm run copy:schemas && npm run copy:collection"
+  }
+}

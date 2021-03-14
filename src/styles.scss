@@ -1,1 +1,43 @@
-/* You can add global styles to this file, and also import other style files */
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply antialiased bg-gray-50;
+  }
+}
+
+@layer utilities {
+  .pb-safe {
+    padding-bottom: constant(safe-area-inset-bottom);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .pt-safe {
+    padding-top: constant(safe-area-inset-top);
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+/* custom components purgable */
+@layer components {
+  .btn {
+    @apply px-4 py-3 text-sm font-medium transition duration-300 ease-in select-none focus:outline-none focus:ring-2 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn.btn-primary {
+    @apply text-white bg-black hover:bg-gray-800 focus:ring-indigo-400;
+  }
+
+  .btn-outline {
+    @extend .btn;
+    @apply border;
+  }
+  .btn-outline.btn-primary {
+    @apply text-black bg-transparent border-black hover:bg-gray-200;
+  }
+}
