@@ -31,13 +31,15 @@ Accusantium aliquid corporis cupiditate dolores eum exercitationem illo iure lab
 
 ## Installation
 
+`ng add ngrx-rtk-query`
+
 ### NPM
 
-`npm install ngrx-rtk-query --save-dev`
+`npm install ngrx-rtk-query`
 
 ### Yarn
 
-`yarn add ngrx-rtk-query --dev`
+`yarn add ngrx-rtk-query`
 
 ## Usage
 
