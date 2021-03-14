@@ -41,6 +41,10 @@ yarn-error.log
 testem.log
 /typings
 
+# cache
+.eslintcache
+
 # System Files
 .DS_Store
 Thumbs.db
+

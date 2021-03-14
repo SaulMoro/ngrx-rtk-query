@@ -21,8 +21,8 @@ const importModuleSet: {
   importPath: string;
 }[] = [
   {
-    moduleName: 'NgrxRtkQueryModule',
-    importModuleStatement: 'NgrxRtkQueryModule.forRoot()',
+    moduleName: 'StoreRtkQueryModule',
+    importModuleStatement: 'StoreRtkQueryModule.forRoot()',
     importPath: 'ngrx-rtk-query',
   },
 ];

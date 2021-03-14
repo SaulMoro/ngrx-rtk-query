@@ -1,20 +1,20 @@
 {
   "name": "ngrx-rtk-query",
-  "version": "1.0.0",
-  "peerDependencies": {
-    "@angular/common": "^11.2.5",
-    "@angular/core": "^11.2.5"
-  },
+  "version": "0.1.0",
+  "description": "Make RTK Query works in Angular Applications",
   "dependencies": {
     "tslib": "^2.0.0"
   },
   "keywords": [
-    "ngrx-rtk-query",
-    "ngrx",
-    "rtk-query",
     "angular",
-    "angular 2",
-    "redux"
+    "angular rtk query",
+    "ngrx-rtk-query",
+    "ngrx rtk query",
+    "rtk-query",
+    "ngrx",
+    "redux",
+    "typescript",
+    "javascript"
   ],
   "license": "MIT",
   "publishConfig": {
