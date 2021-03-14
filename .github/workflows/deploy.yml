@@ -22,5 +22,5 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           npm ci
-          npm run build -- --prod
+          npm run build
           npm run deploy -- --no-silent --name="Saul Moro" --email=saul.moro.gomez@gmail.com
