@@ -1,3 +1,11 @@
+## [1.0.3](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.0.2...v1.0.3) (2021-03-15)
+
+
+### Bug Fixes
+
+* **lib:** fixed polling interval errors ([b43de12](https://github.com/SaulMoro/ngrx-rtk-query/commit/b43de12fdcc1d839dcc1cc268ea885ad69237182))
+* **lib:** fixed styles ([e992666](https://github.com/SaulMoro/ngrx-rtk-query/commit/e99266691708d2216674bf5aafadd220ff026c66))
+
 ## [1.0.2](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.0.1...v1.0.2) (2021-03-15)
 
 
