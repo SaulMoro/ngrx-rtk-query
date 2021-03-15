@@ -26,8 +26,15 @@ export interface MutationHooks<Definition extends MutationDefinition<any, any, a
 
 export type UseQuery<D extends QueryDefinition<any, any, any, any>> = <R = UseQueryStateDefaultResult<D>>(
   arg: QueryArgFrom<D> | Observable<QueryArgFrom<D>>,
-  options?: UseQueryOptions<D, R> | Observable<UseQueryOptions<D, R>>
-) => Observable<UseQueryStateResult<D, R> & ReturnType<UseQuerySubscription<D>>>;
+  options?: UseQueryOptions<D, R> | Observable<UseQueryOptions<D, R>>,
+) => Observable<UseQueryResult<D, R>>;
+
+export type UseQueryResult<
+  D extends QueryDefinition<any, any, any, any>,
+  R = UseQueryStateDefaultResult<D>
+> = UseQueryStateResult<D, R> & ReturnType<UseQuerySubscription<D>>;
+
+export type QueryResult = UseQueryResult<any, UseQueryStateDefaultResult<QueryDefinition<any, any, any, any>>>;
 
 export type UseQueryOptions<
   D extends QueryDefinition<any, any, any, any>,
@@ -47,24 +54,24 @@ export interface UseQuerySubscriptionOptions extends SubscriptionOptions {
 export type UseQuerySubscription<D extends QueryDefinition<any, any, any, any>> = (
   arg: QueryArgFrom<D>,
   options?: UseQuerySubscriptionOptions,
-  promiseRef?: { current?: QueryActionCreatorResult<D> }
+  promiseRef?: { current?: QueryActionCreatorResult<D> },
 ) => Pick<QueryActionCreatorResult<D>, 'refetch'>;
 
 export type QueryStateSelector<R, D extends QueryDefinition<any, any, any, any>> = (
   state: QueryResultSelectorResult<D>,
   lastResult: R | undefined,
-  defaultQueryStateSelector: DefaultQueryStateSelector<D>
+  defaultQueryStateSelector: DefaultQueryStateSelector<D>,
 ) => R;
 
 export type DefaultQueryStateSelector<D extends QueryDefinition<any, any, any, any>> = (
   state: QueryResultSelectorResult<D>,
-  lastResult: Pick<UseQueryStateDefaultResult<D>, 'data'>
+  lastResult: Pick<UseQueryStateDefaultResult<D>, 'data'>,
 ) => UseQueryStateDefaultResult<D>;
 
 export type UseQueryState<D extends QueryDefinition<any, any, any, any>> = <R = UseQueryStateDefaultResult<D>>(
   arg: QueryArgFrom<D>,
   options?: UseQueryStateOptions<D, R>,
-  lastValue?: { current?: UseQueryStateResult<D, R> }
+  lastValue?: { current?: UseQueryStateResult<D, R> },
 ) => Observable<UseQueryStateResult<D, R>>;
 
 export type UseQueryStateOptions<D extends QueryDefinition<any, any, any, any>, R> = {
@@ -119,13 +126,13 @@ export type UseQueryStateDefaultResult<D extends QueryDefinition<any, any, any, 
 
 export type MutationHook<D extends MutationDefinition<any, any, any, any>> = () => {
   dispatch: (arg: QueryArgFrom<D>) => { unwrap: () => Promise<ResultTypeFrom<D>> };
-  state: Observable<MutationSubState<D> & RequestStatusFlags>;
+  state$: Observable<MutationSubState<D> & RequestStatusFlags>;
 };
 
 export type GenericPrefetchThunk = (
   endpointName: any,
   arg: any,
-  options: PrefetchOptions
+  options: PrefetchOptions,
 ) => ThunkAction<void, any, any, AnyAction>;
 
 export function isQueryDefinition(e: EndpointDefinition<any, any, any, any>): e is QueryDefinition<any, any, any, any> {
@@ -133,7 +140,7 @@ export function isQueryDefinition(e: EndpointDefinition<any, any, any, any>): e 
 }
 
 export function isMutationDefinition(
-  e: EndpointDefinition<any, any, any, any>
+  e: EndpointDefinition<any, any, any, any>,
 ): e is MutationDefinition<any, any, any, any> {
   return e.type === 'mutation';
 }

@@ -22,7 +22,5 @@ export class StoreRtkQueryModule {
     };
   }
 
-  constructor(private thunkService: ThunkService) {
-    this.thunkService.init(); // Init service context
-  }
+  constructor(private thunkService: ThunkService) {}
 }

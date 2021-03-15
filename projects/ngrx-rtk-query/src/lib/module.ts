@@ -56,10 +56,8 @@ export const angularHooksModule = ({
       api,
       moduleOptions: { useDispatch, useSelector, getState },
     });
-    safeAssign(api, { usePrefetch });
-    safeAssign(api, {
-      metareducer: buildMetaReducer({ middleware: api.middleware, moduleOptions: { useDispatch, getState } }),
-    });
+    const metareducer = buildMetaReducer({ api, moduleOptions: { useDispatch, getState } });
+    safeAssign(api, { usePrefetch, metareducer });
 
     return {
       injectEndpoint(endpointName, definition) {

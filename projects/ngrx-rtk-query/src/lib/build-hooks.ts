@@ -70,14 +70,14 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
 
   function usePrefetch<EndpointName extends QueryKeys<Definitions>>(
     endpointName: EndpointName,
-    defaultOptions?: PrefetchOptions
+    defaultOptions?: PrefetchOptions,
   ) {
     return (arg: any, options?: PrefetchOptions) =>
       dispatch(
         (api.util.prefetchThunk as GenericPrefetchThunk)(endpointName, arg, {
           ...defaultOptions,
           ...options,
-        })
+        }),
       );
   }
 
@@ -90,7 +90,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
     const useQuerySubscription: UseQuerySubscription<any> = (
       arg: any,
       { refetchOnReconnect, refetchOnFocus, refetchOnMountOrArgChange, skip = false, pollingInterval = 0 } = {},
-      promiseRef = {}
+      promiseRef = {},
     ) => {
       if (!skip) {
         const lastPromise = promiseRef?.current;
@@ -109,7 +109,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
             initiate(arg, {
               subscriptionOptions: { pollingInterval, refetchOnReconnect, refetchOnFocus },
               forceRefetch: refetchOnMountOrArgChange,
-            })
+            }),
           );
           promiseRef.current = promise;
         }
@@ -121,16 +121,16 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
     const useQueryState: UseQueryState<any> = (
       arg: any,
       { skip = false, selectFromResult = defaultQueryStateSelector as QueryStateSelector<any, any> } = {},
-      lastValue = {}
+      lastValue = {},
     ) => {
       const querySelector: MemoizedSelectorWithProps<any, any, any> = createSelectorFactory((projector) =>
-        resultMemoize(projector, shallowEqual)
+        resultMemoize(projector, shallowEqual),
       )([select(!skip ? arg : undefined), (_: any, lastResult: any) => lastResult], (subState: any, lastResult: any) =>
-        selectFromResult(subState, lastResult, defaultQueryStateSelector)
+        selectFromResult(subState, lastResult, defaultQueryStateSelector),
       );
 
       return useSelector((state: RootState<Definitions, any, any>) => querySelector(state, lastValue.current)).pipe(
-        tap((value) => (lastValue.current = value))
+        tap((value) => (lastValue.current = value)),
       );
     };
 
@@ -144,12 +144,12 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       return merge(
         arg$.pipe(
           concatMap((currentArg) => of(currentArg).pipe(withLatestFrom(options$))),
-          map(([currentArg, currentOptions]) => ({ currentArg, currentOptions }))
+          map(([currentArg, currentOptions]) => ({ currentArg, currentOptions })),
         ),
         options$.pipe(
           concatMap((currentOptions) => of(currentOptions).pipe(withLatestFrom(arg$))),
-          map(([currentOptions, currentArg]) => ({ currentArg, currentOptions }))
-        )
+          map(([currentOptions, currentArg]) => ({ currentArg, currentOptions })),
+        ),
       ).pipe(
         distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
         switchMap(({ currentArg, currentOptions }: { currentArg: any; currentOptions?: UseQueryOptions<any, any> }) => {
@@ -164,7 +164,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         finalize(() => {
           void promiseRef.current?.unsubscribe();
           promiseRef.current = undefined;
-        })
+        }),
       );
     };
 
@@ -198,15 +198,15 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         return promise;
       };
 
-      const state = requestId$.pipe(
+      const state$ = requestId$.pipe(
         finalize(() => {
           promiseRef.current?.unsubscribe();
           promiseRef.current = undefined;
         }),
-        switchMap((requestId) => useSelector(select(requestId)))
+        switchMap((requestId) => useSelector(select(requestId))),
       );
 
-      return { dispatch: triggerMutation, state };
+      return { dispatch: triggerMutation, state$ };
     };
   }
 }

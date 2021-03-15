@@ -51,6 +51,7 @@
           { "code": 120, "ignorePattern": "^import [^,]+ from | ^export | `.{30,}` | '.{30,}': | (class|d)=" }
         ],
         "@typescript-eslint/no-unused-vars": ["error", { "args": "none" }],
+        "@typescript-eslint/no-empty-function": ["error", { "allow": ["constructors"] }],
         "@typescript-eslint/explicit-member-accessibility": "off",
         "@typescript-eslint/explicit-module-boundary-types": "off",
         "@typescript-eslint/explicit-function-return-type": [

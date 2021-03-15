@@ -1,10 +1,24 @@
 import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 
-const routes: Routes = [];
+const routes: Routes = [
+  {
+    path: '',
+    redirectTo: 'counter',
+    pathMatch: 'full',
+  },
+  { path: 'counter', loadChildren: () => import('./features/counter/counter.module').then((m) => m.CounterModule) },
+  { path: 'empty', loadChildren: () => import('./features/empty/empty.module').then((m) => m.EmptyModule) },
+];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes)],
+  imports: [
+    RouterModule.forRoot(routes, {
+      preloadingStrategy: PreloadAllModules,
+      anchorScrolling: 'enabled',
+      scrollPositionRestoration: 'enabled',
+    }),
+  ],
   exports: [RouterModule],
 })
 export class AppRoutingModule {}

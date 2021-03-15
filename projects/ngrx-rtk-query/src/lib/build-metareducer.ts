@@ -1,18 +1,28 @@
 import { ActionReducer, MetaReducer, Action } from '@ngrx/store';
-import { Middleware, ThunkDispatch, AnyAction } from '@reduxjs/toolkit';
-import { AngularHooksModuleOptions } from './module';
+import { Api } from '@rtk-incubator/rtk-query';
+import { CoreModule } from '@rtk-incubator/rtk-query/dist/esm/ts/core/module';
+import { AngularHooksModule, AngularHooksModuleOptions } from './module';
 
 export function buildMetaReducer({
-  middleware,
+  api,
   moduleOptions: { useDispatch: dispatch, getState },
 }: {
-  middleware: Middleware<{}, any, ThunkDispatch<any, any, AnyAction>>;
+  api: any;
   moduleOptions: Required<Pick<AngularHooksModuleOptions, 'useDispatch' | 'getState'>>;
 }): MetaReducer<any> {
+  const anyApi = api as Api<any, Record<string, any>, string, string, AngularHooksModule | CoreModule>;
+
   return function (reducer: ActionReducer<any>): ActionReducer<any> {
     return function (state: any, action: Action) {
-      const newState = middleware({ dispatch, getState })(() => state)(action);
-      return reducer(newState, action);
+      const nextState = reducer(state, action);
+      const getNextState = () => nextState;
+
+      anyApi.middleware({
+        dispatch,
+        getState: action.type === anyApi.internalActions.updateSubscriptionOptions.type ? getNextState : getState,
+      })(() => nextState)(action);
+
+      return nextState;
     };
   };
 }

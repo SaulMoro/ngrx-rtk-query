@@ -1,4 +1,4 @@
-import { Injectable, Injector } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Action, State, Store } from '@ngrx/store';
 import { AnyAction, ThunkAction } from '@reduxjs/toolkit';
 import { Observable } from 'rxjs';
@@ -25,33 +25,20 @@ export function select<K>(mapFn: (state: any) => K): Observable<K> {
 
 @Injectable({ providedIn: 'root' })
 export class ThunkService {
-  constructor(private readonly injector: Injector) {
+  constructor(private readonly store: Store, private readonly state: State<any>) {
     service = this;
-  }
-
-  init(): void {
-    // Init State context
-    getState();
   }
 
   getState(): any {
     // eslint-disable-next-line rxjs/no-subject-value
-    return this._state.getValue();
+    return this.state.getValue();
   }
 
   dispatch(action: Action): void {
-    this._store?.dispatch(action);
+    this.store?.dispatch(action);
   }
 
   select<K>(mapFn: (state: any) => K): Observable<K> {
-    return this._store.select(mapFn);
-  }
-
-  private get _store(): Store {
-    return this.injector.get(Store);
-  }
-
-  private get _state(): State<any> {
-    return this.injector.get(State);
+    return this.store.select(mapFn);
   }
 }
