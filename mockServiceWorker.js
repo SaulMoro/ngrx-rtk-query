@@ -224,7 +224,7 @@ This exception has been gracefully handled as a 500 response, however, it's stro
 If you wish to mock an error response, please refer to this guide: https://mswjs.io/docs/recipes/mocking-error-responses\
 `,
         request.method,
-        request.url
+        request.url,
       );
 
       return respondWithMock(clientMessage);
@@ -260,7 +260,7 @@ self.addEventListener('fetch', function (event) {
   return event.respondWith(
     handleRequest(event, requestId).catch((error) => {
       console.error('[MSW] Failed to mock a "%s" request to "%s": %s', request.method, request.url, error);
-    })
+    }),
   );
 });
 
