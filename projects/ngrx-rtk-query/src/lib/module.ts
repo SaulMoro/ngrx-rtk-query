@@ -5,6 +5,8 @@ import {
   Module,
   QueryDefinition,
   MutationDefinition,
+  buildCreateApi,
+  coreModule,
 } from '@rtk-incubator/rtk-query';
 import { MetaReducer } from '@ngrx/store';
 
@@ -82,3 +84,5 @@ export const angularHooksModule = ({
     };
   },
 });
+
+export const createApi = buildCreateApi(coreModule(), angularHooksModule());
