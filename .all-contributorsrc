@@ -1,6 +1,6 @@
 {
   "projectName": "ngrx-rtk-query",
-  "projectOwner": "",
+  "projectOwner": "SaulMoro",
   "repoType": "github",
   "repoHost": "https://github.com",
   "files": [
@@ -9,6 +9,33 @@
   "imageSize": 100,
   "commit": true,
   "commitConvention": "angular",
-  "contributors": [],
+  "contributors": [
+    {
+      "login": "SaulMoro",
+      "name": "Saul Moro",
+      "avatar_url": "https://avatars.githubusercontent.com/u/4116819?v=4",
+      "profile": "https://github.com/SaulMoro",
+      "contributions": [
+        "question",
+        "blog",
+        "bug",
+        "business",
+        "code",
+        "content",
+        "design",
+        "doc",
+        "example",
+        "ideas",
+        "maintenance",
+        "mentoring",
+        "platform",
+        "projectManagement",
+        "research",
+        "review",
+        "talk",
+        "tool"
+      ]
+    }
+  ],
   "contributorsPerLine": 7
 }
