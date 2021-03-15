@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.0.1...v1.0.2) (2021-03-15)
+
+
+### Bug Fixes
+
+* **lib:** remove rtk query import from public api v2 ([2724413](https://github.com/SaulMoro/ngrx-rtk-query/commit/27244131c26a148ca07e03343ffdcb5da1bc1d96))
+
 ## [1.0.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.0.0...v1.0.1) (2021-03-15)
 
 
