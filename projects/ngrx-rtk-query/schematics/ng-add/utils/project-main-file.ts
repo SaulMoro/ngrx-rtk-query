@@ -8,7 +8,7 @@ export const getProjectMainFile = (project: WorkspaceProject): string => {
 
   if (!buildOptions.main) {
     throw new SchematicsException(
-      `Could not find the project main file inside of the ` + `workspace config (${project.sourceRoot})`
+      `Could not find the project main file inside of the ` + `workspace config (${project.sourceRoot})`,
     );
   }
 

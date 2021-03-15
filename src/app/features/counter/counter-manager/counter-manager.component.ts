@@ -43,7 +43,7 @@ import { useDecrementCountMutation, useGetCountQuery, useIncrementCountMutation 
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CounterManagerComponent {
-  countQuery$ = useGetCountQuery(undefined);
+  countQuery$ = useGetCountQuery();
   increment = useIncrementCountMutation();
   decrement = useDecrementCountMutation();
 

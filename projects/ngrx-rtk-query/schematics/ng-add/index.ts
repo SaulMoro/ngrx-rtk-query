@@ -63,7 +63,7 @@ const injectImports = (options: Schema): Rule => (host: Tree, context: Schematic
     const workspace = getWorkspace(host) as any;
     const project = getProjectFromWorkspace(
       workspace,
-      options.project ? options.project : Object.keys(workspace.projects)[0]
+      options.project ? options.project : Object.keys(workspace.projects)[0],
     );
 
     if (!project || project.projectType !== 'application') {
@@ -105,7 +105,7 @@ const addModuleToImports = (options: Schema): Rule => (host: Tree, context: Sche
     const workspace = getWorkspace(host) as any;
     const project = getProjectFromWorkspace(
       workspace,
-      options.project ? options.project : Object.keys(workspace.projects)[0]
+      options.project ? options.project : Object.keys(workspace.projects)[0],
     );
 
     if (!project || project.projectType !== 'application') {

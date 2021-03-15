@@ -68,7 +68,7 @@ export const addModuleImportToRootModule = (
   host: Tree,
   moduleName: string,
   src: string,
-  project: WorkspaceProject
+  project: WorkspaceProject,
 ): void => {
   const modulePath = getAppModulePath(host, getProjectMainFile(project));
   addModuleImportToModule(host, modulePath, moduleName, src);
