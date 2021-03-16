@@ -7,6 +7,7 @@ import { dispatch, ThunkService } from './thunk.service';
 export class StoreRtkQueryModule {
   static forRoot(config?: Partial<StoreQueryConfig>): ModuleWithProviders<StoreRtkQueryModule> {
     const moduleConfig = { ...defaultConfig, ...config };
+
     if (moduleConfig.setupListeners) {
       setupListeners(dispatch);
     }
