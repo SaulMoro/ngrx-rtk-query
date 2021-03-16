@@ -8,7 +8,7 @@
 [![commitizen](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg?style=flat-square)]()
 [![PRs](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)]()
 [![styled with prettier](https://img.shields.io/badge/styled_with-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
-[![All Contributors](https://img.shields.io/badge/all_contributors-0-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
 [![ngneat-lib](https://img.shields.io/badge/made%20with-%40ngneat%2Flib-ad1fe3?logo=angular)](https://github.com/ngneat/lib)
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 
@@ -135,21 +135,19 @@ import { useDecrementCountMutation, useGetCountQuery, useIncrementCountMutation 
   selector: 'app-counter-manager',
   template: `
     <section>
-      <div *ngIf="countQuery$ | async as countQuery">
-        <button
-          *ngIf="increment.state$ | async as incrementState"
-          [disabled]="incrementState.isLoading"
-          (click)="increment.dispatch(1)"
-        > + </button>
+      <button
+        *ngIf="increment.state$ | async as incrementState"
+        [disabled]="incrementState.isLoading"
+        (click)="increment.dispatch(1)"
+      > + </button>
 
-        <span>{{ countQuery.data?.count || 0 }}</span>
+      <span *ngIf="countQuery$ | async as countQuery">{{ countQuery.data?.count || 0 }}</span>
 
-        <button
-          *ngIf="decrement.state$ | async as decrementState"
-          [disabled]="decrementState.isLoading"
-          (click)="decrement.dispatch(1)"
-        > - </button>
-      </div>
+      <button
+        *ngIf="decrement.state$ | async as decrementState"
+        [disabled]="decrementState.isLoading"
+        (click)="decrement.dispatch(1)"
+      > - </button>
     </section>
   `,
 })
