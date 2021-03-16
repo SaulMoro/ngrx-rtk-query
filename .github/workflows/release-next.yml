@@ -1,9 +1,14 @@
-name: Deploy on GitHub Pages
+name: Test, Build and Publish a next version
 
 on:
   push:
     branches:
-      - master
+      - next
+  pull_request:
+    branches:
+      - next
+    types:
+      - 'closed'
 
 jobs:
   build:
@@ -16,11 +21,14 @@ jobs:
         with:
           node-version: '12.x'
 
-      - name: NPM install, build and deploy
+      - name: NPM install, lint, build, test and release
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           npm ci
+          npm run lint
           npm run build
-          npm run deploy -- --no-silent --name="Saul Moro" --email=saul.moro.gomez@gmail.com
+          # TODO: npm run test
+          npm run build:lib
+          npx semantic-release --debug
