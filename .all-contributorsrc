@@ -35,6 +35,26 @@
         "talk",
         "tool"
       ]
+    },
+    {
+      "login": "adrian-pena-castro",
+      "name": "adrian-pena-castro",
+      "avatar_url": "https://avatars.githubusercontent.com/u/80181162?v=4",
+      "profile": "https://github.com/adrian-pena-castro",
+      "contributions": [
+        "blog",
+        "bug",
+        "code",
+        "content",
+        "doc",
+        "example",
+        "ideas",
+        "maintenance",
+        "plugin",
+        "tool",
+        "translation",
+        "tutorial"
+      ]
     }
   ],
   "contributorsPerLine": 7
