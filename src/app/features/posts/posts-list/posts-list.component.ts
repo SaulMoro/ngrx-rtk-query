@@ -2,16 +2,20 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { Post, useGetPostsQuery } from '@app/core/services/posts';
 
 @Component({
-  selector: 'app-post-manager',
+  selector: 'app-posts-list',
   template: `
-    <section class="space-y-4">
-      <h1 class="text-xl font-semibold">Posts List</h1>
+    <section class="space-y-4" *ngIf="postsQuery$ | async as postsQuery">
+      <small *ngIf="postsQuery.isLoading">Loading...</small>
 
-      <div *ngIf="postsQuery$ | async as postsQuery">
+      <div *ngIf="postsQuery?.data?.length; else noPosts">
         <li *ngFor="let post of postsQuery?.data; trackBy: trackByFn">
-          <a [routerLink]="['/posts', post.id]">{{ post.name }}</a>
+          <a class="hover:underline" [routerLink]="['/posts', post.id]">{{ post.name }}</a>
         </li>
       </div>
+
+      <ng-template #noPosts>
+        <p class="mt-4">No posts :(</p>
+      </ng-template>
     </section>
   `,
   styles: [],

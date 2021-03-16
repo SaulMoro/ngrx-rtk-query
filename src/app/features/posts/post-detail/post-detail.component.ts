@@ -6,11 +6,12 @@ import { useDeletePostMutation, useGetPostQuery, useUpdatePostMutation } from '@
 @Component({
   selector: 'app-post-detail',
   template: `
-    <div className="row" *ngIf="postQuery$ | async as postQuery">
-      <div className="column">
-        <h3>{{ postQuery?.data?.name }} {{ postQuery.isFetching ? '...refetching' : '' }}</h3>
-      </div>
-      <div *ngIf="deletePostMutation.state$ | async as deletePostState">
+    <section *ngIf="postQuery$ | async as postQuery">
+      <h1 class="text-xl font-semibold">
+        {{ postQuery?.data?.name }} {{ postQuery.isFetching ? '...refetching' : '' }}
+      </h1>
+
+      <ng-container *ngIf="deletePostMutation.state$ | async as deletePostState">
         <button
           class="btn-outline btn-primary"
           *ngIf="updatePostMutation.state$ | async as updatePostState"
@@ -25,18 +26,16 @@ import { useDeletePostMutation, useGetPostQuery, useUpdatePostMutation } from '@
         >
           {{ deletePostState?.isLoading ? 'Deleting...' : 'Delete' }}
         </button>
-      </div>
-      <div className="row" style="background: '#eee'">
-        <pre>{{ postQuery.data | json }}</pre>
-      </div>
-    </div>
+      </ng-container>
+
+      <pre class="bg-gray-200">{{ postQuery.data | json }}</pre>
+    </section>
   `,
   styles: [],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PostDetailComponent {
-  //queries
-  postQuery$ = useGetPostQuery(this.route.params.pipe(map((params): number => +params.id)));
+  postQuery$ = useGetPostQuery(this.route.params.pipe(map((params) => +params.id)));
   deletePostMutation = useDeletePostMutation();
   updatePostMutation = useUpdatePostMutation();
 
