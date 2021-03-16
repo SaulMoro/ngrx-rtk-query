@@ -29,6 +29,7 @@
         "platform",
         "research",
         "review",
+        "tutorial"
       ]
     },
     {
@@ -37,7 +38,6 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/80181162?v=4",
       "profile": "https://github.com/adrian-pena-castro",
       "contributions": [
-        "blog",
         "bug",
         "code",
         "content",
@@ -45,8 +45,6 @@
         "example",
         "ideas",
         "maintenance",
-        "plugin",
-        "tool",
         "translation",
         "tutorial"
       ]

@@ -22,9 +22,9 @@ export const reducers: ActionReducerMap<RootState> = {
     StoreModule.forRoot(reducers, {
       metaReducers: [counterApi.metareducer, postApi.metareducer],
     }),
+    StoreRtkQueryModule.forRoot({ setupListeners: true }),
     StoreRouterConnectingModule.forRoot({ routerState: RouterState.Minimal }),
     !environment.production ? StoreDevtoolsModule.instrument() : [],
-    StoreRtkQueryModule.forRoot({ setupListeners: true }),
   ],
 })
 export class CoreStoreModule {}

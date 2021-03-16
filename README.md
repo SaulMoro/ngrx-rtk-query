@@ -17,7 +17,7 @@
 ## Table of Contents
 
 - [Installation](#installation)
-- [Usage](#usage)
+- [Basic Usage](#basic-usage)
 - [FAQ](#faq)
 
 ## Installation
@@ -175,7 +175,8 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- markdownlint-disable -->
 <table>
   <tr>
-    <td align="center"><a href="https://github.com/adrian-pena-castro"><img src="https://avatars.githubusercontent.com/u/80181162?v=4?s=100" width="100px;" alt=""/><br /><sub><b>adrian-pena-castro</b></sub></a><br /><a href="#blog-adrian-pena-castro" title="Blogposts">📝</a> <a href="https://github.com/SaulMoro/ngrx-rtk-query/issues?q=author%3Aadrian-pena-castro" title="Bug reports">🐛</a> <a href="https://github.com/SaulMoro/ngrx-rtk-query/commits?author=adrian-pena-castro" title="Code">💻</a> <a href="#content-adrian-pena-castro" title="Content">🖋</a> <a href="https://github.com/SaulMoro/ngrx-rtk-query/commits?author=adrian-pena-castro" title="Documentation">📖</a> <a href="#example-adrian-pena-castro" title="Examples">💡</a> <a href="#ideas-adrian-pena-castro" title="Ideas, Planning, & Feedback">🤔</a> <a href="#maintenance-adrian-pena-castro" title="Maintenance">🚧</a> <a href="#plugin-adrian-pena-castro" title="Plugin/utility libraries">🔌</a> <a href="#tool-adrian-pena-castro" title="Tools">🔧</a> <a href="#translation-adrian-pena-castro" title="Translation">🌍</a> <a href="#tutorial-adrian-pena-castro" title="Tutorials">✅</a></td>
+    <td align="center"><a href="https://github.com/SaulMoro"><img src="https://avatars.githubusercontent.com/u/4116819?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Saul Moro</b></sub></a><br /><a href="#question-SaulMoro" title="Answering Questions">💬</a> <a href="https://github.com/SaulMoro/ngrx-rtk-query/issues?q=author%3ASaulMoro" title="Bug reports">🐛</a> <a href="https://github.com/SaulMoro/ngrx-rtk-query/commits?author=SaulMoro" title="Code">💻</a> <a href="#content-SaulMoro" title="Content">🖋</a> <a href="#design-SaulMoro" title="Design">🎨</a> <a href="https://github.com/SaulMoro/ngrx-rtk-query/commits?author=SaulMoro" title="Documentation">📖</a> <a href="#basic-usage" title="Examples">💡</a> <a href="#ideas-SaulMoro" title="Ideas, Planning, & Feedback">🤔</a> <a href="#maintenance-SaulMoro" title="Maintenance">🚧</a> <a href="#mentoring-SaulMoro" title="Mentoring">🧑‍🏫</a> <a href="#platform-SaulMoro" title="Packaging/porting to new platform">📦</a> <a href="#research-SaulMoro" title="Research">🔬</a> <a href="https://github.com/SaulMoro/ngrx-rtk-query/pulls?q=is%3Apr+reviewed-by%3ASaulMoro" title="Reviewed Pull Requests">👀</a> <a href="#basic-usage" title="Tutorials">✅</a></td>
+    <td align="center"><a href="https://github.com/adrian-pena-castro"><img src="https://avatars.githubusercontent.com/u/80181162?v=4?s=100" width="100px;" alt=""/><br /><sub><b>adrian-pena-castro</b></sub></a><br /> <a href="https://github.com/SaulMoro/ngrx-rtk-query/issues?q=author%3Aadrian-pena-castro" title="Bug reports">🐛</a> <a href="https://github.com/SaulMoro/ngrx-rtk-query/commits?author=adrian-pena-castro" title="Code">💻</a> <a href="#content-adrian-pena-castro" title="Content">🖋</a> <a href="https://github.com/SaulMoro/ngrx-rtk-query/commits?author=adrian-pena-castro" title="Documentation">📖</a> <a href="#example-adrian-pena-castro" title="Examples">💡</a> <a href="#ideas-adrian-pena-castro" title="Ideas, Planning, & Feedback">🤔</a> <a href="#maintenance-adrian-pena-castro" title="Maintenance">🚧</a> <a href="#translation-adrian-pena-castro" title="Translation">🌍</a> <a href="#tutorial-adrian-pena-castro" title="Tutorials">✅</a></td>
   </tr>
 </table>
 
