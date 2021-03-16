@@ -6,27 +6,28 @@ import { useDeletePostMutation, useGetPostQuery, useUpdatePostMutation } from '@
 @Component({
   selector: 'app-post-detail',
   template: `
-    <section *ngIf="postQuery$ | async as postQuery">
-      <h1 class="text-xl font-semibold">
-        {{ postQuery?.data?.name }} {{ postQuery.isFetching ? '...refetching' : '' }}
-      </h1>
+    <section class="space-y-4" *ngIf="postQuery$ | async as postQuery">
+      <div>
+        <h1 class="text-xl font-semibold">{{ postQuery?.data?.name }}</h1>
+        <small *ngIf="postQuery.isFetching">Refetching...</small>
+      </div>
 
-      <ng-container *ngIf="deletePostMutation.state$ | async as deletePostState">
+      <div class="flex items-center space-x-4" *ngIf="deletePostMutation.state$ | async as deletePostState">
         <button
           class="btn-outline btn-primary"
           *ngIf="updatePostMutation.state$ | async as updatePostState"
-          [disabled]="deletePostState.isLoading || updatePostState?.isLoading"
+          [disabled]="postQuery.isLoading || deletePostState.isLoading || updatePostState.isLoading"
         >
           {{ updatePostState?.isLoading ? 'Updating...' : 'Edit' }}
         </button>
         <button
           class="m-4 btn-outline btn-primary"
           (click)="deletePost(postQuery.data?.id)"
-          [disabled]="deletePostState?.isLoading"
+          [disabled]="postQuery.isLoading || deletePostState.isLoading"
         >
           {{ deletePostState?.isLoading ? 'Deleting...' : 'Delete' }}
         </button>
-      </ng-container>
+      </div>
 
       <pre class="bg-gray-200">{{ postQuery.data | json }}</pre>
     </section>

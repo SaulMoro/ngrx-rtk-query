@@ -18,10 +18,6 @@ export const postHandlers = [
     return res(ctx.json(Object.values(state.entities)));
   }),
 
-  rest.get('/posts', (req, res, ctx) => {
-    return res(ctx.json(Object.values(state.entities)));
-  }),
-
   rest.post('/posts', (req, res, ctx) => {
     const post = req.body as Partial<Post>;
     startingId += 1;

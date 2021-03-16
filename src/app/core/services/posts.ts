@@ -75,9 +75,6 @@ export const postApi = createApi({
       },
       invalidates: (_, id) => [{ type: 'Posts', id }],
     }),
-    getErrorProne: build.query<{ success: boolean }, void>({
-      query: () => 'error-prone',
-    }),
   }),
 });
 
@@ -87,5 +84,4 @@ export const {
   useGetPostQuery,
   useGetPostsQuery,
   useUpdatePostMutation,
-  useGetErrorProneQuery,
 } = postApi;
