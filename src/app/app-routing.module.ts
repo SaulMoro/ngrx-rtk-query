@@ -9,6 +9,7 @@ const routes: Routes = [
   },
   { path: 'counter', loadChildren: () => import('./features/counter/counter.module').then((m) => m.CounterModule) },
   { path: 'empty', loadChildren: () => import('./features/empty/empty.module').then((m) => m.EmptyModule) },
+  { path: 'posts', loadChildren: () => import('./features/posts/posts.module').then((m) => m.PostsModule) },
 ];
 
 @NgModule({
