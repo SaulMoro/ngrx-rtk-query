@@ -129,8 +129,6 @@ export class CoreStoreModule {}
 Use the query in a component
 
 ```ts
-import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { nanoid } from '@reduxjs/toolkit';
 import { useDecrementCountMutation, useGetCountQuery, useIncrementCountMutation } from '@app/core/services';
 
 @Component({
