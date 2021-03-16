@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { PostManagerComponent } from './post-manager.component';
+import { PostsListComponent } from './posts-list.component';
 
-describe('PostManagerComponent', () => {
-  let component: PostManagerComponent;
-  let fixture: ComponentFixture<PostManagerComponent>;
+describe('PostsListComponent', () => {
+  let component: PostsListComponent;
+  let fixture: ComponentFixture<PostsListComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [PostManagerComponent],
+      declarations: [PostsListComponent],
     }).compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(PostManagerComponent);
+    fixture = TestBed.createComponent(PostsListComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
