@@ -35,7 +35,7 @@ import { useDecrementCountMutation, useGetCountQuery, useIncrementCountMutation 
           <button class="btn btn-primary" (click)="addCounter()">Add individual counter</button>
         </div>
 
-        <div *ngFor="let counter of counters" class="w-full mt-6">
+        <div *ngFor="let counter of counters; trackBy: trackByFn" class="w-full mt-6">
           <app-counter [id]="counter"></app-counter>
         </div>
       </section>
@@ -55,5 +55,9 @@ export class CounterManagerComponent {
 
   addCounter(): void {
     this.counters = [...this.counters, nanoid()];
+  }
+
+  trackByFn(_index: number, id: string): string {
+    return id;
   }
 }
