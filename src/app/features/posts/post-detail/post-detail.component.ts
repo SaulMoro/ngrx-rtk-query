@@ -43,9 +43,7 @@ export class PostDetailComponent {
   constructor(private route: ActivatedRoute, private router: Router) {}
 
   deletePost(id: number = 0): void {
-    this.deletePostMutation
-      .dispatch(id)
-      .unwrap()
-      .then(() => this.router.navigate(['/posts']));
+    this.deletePostMutation.dispatch(id);
+    this.router.navigate(['/posts']);
   }
 }
