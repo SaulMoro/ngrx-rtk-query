@@ -1,0 +1,26 @@
+name: Test and build
+
+on:
+  push:
+    branches-ignore:
+      - master
+      - next
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+
+      - name: NPM Install, lint, test and build
+        run: |
+          npm ci
+          npm run lint
+          npm run build
+          # TODO: npm test
+          npm run build:lib

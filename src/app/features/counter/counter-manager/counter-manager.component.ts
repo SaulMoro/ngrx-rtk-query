@@ -8,7 +8,7 @@ import { useDecrementCountMutation, useGetCountQuery, useIncrementCountMutation 
     <div class="space-y-8">
       <section class="space-y-4">
         <h1 class="text-xl font-semibold">Main Counter</h1>
-        <div *ngIf="countQuery$ | async as countQuery">
+        <div>
           <div class="flex items-center space-x-4">
             <button
               *ngIf="increment.state$ | async as incrementState"
@@ -18,11 +18,13 @@ import { useDecrementCountMutation, useGetCountQuery, useIncrementCountMutation 
             >
               +
             </button>
-            <span class="text-3xl font-bold">{{ countQuery.data?.count || 0 }}</span>
+            <span *ngIf="countQuery$ | async as countQuery" class="text-3xl font-bold">{{
+              countQuery.data?.count || 0
+            }}</span>
             <button class="btn-outline btn-primary" (click)="decrement.dispatch(1)">-</button>
           </div>
           <small>Decrease is a optimistic update!</small>
-          <p class="mt-6 text-xs">{{ countQuery | json }}</p>
+          <p class="mt-6 text-xs">{{ countQuery$ | async | json }}</p>
         </div>
       </section>
 
@@ -33,7 +35,7 @@ import { useDecrementCountMutation, useGetCountQuery, useIncrementCountMutation 
           <button class="btn btn-primary" (click)="addCounter()">Add individual counter</button>
         </div>
 
-        <div *ngFor="let counter of counters" class="w-full mt-6">
+        <div *ngFor="let counter of counters; trackBy: trackByFn" class="w-full mt-6">
           <app-counter [id]="counter"></app-counter>
         </div>
       </section>
@@ -53,5 +55,9 @@ export class CounterManagerComponent {
 
   addCounter(): void {
     this.counters = [...this.counters, nanoid()];
+  }
+
+  trackByFn(_index: number, id: string): string {
+    return id;
   }
 }
