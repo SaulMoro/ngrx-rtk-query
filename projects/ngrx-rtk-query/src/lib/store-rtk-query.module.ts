@@ -7,18 +7,14 @@ import { dispatch, ThunkService } from './thunk.service';
 export class StoreRtkQueryModule {
   static forRoot(config?: Partial<StoreQueryConfig>): ModuleWithProviders<StoreRtkQueryModule> {
     const moduleConfig = { ...defaultConfig, ...config };
+
     if (moduleConfig.setupListeners) {
       setupListeners(dispatch);
     }
 
     return {
       ngModule: StoreRtkQueryModule,
-      providers: [
-        {
-          provide: STORE_RTK_QUERY_CONFIG,
-          useValue: moduleConfig,
-        },
-      ],
+      providers: [{ provide: STORE_RTK_QUERY_CONFIG, useValue: moduleConfig }],
     };
   }
 

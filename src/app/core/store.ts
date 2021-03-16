@@ -27,4 +27,4 @@ export const reducers: ActionReducerMap<RootState> = {
     StoreRtkQueryModule.forRoot({ setupListeners: true }),
   ],
 })
-export class AppStoreModule {}
+export class CoreStoreModule {}

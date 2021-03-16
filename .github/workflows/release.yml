@@ -1,6 +1,9 @@
-name: Publish the library
+name: Make a Release and Deploy on GitHub Pages
 
-on: push
+on:
+  push:
+    branches:
+      - master
 
 jobs:
   build:
@@ -13,14 +16,13 @@ jobs:
         with:
           node-version: '12.x'
 
-      - name: NPM install, lint, build, test and release
+      - name: NPM install, build, release and deploy
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           npm ci
-          npm run lint
           npm run build
-          # npm run test
           npm run build:lib
-          npx semantic-release --debug
+          npx semantic-release
+          npm run deploy -- --no-silent --name="Saul Moro" --email=saul.moro.gomez@gmail.com

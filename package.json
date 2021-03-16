@@ -36,7 +36,7 @@
     "@ngrx/router-store": "^11.0.1",
     "@ngrx/store": "^11.0.1",
     "@reduxjs/toolkit": "^1.5.0",
-    "@rtk-incubator/rtk-query": "https://pkg.csb.dev/rtk-incubator/rtk-query/commit/5a81294c/@rtk-incubator/rtk-query",
+    "@rtk-incubator/rtk-query": "https://pkg.csb.dev/rtk-incubator/rtk-query/commit/97413bf7/@rtk-incubator/rtk-query",
     "rxjs": "~6.6.0",
     "tslib": "^2.0.0",
     "zone.js": "~0.11.3"

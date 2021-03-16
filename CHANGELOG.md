@@ -1,3 +1,10 @@
+## [1.0.4-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.0.3...v1.0.4-next.1) (2021-03-16)
+
+
+### Bug Fixes
+
+* **lib:** style of Module forRoot ([1ed5c24](https://github.com/SaulMoro/ngrx-rtk-query/commit/1ed5c24ce9e373bacb23e24bd7e2253b9a415385))
+
 ## [1.0.3](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.0.2...v1.0.3) (2021-03-15)
 
 
