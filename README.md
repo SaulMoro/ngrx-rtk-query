@@ -12,16 +12,7 @@
 [![ngneat-lib](https://img.shields.io/badge/made%20with-%40ngneat%2Flib-ad1fe3?logo=angular)](https://github.com/ngneat/lib)
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 
-> The Library Slogan
-
-Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquid assumenda atque blanditiis cum delectus eligendi ipsam iste iure, maxime modi molestiae nihil obcaecati odit officiis pariatur quibusdam suscipit temporibus unde.
-Accusantium aliquid corporis cupiditate dolores eum exercitationem illo iure laborum minus nihil numquam odit officiis possimus quas quasi quos similique, temporibus veritatis? Exercitationem, iure magni nulla quo sapiente soluta. Esse?
-
-## Features
-
-- ✅ One
-- ✅ Two
-- ✅ Three
+**ngrx-rtk-query** is a plugin to make RTK Query (**including auto-generated hooks**) works in Angular applications with NgRx!! Mix the power of RTK Query + NgRx + RxJS to achieve the same functionality as in the RTK Query guide with Hooks.
 
 ## Table of Contents
 
@@ -31,29 +22,153 @@ Accusantium aliquid corporis cupiditate dolores eum exercitationem illo iure lab
 
 ## Installation
 
-`ng add ngrx-rtk-query`
+You can install it through **Angular CLI**:
 
-### NPM
+```bash
+ng add ngrx-rtk-query
+```
 
-`npm install ngrx-rtk-query`
+or with **npm**:
 
-### Yarn
+```bash
+npm install ngrx-rtk-query
+```
 
-`yarn add ngrx-rtk-query`
+When you install using **npm or yarn**, you will also need to import `StoreRtkQueryModule` in your `app.module`. You can also set setupListeners here.:
 
-## Usage
+```typescript
+import { StoreRtkQueryModule } from 'ngrx-rtk-query';
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquid assumenda atque blanditiis cum delectus eligendi ipsam iste iure, maxime modi molestiae nihil obcaecati odit officiis pariatur quibusdam suscipit temporibus unde.
+@NgModule({
+  imports: [
+    ... // NgRx Modules here!!
+    StoreRtkQueryModule.forRoot({ setupListeners: true })
+  ],
+})
+class AppModule {}
+```
+
+## Basic Usage
+
+You can follow the official [RTK Query guide with hooks](https://rtk-query-docs.netlify.app/introduction/getting-started), with slight variations.
+
+You can see the application of this repository for more examples.
+
+First, you need to install redux-toolkit and rtk-query:
+```bash
+npm install @reduxjs/toolkit rtk-incubator/rtk-query#next
+```
+
+We'll create a service definition that queries the publicly available
 
 ```ts
-function helloWorld() {}
+import { fetchBaseQuery } from '@rtk-incubator/rtk-query';
+import { createApi } from 'ngrx-rtk-query';
+
+export interface CountResponse {
+  count: number;
+}
+
+export const counterApi = createApi({
+  reducerPath: 'counterApi',
+  baseQuery: fetchBaseQuery({ baseUrl: '/' }),
+  entityTypes: ['Counter'],
+  endpoints: (build) => ({
+    getCount: build.query<CountResponse, void>({
+      query: () => ({
+        url: `count`,
+      }),
+      provides: ['Counter'],
+    }),
+    incrementCount: build.mutation<CountResponse, number>({
+      query: (amount) => ({
+        url: `increment`,
+        method: 'PUT',
+        body: { amount },
+      }),
+      invalidates: ['Counter'],
+    }),
+    decrementCount: build.mutation<CountResponse, number>({
+      query: (amount) => ({
+        url: `decrement`,
+        method: 'PUT',
+        body: { amount },
+      }),
+      invalidates: ['Counter'],
+    }),
+  }),
+});
+
+export const {
+  useGetCountQuery,
+  useIncrementCountMutation,
+  useDecrementCountMutation,
+} = counterApi;
+```
+
+Add the service to your store
+
+```ts
+export const reducers: ActionReducerMap<RootState> = {
+  [counterApi.reducerPath]: counterApi.reducer,
+};
+
+@NgModule({
+  imports: [
+    StoreModule.forRoot(reducers, {
+      metaReducers: [counterApi.metareducer],
+    }),
+    StoreRtkQueryModule.forRoot({ setupListeners: true }),
+
+    !environment.production ? StoreDevtoolsModule.instrument() : [],
+  ],
+})
+export class CoreStoreModule {}
+```
+
+Use the query in a component
+
+```ts
+import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { nanoid } from '@reduxjs/toolkit';
+import { useDecrementCountMutation, useGetCountQuery, useIncrementCountMutation } from '@app/core/services';
+
+@Component({
+  selector: 'app-counter-manager',
+  template: `
+    <section>
+      <div *ngIf="countQuery$ | async as countQuery">
+        <button
+          *ngIf="increment.state$ | async as incrementState"
+          [disabled]="incrementState.isLoading"
+          (click)="increment.dispatch(1)"
+        > + </button>
+
+        <span>{{ countQuery.data?.count || 0 }}</span>
+
+        <button
+          *ngIf="decrement.state$ | async as decrementState"
+          [disabled]="decrementState.isLoading"
+          (click)="decrement.dispatch(1)"
+        > - </button>
+      </div>
+    </section>
+  `,
+})
+export class CounterManagerComponent {
+  countQuery$ = useGetCountQuery();
+  increment = useIncrementCountMutation();
+  decrement = useDecrementCountMutation();
+}
 ```
 
 ## FAQ
 
-## How to ...
+### I can't install rtk-incubator/rtk-query#next
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquid assumenda atque blanditiis cum delectus eligendi ips
+Until RTK Query releases the next version, you can install the same version as in the package.json of this repository
+
+<br/>
 
 ## Contributors ✨
 
