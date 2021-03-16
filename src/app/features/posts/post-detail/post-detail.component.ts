@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs/operators';
-import { useDeletePostMutation, useGetPostQuery, useUpdatePostMutation } from '@app/core/services';
+import { Post, useDeletePostMutation, useGetPostQuery, useUpdatePostMutation } from '@app/core/services';
 
 @Component({
   selector: 'app-post-detail',
@@ -37,10 +37,14 @@ import { useDeletePostMutation, useGetPostQuery, useUpdatePostMutation } from '@
 })
 export class PostDetailComponent {
   postQuery$ = useGetPostQuery(this.route.params.pipe(map((params) => +params.id)));
-  deletePostMutation = useDeletePostMutation();
   updatePostMutation = useUpdatePostMutation();
+  deletePostMutation = useDeletePostMutation();
 
   constructor(private route: ActivatedRoute, private router: Router) {}
+
+  updatePost(post: Post): void {
+    // TODO:
+  }
 
   deletePost(id: number = 0): void {
     this.deletePostMutation.dispatch(id);
