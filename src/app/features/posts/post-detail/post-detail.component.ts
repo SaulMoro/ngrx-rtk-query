@@ -1,7 +1,8 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { map } from 'rxjs/operators';
-import { Post, useDeletePostMutation, useGetPostQuery, useUpdatePostMutation } from '@app/core/services';
+import { filter, map, tap } from 'rxjs/operators';
+import { useDeletePostMutation, useGetPostQuery, useUpdatePostMutation } from '@app/core/services';
+import { FormControl } from '@angular/forms';
 
 @Component({
   selector: 'app-post-detail',
@@ -28,7 +29,17 @@ import { Post, useDeletePostMutation, useGetPostQuery, useUpdatePostMutation } f
           {{ deletePostState?.isLoading ? 'Deleting...' : 'Delete' }}
         </button>
       </div>
-
+      <div>
+        <input type="text" [formControl]="postFormControl" />
+        <button
+          *ngIf="updatePostMutation.state$ | async as updatePostState"
+          class="m-4 btn btn-primary"
+          (click)="updatePost(postQuery?.data?.id)"
+          [disabled]="updatePostState.isLoading"
+        >
+          {{ updatePostState.isLoading ? 'Updating...' : 'Update' }}
+        </button>
+      </div>
       <pre class="bg-gray-200">{{ postQuery.data | json }}</pre>
     </section>
   `,
@@ -36,14 +47,21 @@ import { Post, useDeletePostMutation, useGetPostQuery, useUpdatePostMutation } f
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PostDetailComponent {
-  postQuery$ = useGetPostQuery(this.route.params.pipe(map((params) => +params.id)));
   updatePostMutation = useUpdatePostMutation();
   deletePostMutation = useDeletePostMutation();
+  postFormControl = new FormControl('');
+
+  postQuery$ = useGetPostQuery(this.route.params.pipe(map((params) => +params.id))).pipe(
+    filter((result: any) => result && result.data),
+    tap((result: any) => {
+      this.postFormControl.setValue(result.data.name);
+    }),
+  );
 
   constructor(private route: ActivatedRoute, private router: Router) {}
 
-  updatePost(post: Post): void {
-    // TODO:
+  updatePost(id: number = 0): void {
+    this.updatePostMutation.dispatch({ id, name: this.postFormControl.value });
   }
 
   deletePost(id: number = 0): void {
