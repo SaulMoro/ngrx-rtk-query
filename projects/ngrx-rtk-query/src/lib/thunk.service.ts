@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Action, State, Store } from '@ngrx/store';
+import { Action, Store } from '@ngrx/store';
 import { AnyAction, ThunkAction } from '@reduxjs/toolkit';
 import { Observable } from 'rxjs';
 
@@ -16,7 +16,7 @@ export function dispatch<R>(action: Action | ThunkAction<R, any, any, AnyAction>
 }
 
 export function getState(): any {
-  return service?.getState();
+  return service?.state;
 }
 
 export function select<K>(mapFn: (state: any) => K): Observable<K> {
@@ -25,13 +25,11 @@ export function select<K>(mapFn: (state: any) => K): Observable<K> {
 
 @Injectable({ providedIn: 'root' })
 export class ThunkService {
-  constructor(private readonly store: Store, private readonly state: State<any>) {
-    service = this;
-  }
+  currentState: any;
 
-  getState(): any {
-    // eslint-disable-next-line rxjs/no-subject-value
-    return this.state.getValue();
+  constructor(private readonly store: Store) {
+    service = this;
+    this.store.subscribe((state) => (this.currentState = state));
   }
 
   dispatch(action: Action): void {
@@ -40,5 +38,9 @@ export class ThunkService {
 
   select<K>(mapFn: (state: any) => K): Observable<K> {
     return this.store.select(mapFn);
+  }
+
+  get state(): any {
+    return this.currentState;
   }
 }
