@@ -1,3 +1,68 @@
+# [1.2.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.1.0...v1.2.0) (2021-03-17)
+
+
+### Bug Fixes
+
+* **lib:** fix duplicated state & metareducer ([ca88736](https://github.com/SaulMoro/ngrx-rtk-query/commit/ca88736b6b07a65dfb9cfb6f56b31c08385547e2))
+
+
+### Features
+
+* **app-posts:** add new post ([bc16cd2](https://github.com/SaulMoro/ngrx-rtk-query/commit/bc16cd2335e09037c4883ece527022d2d405c9a7))
+
+# [1.2.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.1.0...v1.2.0-next.1) (2021-03-17)
+
+
+### Bug Fixes
+
+* **lib:** fix duplicated state & metareducer ([ca88736](https://github.com/SaulMoro/ngrx-rtk-query/commit/ca88736b6b07a65dfb9cfb6f56b31c08385547e2))
+
+
+### Features
+
+* **app-posts:** add new post ([bc16cd2](https://github.com/SaulMoro/ngrx-rtk-query/commit/bc16cd2335e09037c4883ece527022d2d405c9a7))
+
+# [1.1.0-next.2](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.1.0-next.1...v1.1.0-next.2) (2021-03-17)
+
+
+### Bug Fixes
+
+* **lib:** fix duplicated state & metareducer ([ca88736](https://github.com/SaulMoro/ngrx-rtk-query/commit/ca88736b6b07a65dfb9cfb6f56b31c08385547e2))
+
+
+### Features
+
+* **app-posts:** add new post ([bc16cd2](https://github.com/SaulMoro/ngrx-rtk-query/commit/bc16cd2335e09037c4883ece527022d2d405c9a7))
+
+# [1.1.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.0.3...v1.1.0) (2021-03-16)
+
+
+### Bug Fixes
+
+* **app-posts:** navigate on delete ([d804d86](https://github.com/SaulMoro/ngrx-rtk-query/commit/d804d86545d6737032fec434244f6a41c7bd682c))
+* **lib:** style of Module forRoot ([1ed5c24](https://github.com/SaulMoro/ngrx-rtk-query/commit/1ed5c24ce9e373bacb23e24bd7e2253b9a415385))
+
+
+### Features
+
+* **app:** add post manager with 2 lists ([8095c81](https://github.com/SaulMoro/ngrx-rtk-query/commit/8095c81cb2c8a91d8d6cd2920e3ded1ea0ff451d))
+* **app-posts:** add update post with todo ([15626a0](https://github.com/SaulMoro/ngrx-rtk-query/commit/15626a03382b58abd20c4a0a0e344d594e792fca))
+* **posts:** example show and delete ([48268f3](https://github.com/SaulMoro/ngrx-rtk-query/commit/48268f36c13451c8e6056f30fa6c607bc636e20f))
+
+# [1.1.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.0.4-next.1...v1.1.0-next.1) (2021-03-16)
+
+
+### Bug Fixes
+
+* **app-posts:** navigate on delete ([d804d86](https://github.com/SaulMoro/ngrx-rtk-query/commit/d804d86545d6737032fec434244f6a41c7bd682c))
+
+
+### Features
+
+* **app:** add post manager with 2 lists ([8095c81](https://github.com/SaulMoro/ngrx-rtk-query/commit/8095c81cb2c8a91d8d6cd2920e3ded1ea0ff451d))
+* **app-posts:** add update post with todo ([15626a0](https://github.com/SaulMoro/ngrx-rtk-query/commit/15626a03382b58abd20c4a0a0e344d594e792fca))
+* **posts:** example show and delete ([48268f3](https://github.com/SaulMoro/ngrx-rtk-query/commit/48268f36c13451c8e6056f30fa6c607bc636e20f))
+
 ## [1.0.4-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.0.3...v1.0.4-next.1) (2021-03-16)
 
 
