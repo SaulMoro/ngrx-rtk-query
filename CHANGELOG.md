@@ -1,3 +1,15 @@
+# [1.2.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.1.0...v1.2.0) (2021-03-17)
+
+
+### Bug Fixes
+
+* **lib:** fix duplicated state & metareducer ([ca88736](https://github.com/SaulMoro/ngrx-rtk-query/commit/ca88736b6b07a65dfb9cfb6f56b31c08385547e2))
+
+
+### Features
+
+* **app-posts:** add new post ([bc16cd2](https://github.com/SaulMoro/ngrx-rtk-query/commit/bc16cd2335e09037c4883ece527022d2d405c9a7))
+
 # [1.2.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.1.0...v1.2.0-next.1) (2021-03-17)
 
 
