@@ -11,6 +11,7 @@ export function buildMetaReducer({
   moduleOptions: Required<Pick<AngularHooksModuleOptions, 'useDispatch' | 'getState'>>;
 }): MetaReducer<any> {
   const anyApi = api as Api<any, Record<string, any>, string, string, AngularHooksModule | CoreModule>;
+  const { unsubscribeQueryResult } = anyApi.internalActions;
 
   return function (reducer: ActionReducer<any>): ActionReducer<any> {
     return function (state: any, action: Action) {
@@ -19,8 +20,13 @@ export function buildMetaReducer({
 
       anyApi.middleware({
         dispatch,
-        getState: action.type === anyApi.internalActions.updateSubscriptionOptions.type ? getNextState : getState,
-      })(() => nextState)(action);
+        /**
+         * The unsuscriptQueryResult Action to remove unsubscriptions (handleUnsubscribe)
+         * dispatch a function with setTimeout. This function needs the state of the store after the
+         * tiemout so we have to pass the reference of the state with getState.
+         */
+        getState: action.type === unsubscribeQueryResult.type ? getState : getNextState,
+      })(getNextState)(action);
 
       return nextState;
     };
