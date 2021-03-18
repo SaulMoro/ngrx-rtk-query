@@ -158,6 +158,21 @@ export class CounterManagerComponent {
 }
 ```
 
+## Mutations
+
+The use of mutations is a bit different compared to the original [RTK Query guide with hooks](https://rtk-query-docs.netlify.app/introduction/getting-started)
+
+Like in the original library, a mutation is a tuple with two items, but the structure and naming of the items is different.
+The first item is a function called **dispatch**. This function is the trigger to run the mutation action.
+The second item is an observable that returns an object with the state, including the status flags: isUninitialized, isLoading, isSuccess, isError.
+
+```typescript
+  addPostMutation = useAddPostMutation();
+  addPostMutation.dispatch({params}); //this is the mutation trigger
+  addPostMutation.state$ //this is the observable with the state
+
+```
+
 ## FAQ
 
 ### I can't install rtk-incubator/rtk-query#next
