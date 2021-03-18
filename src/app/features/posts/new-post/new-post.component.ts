@@ -1,7 +1,6 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl } from '@angular/forms';
-
-import { useAddPostMutation } from '@app/core/services';
+import { useAddPostMutation } from '../services';
 
 @Component({
   selector: 'app-new-post',

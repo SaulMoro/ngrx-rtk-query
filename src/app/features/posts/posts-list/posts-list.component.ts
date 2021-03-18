@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { Post, useGetPostsQuery } from '@app/core/services/posts';
+import { useGetPostsQuery } from '../services';
+import { Post } from '../models';
 
 @Component({
   selector: 'app-posts-list',
