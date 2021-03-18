@@ -2,7 +2,7 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { filter, map, tap } from 'rxjs/operators';
 import { FormControl } from '@angular/forms';
-import { useGetPostQuery, useUpdatePostMutation, useDeletePostMutation } from '@app/core/services';
+import { useDeletePostMutation, useGetPostQuery, useUpdatePostMutation } from '../services/posts';
 
 @Component({
   selector: 'app-post-detail',
