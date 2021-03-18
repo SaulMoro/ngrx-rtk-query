@@ -1,7 +1,9 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs/operators';
-import { Post, useDeletePostMutation, useGetPostQuery, useUpdatePostMutation } from '@app/core/services';
+
+import { useDeletePostMutation, useGetPostQuery, useUpdatePostMutation } from '../services';
+import { Post } from '../models';
 
 @Component({
   selector: 'app-post-detail',
