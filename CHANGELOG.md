@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.2.0...v1.3.0) (2021-03-18)
+
+
+### Features
+
+* **lib:** add code splitting support and refactor posts example ([dca9ff9](https://github.com/SaulMoro/ngrx-rtk-query/commit/dca9ff93919c7ff80c15614e6559b8fdccc37382))
+
 # [1.3.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.2.0...v1.3.0-next.1) (2021-03-18)
 
 
