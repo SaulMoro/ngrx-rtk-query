@@ -1,6 +1,6 @@
-import { Post } from '@app/core/services';
-import { createEntityAdapter } from '@reduxjs/toolkit';
 import { rest } from 'msw';
+import { createEntityAdapter } from '@reduxjs/toolkit';
+import { Post } from '@app/features/posts/models';
 
 // high tech in-memory storage
 let startingId = 3; // Just a silly counter for usage when adding new posts

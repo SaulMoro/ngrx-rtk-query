@@ -18,6 +18,7 @@
 
 - [Installation](#installation)
 - [Basic Usage](#basic-usage)
+- [Usage](#usage)
 - [FAQ](#faq)
 
 ## Installation
@@ -157,8 +158,40 @@ export class CounterManagerComponent {
   decrement = useDecrementCountMutation();
 }
 ```
+<br/>
 
-## Mutations
+## Usage
+
+### **Use on code-splitted/feature/lazy modules**
+
+To introduce a lazy/feature/code-splitted query, you must export it through an angular module.
+Import this module where needed. You can look at the example of posts from this repository.
+
+```ts
+// ...
+
+export const postsApi = createApi({
+  reducerPath: 'postsApi',
+  baseQuery: baseQueryWithRetry,
+  entityTypes: ['Posts'],
+  endpoints: (build) => ({
+    // ...
+  }),
+});
+
+export const {
+  // ...
+} = postsApi;
+
+@NgModule({
+  imports: [StoreModule.forFeature(postsApi.reducerPath, postsApi.reducer, { metaReducers: [postsApi.metareducer] })],
+})
+export class PostsQueryModule {}
+```
+
+<br/>
+
+### Mutations
 
 The use of mutations is a bit different compared to the original [RTK Query guide with hooks](https://rtk-query-docs.netlify.app/introduction/getting-started)
 
@@ -173,9 +206,10 @@ The second item is an observable that returns an object with the state, includin
 
 ```
 
+
 ## FAQ
 
-### I can't install rtk-incubator/rtk-query#next
+### **I can't install rtk-incubator/rtk-query#next**
 
 Until RTK Query releases the next version, you can install the same version as in the package.json of this repository
 

@@ -16,7 +16,12 @@ export function buildMetaReducer({
   return function (reducer: ActionReducer<any>): ActionReducer<any> {
     return function (state: any, action: Action) {
       const nextState = reducer(state, action);
-      const getNextState = () => nextState;
+      let getNextState = () => nextState;
+
+      // Query inside forFeature (Code splitting)
+      if (!nextState[anyApi.reducerPath]) {
+        getNextState = () => ({ [anyApi.reducerPath]: nextState });
+      }
 
       anyApi.middleware({
         dispatch,
@@ -25,7 +30,7 @@ export function buildMetaReducer({
          * dispatch a function with setTimeout. This function needs the state of the store after the
          * tiemout so we have to pass the reference of the state with getState.
          */
-        getState: action.type === unsubscribeQueryResult.type ? getState : getNextState,
+        getState: unsubscribeQueryResult.match(action) ? getState : getNextState,
       })(getNextState)(action);
 
       return nextState;
