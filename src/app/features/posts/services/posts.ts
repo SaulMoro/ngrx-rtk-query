@@ -1,20 +1,10 @@
+import { NgModule } from '@angular/core';
+import { StoreModule } from '@ngrx/store';
 import { fetchBaseQuery, retry } from '@rtk-incubator/rtk-query';
 import { createApi } from 'ngrx-rtk-query';
-
-export interface Post {
-  id: number;
-  name: string;
-  fetched_at: string;
-}
+import { Post } from '../models';
 
 type PostsResponse = Post[];
-
-export interface User {
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone: string;
-}
 
 // Create our baseQuery instance
 const baseQuery = fetchBaseQuery({
@@ -31,7 +21,7 @@ const baseQuery = fetchBaseQuery({
 
 const baseQueryWithRetry = retry(baseQuery, { maxRetries: 6 });
 
-export const postApi = createApi({
+export const postsApi = createApi({
   reducerPath: 'postsApi',
   baseQuery: baseQueryWithRetry,
   entityTypes: ['Posts'],
@@ -84,4 +74,9 @@ export const {
   useGetPostQuery,
   useGetPostsQuery,
   useUpdatePostMutation,
-} = postApi;
+} = postsApi;
+
+@NgModule({
+  imports: [StoreModule.forFeature(postsApi.reducerPath, postsApi.reducer, { metaReducers: [postsApi.metareducer] })],
+})
+export class PostsQueryModule {}

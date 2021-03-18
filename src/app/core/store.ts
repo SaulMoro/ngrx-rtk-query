@@ -5,25 +5,23 @@ import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 import { StoreRtkQueryModule } from 'ngrx-rtk-query';
 
 import { environment } from '@environments/environment';
-import { counterApi, postApi } from '@app/core/services';
+import { counterApi } from '@app/core/services';
 
 export type RootState = {
   router: RouterReducerState;
   [counterApi.reducerPath]: ReturnType<typeof counterApi.reducer>;
-  [postApi.reducerPath]: ReturnType<typeof postApi.reducer>;
+  // Rest of Queries are lazy / code splitted
 };
 
 export const reducers: ActionReducerMap<RootState> = {
   router: routerReducer,
   [counterApi.reducerPath]: counterApi.reducer,
-  [postApi.reducerPath]: postApi.reducer,
+  // Rest of Queries are lazy / code splitted
 };
 
 @NgModule({
   imports: [
-    StoreModule.forRoot(reducers, {
-      metaReducers: [counterApi.metareducer, postApi.metareducer],
-    }),
+    StoreModule.forRoot(reducers, { metaReducers: [counterApi.metareducer] }),
     StoreRtkQueryModule.forRoot({ setupListeners: true }),
     StoreRouterConnectingModule.forRoot({ routerState: RouterState.Minimal }),
     !environment.production ? StoreDevtoolsModule.instrument() : [],
