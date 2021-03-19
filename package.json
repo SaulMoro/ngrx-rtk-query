@@ -12,7 +12,7 @@
     "contributors:add": "all-contributors add",
     "hooks:pre-commit": "node .husky/hooks/pre-commit.js",
     "commit": "cz",
-    "deploy": "ng deploy --no-build --base-href=https://SaulMoro.github.io/ngrx-rtk-query/",
+    "deploy": "ng deploy --base-href=https://SaulMoro.github.io/ngrx-rtk-query/",
     "copy": "cpx README.md dist/ngrx-rtk-query",
     "build:lib": "ng build ngrx-rtk-query --prod && npm run copy",
     "test:lib": "ng test ngrx-rtk-query --pass-with-no-tests",
