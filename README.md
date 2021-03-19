@@ -193,7 +193,7 @@ The use of queries is a bit different compared to the original [Queries - RTK Qu
 
 The parameters and options of the Query can be static or Observables.
 
-The hook useXXXQuery() returns an observable with all the information indicated in the official documentation (including refetch() function). By subscribing to this query (with the async pipe or subscribe()), the query will start its request.
+The hook `useXXXQuery()` returns an observable with all the information indicated in the official documentation (including `refetch()` function). By subscribing to this query (with the `async pipe` or `subscribe()`), the query will start its request.
 
 ```ts
 // Use query without params or options
@@ -213,8 +213,8 @@ postQuery$ = useGetPostsQuery(id$, options$);
 The use of mutations is a bit different compared to the original [Mutations - RTK Query guide](https://rtk-query-docs.netlify.app/concepts/mutations).
 
 Like in the original library, a mutation is a tuple with two items, but the structure and naming of the items is different.
-The first item is a function called **dispatch**. This function is the trigger to run the mutation action.
-The second item is an observable that returns an object with the state, including the status flags and other info (see official docs).
+The first item is a function called `dispatch(params)`. This function is the trigger to run the mutation action.
+The second item (`state$`) is an observable that returns an object with the state, including the status flags and other info (see official docs).
 
 ```ts
 // Use mutation hook
