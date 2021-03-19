@@ -10,7 +10,7 @@
     "lint": "ng lint && stylelint '*/**/*.scss' --syntax scss",
     "format": "prettier --check --ignore-unknown .",
     "contributors:add": "all-contributors add",
-    "hooks:pre-commit": "node hooks/pre-commit.js",
+    "hooks:pre-commit": "node .husky/hooks/pre-commit.js",
     "commit": "cz",
     "deploy": "ng deploy --no-build --base-href=https://SaulMoro.github.io/ngrx-rtk-query/",
     "copy": "cpx README.md dist/ngrx-rtk-query",
