@@ -189,22 +189,43 @@ export const {
 export class PostsQueryModule {}
 ```
 
+### **Queries**
+
+The use of queries is a bit different compared to the original [Queries - RTK Query guide](https://rtk-query-docs.netlify.app/concepts/queries).
+
+The parameters and options of the Query can be static or Observables.
+
+The hook useXXXQuery() returns an observable with all the information indicated in the official documentation (including refetch() function). By subscribing to this query (with the async pipe or subscribe()), the query will start its request.
+
+```ts
+// Use query without params or options
+postsQuery$ = useGetPostsQuery();
+
+// Use query with static params or options
+postQuery$ = useGetPostsQuery(2, {
+  selectFromResult: ({ data: post, isLoading }) => ({ post, isLoading }),
+});
+
+// Use query with Observables params or options (can be mixed with static)
+postQuery$ = useGetPostsQuery(id$, options$);
+```
+
 ### **Mutations**
 
-The use of mutations is a bit different compared to the original [RTK Query guide with hooks](https://rtk-query-docs.netlify.app/introduction/getting-started)
+The use of mutations is a bit different compared to the original [Mutations - RTK Query guide](https://rtk-query-docs.netlify.app/concepts/mutations).
 
 Like in the original library, a mutation is a tuple with two items, but the structure and naming of the items is different.
 The first item is a function called **dispatch**. This function is the trigger to run the mutation action.
-The second item is an observable that returns an object with the state, including the status flags and other info (see official docs): isUninitialized, isLoading, isSuccess, isError.
+The second item is an observable that returns an object with the state, including the status flags and other info (see official docs).
 
 ```ts
-// Use Mutation hook
+// Use mutation hook
 addPost = useAddPostMutation();
 
 // Mutation trigger
-addPostMutation.dispatch({params});
+addPost.dispatch({params});
 // Observable with the state of mutation
-addPostMutation.state$
+addPost.state$
 ```
 
 <br />
