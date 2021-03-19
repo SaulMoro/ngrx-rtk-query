@@ -12,7 +12,7 @@ import { Post } from '../models';
     <section class="space-y-4" *ngIf="postQuery$ | async as postQuery">
       <div>
         <h1 class="text-xl font-semibold">{{ postQuery?.data?.name }}</h1>
-        <small *ngIf="postQuery.isFetching">Refetching...</small>
+        <small *ngIf="postQuery.isFetching">Loading...</small>
       </div>
 
       <ng-container *ngIf="!isEditing; else editionSection">
@@ -31,6 +31,9 @@ import { Post } from '../models';
             (click)="deletePost(postQuery.data!)"
           >
             {{ deletePostState?.isLoading ? 'Deleting...' : 'Delete' }}
+          </button>
+          <button class="btn-outline btn-primary" [disabled]="postQuery.isFetching" (click)="postQuery.refetch()">
+            Refresh
           </button>
         </div>
       </ng-container>
@@ -51,7 +54,7 @@ import { Post } from '../models';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PostDetailComponent {
-  postQuery$ = useGetPostQuery(this.route.params.pipe(map((params) => +params.id))).pipe(
+  postQuery$ = useGetPostQuery(this.route.params.pipe(map((p) => +p.id))).pipe(
     tap((result) => this.postFormControl.setValue(result.data?.name ?? '')),
   );
   updatePostMutation = useUpdatePostMutation();
