@@ -1,3 +1,19 @@
+# [1.4.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.3.0...v1.4.0) (2021-03-19)
+
+
+### Bug Fixes
+
+* **app-posts:** fixed post queries import ([bca085c](https://github.com/SaulMoro/ngrx-rtk-query/commit/bca085cdaf23ef5533f0b0cbf310c0166c1a8df5))
+
+
+### Features
+
+* **app-posts:** edit post ([d56938f](https://github.com/SaulMoro/ngrx-rtk-query/commit/d56938fda3ce40a308d7bdde33bfeedde99a7358))
+* **app-posts:** hide  edit post ([f9087fd](https://github.com/SaulMoro/ngrx-rtk-query/commit/f9087fd95054048e06827c7dc0a2a09abee2b504))
+* **app-posts:** hide  edit post ([1060515](https://github.com/SaulMoro/ngrx-rtk-query/commit/10605156a6d2f2164b8340360557d72fbd593f8f))
+* **app-posts:** merge with next ([44daebd](https://github.com/SaulMoro/ngrx-rtk-query/commit/44daebdc0ba02e6faed403580dbf23c99126b4b4))
+* **app-posts:** mutations in readme ([7befa1b](https://github.com/SaulMoro/ngrx-rtk-query/commit/7befa1b5daa20d15822504fc176653dd1235afb9))
+
 # [1.4.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.3.0...v1.4.0-next.1) (2021-03-19)
 
 
