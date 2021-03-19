@@ -24,7 +24,10 @@ import { useDecrementCountMutation, useGetCountQuery, useIncrementCountMutation 
             <button class="btn-outline btn-primary" (click)="decrement.dispatch(1)">-</button>
           </div>
           <small>Decrease is a optimistic update!</small>
-          <p class="mt-6 text-xs">{{ countQuery$ | async | json }}</p>
+
+          <p class="mt-6 text-xs bg-gray-200">
+            <code>{{ countQuery$ | async | json }}</code>
+          </p>
         </div>
       </section>
 
@@ -34,7 +37,6 @@ import { useDecrementCountMutation, useGetCountQuery, useIncrementCountMutation 
           <h1 class="text-xl font-semibold">Counters List</h1>
           <button class="btn btn-primary" (click)="addCounter()">Add individual counter</button>
         </div>
-
         <div *ngFor="let counter of counters; trackBy: trackByFn" class="w-full mt-6">
           <app-counter [id]="counter"></app-counter>
         </div>

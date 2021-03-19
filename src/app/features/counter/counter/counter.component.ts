@@ -11,34 +11,35 @@ import { pollingOptions } from '../utils/polling-options';
   template: `
     <section class="space-y-4">
       <h1 class="font-medium text-md">{{ id }}</h1>
-      <div *ngIf="countQuery$ | async as countQuery">
-        <div class="flex items-center space-x-4">
-          <button
-            *ngIf="increment.state$ | async as incrementState"
-            class="btn-outline btn-primary"
-            [disabled]="incrementState.isLoading"
-            (click)="incrementCounter()"
-          >
-            +
-          </button>
-          <span class="text-3xl font-bold" [class.bg-green-100]="countQuery.isFetching">{{
-            countQuery.data?.count || 0
-          }}</span>
-          <button
-            *ngIf="decrement.state$ | async as decrementState"
-            class="btn-outline btn-primary"
-            [disabled]="decrementState.isLoading"
-            (click)="decrementCounter()"
-          >
-            -
-          </button>
+      <div class="flex items-center space-x-4">
+        <button
+          *ngIf="increment.state$ | async as incrementState"
+          class="btn-outline btn-primary"
+          [disabled]="incrementState.isLoading"
+          (click)="incrementCounter()"
+        >
+          +
+        </button>
+        <span
+          *ngIf="countQuery$ | async as countQuery"
+          class="text-3xl font-bold"
+          [class.bg-green-100]="countQuery.isFetching"
+          >{{ countQuery.data?.count || 0 }}</span
+        >
+        <button
+          *ngIf="decrement.state$ | async as decrementState"
+          class="btn-outline btn-primary"
+          [disabled]="decrementState.isLoading"
+          (click)="decrementCounter()"
+        >
+          -
+        </button>
 
-          <select [ngModel]="pollingInterval$ | async" (ngModelChange)="changePollingInterval($event)">
-            <option *ngFor="let pollingOption of pollingOptions" [value]="pollingOption.value">
-              {{ pollingOption.label }}
-            </option>
-          </select>
-        </div>
+        <select [ngModel]="pollingInterval$ | async" (ngModelChange)="changePollingInterval($event)">
+          <option *ngFor="let pollingOption of pollingOptions" [value]="pollingOption.value">
+            {{ pollingOption.label }}
+          </option>
+        </select>
       </div>
     </section>
   `,

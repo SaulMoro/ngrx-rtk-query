@@ -1,6 +1,9 @@
+const args = process.argv.join(' ');
+
 module.exports = {
   purge: {
-    enabled: process.env.WEBPACK_DEV_SERVER === 'true' && process.argv.join(' ').indexOf('build') !== -1,
+    enabled:
+      process.env.WEBPACK_DEV_SERVER === 'true' && (args.indexOf('build') !== -1 || args.indexOf('deploy') !== -1),
     content: ['./src/**/*.{html,ts}', './projects/**/*.{html,ts}'],
   },
   darkMode: false, // or 'media' or 'class'

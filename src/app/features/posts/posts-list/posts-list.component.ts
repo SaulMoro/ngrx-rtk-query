@@ -8,8 +8,8 @@ import { Post } from '../models';
     <section class="space-y-4" *ngIf="postsQuery$ | async as postsQuery">
       <small *ngIf="postsQuery.isLoading">Loading...</small>
 
-      <div *ngIf="postsQuery?.data?.length; else noPosts">
-        <li *ngFor="let post of postsQuery?.data; trackBy: trackByFn">
+      <div *ngIf="postsQuery.posts?.length; else noPosts">
+        <li *ngFor="let post of postsQuery.posts; trackBy: trackByFn">
           <a class="hover:underline" [routerLink]="['/posts', post.id]">{{ post.name }}</a>
         </li>
       </div>
@@ -23,7 +23,9 @@ import { Post } from '../models';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PostsListComponent {
-  postsQuery$ = useGetPostsQuery();
+  postsQuery$ = useGetPostsQuery(undefined, {
+    selectFromResult: ({ data: posts, isLoading }) => ({ posts, isLoading }),
+  });
 
   constructor() {}
 

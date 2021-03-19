@@ -7,10 +7,9 @@ import { PostsQueryModule } from './services';
 import { PostsManagerComponent } from './posts-manager/posts-manager.component';
 import { PostsListComponent } from './posts-list/posts-list.component';
 import { PostDetailComponent } from './post-detail/post-detail.component';
-import { NewPostComponent } from './new-post/new-post.component';
 
 @NgModule({
-  declarations: [PostsManagerComponent, PostsListComponent, PostDetailComponent, NewPostComponent],
+  declarations: [PostsManagerComponent, PostsListComponent, PostDetailComponent],
   imports: [
     CommonModule,
     PostsRoutingModule,
