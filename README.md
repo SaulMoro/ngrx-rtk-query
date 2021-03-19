@@ -189,23 +189,25 @@ export const {
 export class PostsQueryModule {}
 ```
 
-<br/>
-
-### Mutations
+### **Mutations**
 
 The use of mutations is a bit different compared to the original [RTK Query guide with hooks](https://rtk-query-docs.netlify.app/introduction/getting-started)
 
 Like in the original library, a mutation is a tuple with two items, but the structure and naming of the items is different.
 The first item is a function called **dispatch**. This function is the trigger to run the mutation action.
-The second item is an observable that returns an object with the state, including the status flags: isUninitialized, isLoading, isSuccess, isError.
+The second item is an observable that returns an object with the state, including the status flags and other info (see official docs): isUninitialized, isLoading, isSuccess, isError.
 
-```typescript
-  addPostMutation = useAddPostMutation();
-  addPostMutation.dispatch({params}); //this is the mutation trigger
-  addPostMutation.state$ //this is the observable with the state
+```ts
+// Use Mutation hook
+addPost = useAddPostMutation();
 
+// Mutation trigger
+addPostMutation.dispatch({params});
+// Observable with the state of mutation
+addPostMutation.state$
 ```
 
+<br />
 
 ## FAQ
 
