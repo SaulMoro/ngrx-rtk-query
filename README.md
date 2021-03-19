@@ -179,9 +179,7 @@ export const postsApi = createApi({
   }),
 });
 
-export const {
-  // ...
-} = postsApi;
+// ...
 
 @NgModule({
   imports: [StoreModule.forFeature(postsApi.reducerPath, postsApi.reducer, { metaReducers: [postsApi.metareducer] })],
