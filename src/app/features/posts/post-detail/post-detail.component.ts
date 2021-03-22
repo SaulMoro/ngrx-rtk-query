@@ -1,10 +1,9 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormControl } from '@angular/forms';
-import { map, tap } from 'rxjs/operators';
+import { tap } from 'rxjs/operators';
 
 import { useDeletePostMutation, useGetPostQuery, useUpdatePostMutation } from '../services/posts';
-import { Post } from '../models';
 
 @Component({
   selector: 'app-post-detail',
@@ -28,19 +27,19 @@ import { Post } from '../models';
           <button
             class="btn-outline btn-primary"
             [disabled]="postQuery.isLoading || deletePostState.isLoading"
-            (click)="deletePost(postQuery.data!)"
+            (click)="deletePost()"
           >
             {{ deletePostState?.isLoading ? 'Deleting...' : 'Delete' }}
           </button>
           <button class="btn-outline btn-primary" [disabled]="postQuery.isFetching" (click)="postQuery.refetch()">
-            Refresh
+            {{ postQuery.isFetching ? 'Fetching...' : 'Refresh' }}
           </button>
         </div>
       </ng-container>
       <ng-template #editionSection>
         <div class="space-x-4" *ngIf="updatePostMutation.state$ | async as updatePostState">
           <input type="text" [formControl]="postFormControl" />
-          <button class="btn btn-primary" [disabled]="updatePostState.isLoading" (click)="updatePost(postQuery.data!)">
+          <button class="btn btn-primary" [disabled]="updatePostState.isLoading" (click)="updatePost()">
             {{ updatePostState?.isLoading ? 'Updating...' : 'Update' }}
           </button>
           <button class="btn btn-primary" [disabled]="updatePostState.isLoading" (click)="toggleEdit()">Cancel</button>
@@ -54,7 +53,7 @@ import { Post } from '../models';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PostDetailComponent {
-  postQuery$ = useGetPostQuery(this.route.params.pipe(map((p) => +p.id))).pipe(
+  postQuery$ = useGetPostQuery(+this.route.snapshot.params.id).pipe(
     tap((result) => this.postFormControl.setValue(result.data?.name ?? '')),
   );
   updatePostMutation = useUpdatePostMutation();
@@ -65,19 +64,19 @@ export class PostDetailComponent {
 
   constructor(private route: ActivatedRoute, private router: Router) {}
 
-  updatePost({ id }: Post): void {
+  updatePost(): void {
     this.updatePostMutation
-      .dispatch({ id, name: this.postFormControl.value })
+      .dispatch({ id: +this.route.snapshot.params.id, name: this.postFormControl.value })
       .unwrap()
       .then(() => this.toggleEdit());
   }
 
-  deletePost({ id }: Post): void {
+  deletePost(): void {
     this.deletePostMutation
-      .dispatch(id)
+      .dispatch(+this.route.snapshot.params.id)
       .unwrap()
       .then(() => this.router.navigate(['/posts']))
-      .catch(() => console.log('Error deleting Post'));
+      .catch(() => console.error('Error deleting Post'));
   }
 
   toggleEdit(): void {

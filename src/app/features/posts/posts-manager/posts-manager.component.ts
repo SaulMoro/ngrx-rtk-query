@@ -35,6 +35,9 @@ export class PostsManagerComponent {
   constructor() {}
 
   addNewPost(): void {
-    this.addPost.dispatch({ name: this.postNameFormControl.value });
+    this.addPost
+      .dispatch({ name: this.postNameFormControl.value })
+      .unwrap()
+      .then(() => this.postNameFormControl.setValue(''));
   }
 }
