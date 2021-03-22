@@ -5,17 +5,20 @@ import { Post } from '../models';
 @Component({
   selector: 'app-posts-list',
   template: `
-    <section class="space-y-4" *ngIf="postsQuery$ | async as postsQuery">
-      <small *ngIf="postsQuery.isLoading">Loading...</small>
+    <section *ngIf="postsQuery$ | async as postsQuery" class="space-y-4">
+      <ng-container *ngIf="postsQuery.data as posts; else loading">
+        <div *ngIf="posts.length; else emptyPosts">
+          <li *ngFor="let post of posts; trackBy: trackByFn">
+            <a class="hover:underline" [routerLink]="['/posts', post.id]">{{ post.name }}</a>
+          </li>
+        </div>
+        <ng-template #emptyPosts>
+          <p class="mt-4">No posts :(</p>
+        </ng-template>
+      </ng-container>
 
-      <div *ngIf="postsQuery.posts?.length; else noPosts">
-        <li *ngFor="let post of postsQuery.posts; trackBy: trackByFn">
-          <a class="hover:underline" [routerLink]="['/posts', post.id]">{{ post.name }}</a>
-        </li>
-      </div>
-
-      <ng-template #noPosts>
-        <p class="mt-4">No posts :(</p>
+      <ng-template #loading>
+        <small>Loading...</small>
       </ng-template>
     </section>
   `,
@@ -23,9 +26,7 @@ import { Post } from '../models';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PostsListComponent {
-  postsQuery$ = useGetPostsQuery(undefined, {
-    selectFromResult: ({ data: posts, isLoading }) => ({ posts, isLoading }),
-  });
+  postsQuery$ = useGetPostsQuery();
 
   constructor() {}
 

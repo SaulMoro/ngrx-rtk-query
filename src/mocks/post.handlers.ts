@@ -15,7 +15,7 @@ state = adapter.setAll(state, [
 
 export const postHandlers = [
   rest.get('/posts', (_req, res, ctx) => {
-    return res(ctx.json(Object.values(state.entities)));
+    return res(ctx.delay(300), ctx.json(Object.values(state.entities)));
   }),
 
   rest.post('/posts', (req, res, ctx) => {
