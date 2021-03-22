@@ -1,3 +1,10 @@
+# [1.5.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.4.0...v1.5.0-next.1) (2021-03-22)
+
+
+### Features
+
+* **app:** add pagination example ([fac10dd](https://github.com/SaulMoro/ngrx-rtk-query/commit/fac10dd046ddd3b448f2324bade57283b120c5bf))
+
 # [1.4.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.3.0...v1.4.0) (2021-03-19)
 
 
