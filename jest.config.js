@@ -6,5 +6,5 @@ module.exports = {
     '@environments/(.*)': '<rootDir>/src/environments/$1',
     'ngrx-rtk-query': '<rootDir>/projects/ngrx-rtk-query/src/public-api.ts',
   },
-  testPathIgnorePatterns: ['e2e'],
+  testPathIgnorePatterns: ['<rootDir>[/\\\\](node_modules|e2e|projects)[/\\\\]'],
 };

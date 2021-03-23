@@ -22,5 +22,6 @@ jobs:
           npm ci
           npm run lint
           npm run build
-          # TODO: npm test
+          npm run test:ci
+          npm run test:lib:ci
           npm run build:lib

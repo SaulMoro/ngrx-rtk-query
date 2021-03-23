@@ -8,5 +8,5 @@
     "allowJs": true
   },
   "files": ["src/polyfills.ts"],
-  "include": ["**/*.spec.ts", "**/*.test.ts", "**/*.d.ts"]
+  "include": ["src/**/*.spec.ts", "src/**/*.test.ts", "src/**/*.d.ts"]
 }
