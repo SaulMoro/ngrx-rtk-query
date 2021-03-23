@@ -1,3 +1,10 @@
+# [1.5.0-next.2](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.5.0-next.1...v1.5.0-next.2) (2021-03-23)
+
+
+### Bug Fixes
+
+* **lib:** rtk doesnt works in tests ([0b06a06](https://github.com/SaulMoro/ngrx-rtk-query/commit/0b06a06899bbe17fa8095efd36a7c059eeafbcf6))
+
 # [1.5.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.4.0...v1.5.0-next.1) (2021-03-22)
 
 
