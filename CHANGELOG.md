@@ -1,3 +1,15 @@
+# [1.5.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.4.0...v1.5.0) (2021-03-23)
+
+
+### Bug Fixes
+
+* **lib:** rtk doesnt works in tests ([0b06a06](https://github.com/SaulMoro/ngrx-rtk-query/commit/0b06a06899bbe17fa8095efd36a7c059eeafbcf6))
+
+
+### Features
+
+* **app:** add pagination example ([fac10dd](https://github.com/SaulMoro/ngrx-rtk-query/commit/fac10dd046ddd3b448f2324bade57283b120c5bf))
+
 # [1.5.0-next.2](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.5.0-next.1...v1.5.0-next.2) (2021-03-23)
 
 
