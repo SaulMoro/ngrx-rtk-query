@@ -21,7 +21,7 @@ jobs:
         run: |
           npm ci
           npm run lint
-          npm run build
           npm run test:ci
+          npm run build
           npm run test:lib:ci
           npm run build:lib
