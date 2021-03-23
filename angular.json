@@ -135,6 +135,8 @@
         "test": {
           "builder": "@angular-builders/jest:run",
           "options": {
+            "jestConfig": "projects/ngrx-rtk-query/jest.config.js",
+            "polyfills": "src/polyfills.ts",
             "tsConfig": "projects/ngrx-rtk-query/tsconfig.spec.json"
           }
         },

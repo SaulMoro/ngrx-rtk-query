@@ -125,8 +125,9 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
     ) => {
       const querySelector: MemoizedSelectorWithProps<any, any, any> = createSelectorFactory((projector) =>
         resultMemoize(projector, shallowEqual),
-      )([select(!skip ? arg : undefined), (_: any, lastResult: any) => lastResult], (subState: any, lastResult: any) =>
-        selectFromResult(subState, lastResult, defaultQueryStateSelector),
+      )(
+        [select(skip ? 'skip selector' : arg), (_: any, lastResult: any) => lastResult],
+        (subState: any, lastResult: any) => selectFromResult(subState, lastResult, defaultQueryStateSelector),
       );
 
       return useSelector((state: RootState<Definitions, any, any>) => querySelector(state, lastValue.current)).pipe(

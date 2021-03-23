@@ -4,7 +4,10 @@ module.exports = {
   ...baseConfig,
   globals: {
     'ts-jest': {
-      tsConfig: '<rootDir>/projects/ngrx-rtk-query/tsconfig.spec.json',
+      tsconfig: './tsconfig.spec.json',
     },
+  },
+  moduleNameMapper: {
+    'ngrx-rtk-query': '<rootDir>/src/public-api.ts',
   },
 };
