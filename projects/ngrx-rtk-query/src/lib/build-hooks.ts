@@ -15,6 +15,7 @@ import { BehaviorSubject, of, isObservable, merge } from 'rxjs';
 import {
   concatMap,
   distinctUntilChanged,
+  filter,
   finalize,
   map,
   shareReplay,
@@ -30,6 +31,8 @@ import {
   MutationHook,
   QueryHooks,
   QueryStateSelector,
+  UseLazyQuery,
+  UseLazyQuerySubscription,
   UseQuery,
   UseQueryOptions,
   UseQueryState,
@@ -37,6 +40,7 @@ import {
   UseQuerySubscription,
 } from './types';
 import { shallowEqual } from './utils';
+import { UNINITIALIZED_VALUE } from './constants';
 
 const defaultQueryStateSelector: DefaultQueryStateSelector<any> = (currentState, lastResult) => {
   // data is the last known good request result we have tracked
@@ -93,29 +97,49 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       promiseRef = {},
     ) => {
       if (!skip) {
+        const subscriptionOptions = { refetchOnReconnect, refetchOnFocus, pollingInterval };
         const lastPromise = promiseRef?.current;
-        if (lastPromise && lastPromise.arg === arg) {
-          // arg did not change, but options did probably, update them
-          lastPromise.updateSubscriptionOptions({
-            pollingInterval,
-            refetchOnReconnect,
-            refetchOnFocus,
-          });
-        } else {
-          if (lastPromise) {
-            lastPromise.unsubscribe();
-          }
-          const promise = dispatch(
-            initiate(arg, {
-              subscriptionOptions: { pollingInterval, refetchOnReconnect, refetchOnFocus },
-              forceRefetch: refetchOnMountOrArgChange,
-            }),
+        const lastSubscriptionOptions = promiseRef.current?.subscriptionOptions;
+
+        if (!lastPromise || !shallowEqual(lastPromise.arg, arg)) {
+          lastPromise?.unsubscribe();
+          promiseRef.current = dispatch(
+            initiate(arg, { subscriptionOptions, forceRefetch: refetchOnMountOrArgChange }),
           );
-          promiseRef.current = promise;
+        } else if (!shallowEqual(subscriptionOptions, lastSubscriptionOptions)) {
+          // arg did not change, but options did probably, update them
+          lastPromise.updateSubscriptionOptions(subscriptionOptions);
         }
       }
 
       return { refetch: () => void promiseRef.current?.refetch() };
+    };
+
+    const useLazyQuerySubscription: UseLazyQuerySubscription<any> = (
+      { refetchOnReconnect, refetchOnFocus, pollingInterval = 0 } = {},
+      promiseRef = {},
+    ) => {
+      let argState: any = UNINITIALIZED_VALUE;
+      const subscriptionOptions = { refetchOnReconnect, refetchOnFocus, pollingInterval };
+
+      const lastSubscriptionOptions = promiseRef.current?.subscriptionOptions;
+      if (!shallowEqual(subscriptionOptions, lastSubscriptionOptions)) {
+        promiseRef.current?.updateSubscriptionOptions(subscriptionOptions);
+      }
+
+      const trigger = (arg: any, preferCacheValue = false) => {
+        promiseRef.current?.unsubscribe();
+
+        promiseRef.current = dispatch(initiate(arg, { subscriptionOptions, forceRefetch: !preferCacheValue }));
+        argState = arg;
+      };
+
+      /* if "cleanup on unmount" was triggered from a fast refresh, we want to reinstate the query */
+      if (argState !== UNINITIALIZED_VALUE && !promiseRef.current) {
+        trigger(argState, true);
+      }
+
+      return [trigger, argState];
     };
 
     const useQueryState: UseQueryState<any> = (
@@ -155,8 +179,8 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
         switchMap(({ currentArg, currentOptions }: { currentArg: any; currentOptions?: UseQueryOptions<any, any> }) => {
           const querySubscriptionResults = useQuerySubscription(currentArg, currentOptions, promiseRef);
-          const queryStateResults = useQueryState(currentArg, currentOptions, lastValue);
-          return queryStateResults.pipe(map((queryState) => ({ ...queryState, ...querySubscriptionResults })));
+          const queryStateResults$ = useQueryState(currentArg, currentOptions, lastValue);
+          return queryStateResults$.pipe(map((queryState) => ({ ...queryState, ...querySubscriptionResults })));
         }),
         shareReplay({
           bufferSize: 1,
@@ -169,9 +193,52 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       );
     };
 
+    const useLazyQuery: UseLazyQuery<any> = (options) => {
+      // Refs
+      const promiseRef: { current?: QueryActionCreatorResult<any> } = {};
+      const lastValue: { current?: any } = {};
+
+      const lastArgSubject = new BehaviorSubject<any>(UNINITIALIZED_VALUE);
+      const lastArg$ = lastArgSubject.asObservable();
+      const options$ = isObservable(options) ? options : of(options);
+      let trigger: (arg: any) => void;
+
+      const state$ = merge(
+        lastArg$.pipe(
+          filter((currentArg) => currentArg !== UNINITIALIZED_VALUE),
+          concatMap((currentArg) => of(currentArg).pipe(withLatestFrom(options$))),
+          map(([currentArg, currentOptions]) => ({ currentArg, currentOptions })),
+        ),
+        options$.pipe(
+          concatMap((currentOptions) => of(currentOptions).pipe(withLatestFrom(lastArg$))),
+          map(([currentOptions, currentArg]) => ({ currentArg, currentOptions })),
+          tap(({ currentOptions }) => (trigger = useLazyQuerySubscription(currentOptions, promiseRef)[0])),
+        ),
+      ).pipe(
+        switchMap(({ currentArg, currentOptions }) => {
+          if (currentArg !== UNINITIALIZED_VALUE) {
+            trigger(currentArg);
+          }
+          return useQueryState(currentArg, { ...currentOptions, skip: currentArg === UNINITIALIZED_VALUE }, lastValue);
+        }),
+        shareReplay({
+          bufferSize: 1,
+          refCount: true,
+        }),
+        finalize(() => {
+          void promiseRef.current?.unsubscribe();
+          promiseRef.current = undefined;
+        }),
+      );
+
+      return { fetch: lastArgSubject.next, state$, lastArg$ };
+    };
+
     return {
-      useQuerySubscription,
       useQueryState,
+      useQuerySubscription,
+      useLazyQuerySubscription,
+      useLazyQuery,
       useQuery,
     };
   }

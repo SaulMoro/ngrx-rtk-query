@@ -13,10 +13,13 @@ import { PrefetchOptions } from '@rtk-incubator/rtk-query/dist/esm/ts/core/modul
 import { QueryArgFrom, ResultTypeFrom } from '@rtk-incubator/rtk-query/dist/esm/ts/endpointDefinitions';
 import { Id, NoInfer, Override } from '@rtk-incubator/rtk-query/dist/esm/ts/tsHelpers';
 import { Observable } from 'rxjs';
+import { UninitializedValue } from '../constants';
 
 export interface QueryHooks<Definition extends QueryDefinition<any, any, any, any, any>> {
   useQuery: UseQuery<Definition>;
+  useLazyQuery: UseLazyQuery<Definition>;
   useQuerySubscription: UseQuerySubscription<Definition>;
+  useLazyQuerySubscription: UseLazyQuerySubscription<Definition>;
   useQueryState: UseQueryState<Definition>;
 }
 
@@ -27,14 +30,12 @@ export interface MutationHooks<Definition extends MutationDefinition<any, any, a
 export type UseQuery<D extends QueryDefinition<any, any, any, any>> = <R = UseQueryStateDefaultResult<D>>(
   arg: QueryArgFrom<D> | Observable<QueryArgFrom<D>>,
   options?: UseQueryOptions<D, R> | Observable<UseQueryOptions<D, R>>,
-) => Observable<UseQueryResult<D, R>>;
+) => Observable<UseQueryStateResult<D, R> & ReturnType<UseQuerySubscription<D>>>;
 
-export type UseQueryResult<
-  D extends QueryDefinition<any, any, any, any>,
-  R = UseQueryStateDefaultResult<D>
-> = UseQueryStateResult<D, R> & ReturnType<UseQuerySubscription<D>>;
-
-export type QueryResult = UseQueryResult<any, UseQueryStateDefaultResult<QueryDefinition<any, any, any, any>>>;
+export interface UseQuerySubscriptionOptions extends SubscriptionOptions {
+  skip?: boolean;
+  refetchOnMountOrArgChange?: boolean | number;
+}
 
 export type UseQueryOptions<
   D extends QueryDefinition<any, any, any, any>,
@@ -46,16 +47,34 @@ export type QueryOptions<SelectFromResultType = UseQueryStateDefaultResult<any>>
   SelectFromResultType
 >;
 
-export interface UseQuerySubscriptionOptions extends SubscriptionOptions {
-  skip?: boolean | Observable<boolean>;
-  refetchOnMountOrArgChange?: boolean | number;
-}
-
 export type UseQuerySubscription<D extends QueryDefinition<any, any, any, any>> = (
   arg: QueryArgFrom<D>,
   options?: UseQuerySubscriptionOptions,
   promiseRef?: { current?: QueryActionCreatorResult<D> },
 ) => Pick<QueryActionCreatorResult<D>, 'refetch'>;
+
+export type UseLazyQuery<D extends QueryDefinition<any, any, any, any>> = <R = UseQueryStateDefaultResult<D>>(
+  options?: UseLazyQueryOptions<D, R> | Observable<UseLazyQueryOptions<D, R>>,
+) => {
+  fetch: (arg: QueryArgFrom<D>) => void;
+  state$: Observable<UseQueryStateResult<D, R>>;
+  lastArg$: Observable<QueryArgFrom<D>>;
+};
+
+export type UseLazyQueryOptions<
+  D extends QueryDefinition<any, any, any, any>,
+  R = UseQueryStateDefaultResult<D>
+> = SubscriptionOptions & Omit<UseQueryStateOptions<D, R>, 'skip'>;
+
+export type LazyQueryOptions<SelectFromResultType = UseQueryStateDefaultResult<any>> = UseLazyQueryOptions<
+  any,
+  SelectFromResultType
+>;
+
+export type UseLazyQuerySubscription<D extends QueryDefinition<any, any, any, any>> = (
+  options?: SubscriptionOptions,
+  promiseRef?: { current?: QueryActionCreatorResult<any> },
+) => [(arg: QueryArgFrom<D>) => void, QueryArgFrom<D> | UninitializedValue];
 
 export type QueryStateSelector<R, D extends QueryDefinition<any, any, any, any>> = (
   state: QueryResultSelectorResult<D>,
@@ -71,15 +90,15 @@ export type DefaultQueryStateSelector<D extends QueryDefinition<any, any, any, a
 export type UseQueryState<D extends QueryDefinition<any, any, any, any>> = <R = UseQueryStateDefaultResult<D>>(
   arg: QueryArgFrom<D>,
   options?: UseQueryStateOptions<D, R>,
-  lastValue?: { current?: UseQueryStateResult<D, R> },
+  lastValue?: { current?: any },
 ) => Observable<UseQueryStateResult<D, R>>;
 
 export type UseQueryStateOptions<D extends QueryDefinition<any, any, any, any>, R> = {
-  skip?: boolean | Observable<boolean>;
+  skip?: boolean;
   selectFromResult?: QueryStateSelector<R, D>;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-unused-vars
 export type UseQueryStateResult<_ extends QueryDefinition<any, any, any, any>, R> = NoInfer<R>;
 
 export type UseQueryStateBaseResult<D extends QueryDefinition<any, any, any, any>> = QuerySubState<D> & {
