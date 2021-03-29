@@ -63,7 +63,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
   api,
   moduleOptions: { useDispatch: dispatch, useSelector },
 }: {
-  api: Api<any, Definitions, any, string, CoreModule>;
+  api: Api<any, Definitions, any, any, CoreModule>;
   moduleOptions: Required<AngularHooksModuleOptions>;
 }) {
   return { buildQueryHooks, buildMutationHook, usePrefetch };
