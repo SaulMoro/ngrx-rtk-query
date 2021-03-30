@@ -24,7 +24,6 @@ import {
 } from 'rxjs/operators';
 
 import { AngularHooksModuleOptions } from './module';
-import { UNINITIALIZED_VALUE } from './constants';
 import {
   DefaultQueryStateSelector,
   GenericPrefetchThunk,
@@ -39,6 +38,7 @@ import {
   UseQueryStateDefaultResult,
   UseQuerySubscription,
 } from './types';
+import { UNINITIALIZED_VALUE } from './constants';
 import { shallowEqual } from './utils';
 
 const defaultQueryStateSelector: DefaultQueryStateSelector<any> = (currentState, lastResult) => {
@@ -106,7 +106,6 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
             initiate(arg, { subscriptionOptions, forceRefetch: refetchOnMountOrArgChange }),
           );
         } else if (!shallowEqual(subscriptionOptions, lastSubscriptionOptions)) {
-          // arg did not change, but options did probably, update them
           lastPromise.updateSubscriptionOptions(subscriptionOptions);
         }
       }
@@ -257,12 +256,10 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       const requestIdSubject = new BehaviorSubject<string>('');
       const requestId$ = requestIdSubject.asObservable();
 
-      const triggerMutation = (args: any) => {
-        if (promiseRef.current) {
-          promiseRef.current.unsubscribe();
-        }
+      const triggerMutation = (arg: any) => {
+        promiseRef.current?.unsubscribe();
 
-        const promise = dispatch(initiate(args));
+        const promise = dispatch(initiate(arg));
         promiseRef.current = promise;
         requestIdSubject.next(promise.requestId);
 
