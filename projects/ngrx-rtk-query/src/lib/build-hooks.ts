@@ -15,7 +15,6 @@ import { BehaviorSubject, of, isObservable, merge } from 'rxjs';
 import {
   concatMap,
   distinctUntilChanged,
-  filter,
   finalize,
   map,
   shareReplay,
@@ -25,6 +24,7 @@ import {
 } from 'rxjs/operators';
 
 import { AngularHooksModuleOptions } from './module';
+import { UNINITIALIZED_VALUE } from './constants';
 import {
   DefaultQueryStateSelector,
   GenericPrefetchThunk,
@@ -40,7 +40,6 @@ import {
   UseQuerySubscription,
 } from './types';
 import { shallowEqual } from './utils';
-import { UNINITIALIZED_VALUE } from './constants';
 
 const defaultQueryStateSelector: DefaultQueryStateSelector<any> = (currentState, lastResult) => {
   // data is the last known good request result we have tracked
@@ -197,30 +196,34 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       // Refs
       const promiseRef: { current?: QueryActionCreatorResult<any> } = {};
       const lastValue: { current?: any } = {};
+      const triggerRef: { current?: (arg: any) => void } = {};
 
       const lastArgSubject = new BehaviorSubject<any>(UNINITIALIZED_VALUE);
       const lastArg$ = lastArgSubject.asObservable();
       const options$ = isObservable(options) ? options : of(options);
-      let trigger: (arg: any) => void;
+
+      const newOptions = (currentOptions: any) => {
+        const [trigger] = useLazyQuerySubscription(currentOptions, promiseRef);
+        triggerRef.current = trigger;
+      };
 
       const state$ = merge(
         lastArg$.pipe(
-          filter((currentArg) => currentArg !== UNINITIALIZED_VALUE),
           concatMap((currentArg) => of(currentArg).pipe(withLatestFrom(options$))),
           map(([currentArg, currentOptions]) => ({ currentArg, currentOptions })),
+          tap(({ currentArg, currentOptions }) =>
+            currentArg !== UNINITIALIZED_VALUE ? triggerRef.current?.(currentArg) : newOptions(currentOptions),
+          ),
         ),
         options$.pipe(
           concatMap((currentOptions) => of(currentOptions).pipe(withLatestFrom(lastArg$))),
           map(([currentOptions, currentArg]) => ({ currentArg, currentOptions })),
-          tap(({ currentOptions }) => (trigger = useLazyQuerySubscription(currentOptions, promiseRef)[0])),
+          tap(({ currentOptions }) => newOptions(currentOptions)),
         ),
       ).pipe(
-        switchMap(({ currentArg, currentOptions }) => {
-          if (currentArg !== UNINITIALIZED_VALUE) {
-            trigger(currentArg);
-          }
-          return useQueryState(currentArg, { ...currentOptions, skip: currentArg === UNINITIALIZED_VALUE }, lastValue);
-        }),
+        switchMap(({ currentArg, currentOptions }) =>
+          useQueryState(currentArg, { ...currentOptions, skip: currentArg === UNINITIALIZED_VALUE }, lastValue),
+        ),
         shareReplay({
           bufferSize: 1,
           refCount: true,
