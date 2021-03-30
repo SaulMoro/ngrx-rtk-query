@@ -216,9 +216,9 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
           ),
         ),
         options$.pipe(
+          tap((currentOptions) => newOptions(currentOptions)),
           concatMap((currentOptions) => of(currentOptions).pipe(withLatestFrom(lastArg$))),
           map(([currentOptions, currentArg]) => ({ currentArg, currentOptions })),
-          tap(({ currentOptions }) => newOptions(currentOptions)),
         ),
       ).pipe(
         switchMap(({ currentArg, currentOptions }) =>

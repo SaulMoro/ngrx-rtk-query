@@ -46,7 +46,7 @@ export const postsApi = createApi({
       provides: (_, id) => [{ type: 'Posts', id }],
     }),
     updatePost: build.mutation<Post, Partial<Post>>({
-      query(data) {
+      query: (data) => {
         const { id, ...body } = data;
         return {
           url: `posts/${id}`,
@@ -57,12 +57,10 @@ export const postsApi = createApi({
       invalidates: (_, { id }) => [{ type: 'Posts', id }],
     }),
     deletePost: build.mutation<{ success: boolean; id: number }, number>({
-      query(id) {
-        return {
-          url: `posts/${id}`,
-          method: 'DELETE',
-        };
-      },
+      query: (id) => ({
+        url: `posts/${id}`,
+        method: 'DELETE',
+      }),
       invalidates: (_, id) => [{ type: 'Posts', id }],
     }),
   }),

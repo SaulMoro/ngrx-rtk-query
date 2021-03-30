@@ -30,7 +30,7 @@ export const counterApi = createApi({
         method: 'PUT',
         body: { amount },
       }),
-      onStart(amount, { dispatch, context }) {
+      onStart: (amount, { dispatch, context }) => {
         // When we start the request, just immediately update the cache
         context.undoPost = dispatch(
           counterApi.util.updateQueryResult('getCount', undefined, (draft) => {
@@ -38,7 +38,7 @@ export const counterApi = createApi({
           }),
         ).inversePatches;
       },
-      onError(_, { dispatch, context }) {
+      onError: (_, { dispatch, context }) => {
         // If there is an error, roll it back
         dispatch(counterApi.util.patchQueryResult('getCount', undefined, context.undoPost));
       },
