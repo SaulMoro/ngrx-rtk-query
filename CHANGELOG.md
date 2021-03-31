@@ -1,3 +1,19 @@
+# [1.6.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.5.0...v1.6.0-next.1) (2021-03-31)
+
+
+### Bug Fixes
+
+* **lazy-query:** initital options on create hook ([5697793](https://github.com/SaulMoro/ngrx-rtk-query/commit/569779375d589534cd8cadb73a3ef695852aa48f))
+* **lib:** change merge operator to combineLatests ([da277fe](https://github.com/SaulMoro/ngrx-rtk-query/commit/da277fe4438d73797b58cc78fefa26ec4eb32799))
+
+
+### Features
+
+* **hooks:** add initial version of Lazy Query ([6161665](https://github.com/SaulMoro/ngrx-rtk-query/commit/61616656a360aa8be813e84e77c48e1addbdb3fe))
+* **lazy-query:** add ts41 types ([3e544d2](https://github.com/SaulMoro/ngrx-rtk-query/commit/3e544d28a30b85de2758e5ac97236c582e646aca))
+* **lazyQuery:** add preferCacheValue option ([c50520b](https://github.com/SaulMoro/ngrx-rtk-query/commit/c50520bc62aaa7615cafccc748178f181baf6672))
+* **lazyQuery:** add unitializedValue to info ([d96dccd](https://github.com/SaulMoro/ngrx-rtk-query/commit/d96dccdba9a949322d7bc789747a9219b2280bdf))
+
 # [1.5.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.4.0...v1.5.0) (2021-03-23)
 
 
