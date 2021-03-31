@@ -58,7 +58,7 @@ export type UseLazyTrigger<D extends QueryDefinition<any, any, any, any>> = (
 ) => void;
 
 export type UseLazyQueryLastPromiseInfo<D extends QueryDefinition<any, any, any, any>> = {
-  lastArg: QueryArgFrom<D>;
+  lastArg: QueryArgFrom<D> | UninitializedValue;
   extra?: Parameters<UseLazyTrigger<D>>[1];
 };
 
