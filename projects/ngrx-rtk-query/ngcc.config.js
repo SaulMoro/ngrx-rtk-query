@@ -1,3 +1,3 @@
 module.exports = {
-  ignorableDeepImportMatchers: [/@rtk-incubator\/rtk-query\/dist\//],
+  ignorableDeepImportMatchers: [/rtk\-query\//],
 };

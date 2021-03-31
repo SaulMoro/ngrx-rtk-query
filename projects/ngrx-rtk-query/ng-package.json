@@ -2,6 +2,11 @@
   "$schema": "../../node_modules/ng-packagr/ng-package.schema.json",
   "dest": "../../dist/ngrx-rtk-query",
   "lib": {
-    "entryFile": "src/public-api.ts"
-  }
+    "entryFile": "src/public-api.ts",
+    "umdModuleIds": {
+      "@ngrx/store": "ngrx.store",
+      "@rtk-incubator/rtk-query": "rtkQuery"
+    }
+  },
+  "assets": ["ngcc.config.js"]
 }
