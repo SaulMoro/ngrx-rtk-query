@@ -1,3 +1,10 @@
+# [1.6.0-next.4](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.6.0-next.3...v1.6.0-next.4) (2021-03-31)
+
+
+### Features
+
+* **lib:** exports thunk service ([20e60be](https://github.com/SaulMoro/ngrx-rtk-query/commit/20e60bec0ee7750c4d49d21a5fcda5e12da2678d))
+
 # [1.6.0-next.3](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.6.0-next.2...v1.6.0-next.3) (2021-03-31)
 
 
