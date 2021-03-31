@@ -23,7 +23,7 @@ export function select<K>(mapFn: (state: any) => K): Observable<K> {
   return service?.select(mapFn);
 }
 
-@Injectable({ providedIn: 'root' })
+@Injectable()
 export class ThunkService {
   currentState: any;
 
