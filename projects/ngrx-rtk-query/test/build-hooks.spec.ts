@@ -5,29 +5,10 @@ import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { getState } from '../src/lib/thunk.service';
+import { resetPostsApi } from './mocks/lib-posts.handlers';
+import * as HooksComponents from './helper-components';
 import { actionsReducer, setupApiStore, waitMs } from './helper';
 import { api, defaultApi, libPostsApi, resetAmount } from './helper-apis';
-import { resetPostsApi } from './mocks/lib-posts.handlers';
-import {
-  FetchingComponent,
-  FetchingLoadingComponent,
-  LoadingComponent,
-  MutationComponent,
-  PrefetchHighPriorityComponent,
-  RefetchOnMountComponent,
-  RefetchOnMountSkipComponent,
-  HIGH_PRIORITY_USER_ID,
-  PrefetchLowPriorityComponent,
-  LOW_PRIORITY_USER_ID,
-  PrefetchUncachedComponent,
-  RefetchOnMountDefaultsComponent,
-  PostsContainerComponent,
-  PostComponent,
-  SelectedPostComponent,
-  PostsHookContainerComponent,
-  SelectedPostHookComponent,
-  FetchingBaseComponent,
-} from './helper-components';
 
 const storeRef = setupApiStore(api, { ...actionsReducer });
 
@@ -40,7 +21,7 @@ describe('hooks tests', () => {
     let getRenderCount: () => number = () => 0;
 
     test('useQuery hook basic render count assumptions', async () => {
-      const { fixture } = await render(FetchingBaseComponent, { imports: storeRef.imports });
+      const { fixture } = await render(HooksComponents.FetchingBaseComponent, { imports: storeRef.imports });
       getRenderCount = fixture.componentInstance.renderCounter.getRenderCount;
 
       const fetchControl = screen.getByTestId('isFetching');
@@ -52,7 +33,7 @@ describe('hooks tests', () => {
     });
 
     test('useQuery hook sets isFetching=true whenever a request is in flight', async () => {
-      const { fixture } = await render(FetchingComponent, { imports: storeRef.imports });
+      const { fixture } = await render(HooksComponents.FetchingComponent, { imports: storeRef.imports });
       getRenderCount = fixture.componentInstance.renderCounter.getRenderCount;
 
       const fetchControl = screen.getByTestId('isFetching');
@@ -74,7 +55,7 @@ describe('hooks tests', () => {
     });
 
     test('useQuery hook sets isLoading=true only on initial request', async () => {
-      await render(LoadingComponent, { imports: storeRef.imports });
+      await render(HooksComponents.LoadingComponent, { imports: storeRef.imports });
 
       const loadingControl = screen.getByTestId('isLoading');
       const incrementControl = screen.getByRole('button', { name: /Increment value/i });
@@ -97,7 +78,7 @@ describe('hooks tests', () => {
     });
 
     test('useQuery hook sets isLoading and isFetching to the correct states', async () => {
-      const { fixture } = await render(FetchingLoadingComponent, { imports: storeRef.imports });
+      const { fixture } = await render(HooksComponents.FetchingLoadingComponent, { imports: storeRef.imports });
       getRenderCount = fixture.componentInstance.renderCounter.getRenderCount;
 
       const fetchControl = screen.getByTestId('isFetching');
@@ -147,7 +128,7 @@ describe('hooks tests', () => {
     });
 
     test('useQuery hook respects refetchOnMountOrArgChange: true', async () => {
-      const { rerender } = await render(RefetchOnMountComponent, { imports: storeRef.imports });
+      const { rerender } = await render(HooksComponents.RefetchOnMountComponent, { imports: storeRef.imports });
 
       const fetchControl = screen.getByTestId('isFetching');
       const loadingControl = screen.getByTestId('isLoading');
@@ -173,7 +154,7 @@ describe('hooks tests', () => {
     });
 
     test('useQuery does not refetch when refetchOnMountOrArgChange: NUMBER condition is not met', async () => {
-      const { rerender } = await render(RefetchOnMountComponent, {
+      const { rerender } = await render(HooksComponents.RefetchOnMountComponent, {
         imports: storeRef.imports,
         componentProperties: {
           query$: api.endpoints.getIncrementedAmount.useQuery(undefined, {
@@ -204,7 +185,7 @@ describe('hooks tests', () => {
     });
 
     test('useQuery refetches when refetchOnMountOrArgChange: NUMBER condition is met', async () => {
-      const { rerender } = await render(RefetchOnMountComponent, {
+      const { rerender } = await render(HooksComponents.RefetchOnMountComponent, {
         imports: storeRef.imports,
         componentProperties: {
           query$: api.endpoints.getIncrementedAmount.useQuery(undefined, {
@@ -239,7 +220,7 @@ describe('hooks tests', () => {
     });
 
     test('refetchOnMountOrArgChange works as expected when changing skip from false->true', async () => {
-      await render(RefetchOnMountSkipComponent, { imports: storeRef.imports });
+      await render(HooksComponents.RefetchOnMountSkipComponent, { imports: storeRef.imports });
 
       const fetchControl = screen.getByTestId('isFetching');
       const loadingControl = screen.getByTestId('isLoading');
@@ -263,7 +244,7 @@ describe('hooks tests', () => {
       // 2. we need to mount a skipped component after that, then toggle skip as well. should pull from the cache.
       // 3. we need to mount another skipped component, then toggle skip after the specified
       //    duration and expect the time condition to be satisfied
-      const { rerender } = await render(RefetchOnMountSkipComponent, { imports: storeRef.imports });
+      const { rerender } = await render(HooksComponents.RefetchOnMountSkipComponent, { imports: storeRef.imports });
 
       const fetchControl = screen.getByTestId('isFetching');
       const amount = screen.getByTestId('amount');
@@ -323,12 +304,127 @@ describe('hooks tests', () => {
   });
 
   describe('useLazyQuery', () => {
-    test.todo('TODO test');
+    let getRenderCount: () => number = () => 0;
+    let data: any;
+
+    afterEach(() => {
+      data = undefined;
+    });
+
+    test('useLazyQuery does not automatically fetch when mounted and has undefined data', async () => {
+      const { fixture } = await render(HooksComponents.LazyFetchingBaseComponent, { imports: storeRef.imports });
+      getRenderCount = fixture.componentInstance.renderCounter.getRenderCount;
+      data = fixture.componentInstance.data;
+
+      const uninitializedControl = screen.getByTestId('isUninitialized');
+      const fetchingControl = screen.getByTestId('isFetching');
+      const fetchButton = screen.getByTestId('fetchButton');
+
+      expect(getRenderCount()).toBe(1);
+
+      await waitFor(() => expect(uninitializedControl).toHaveTextContent('true'));
+      await waitFor(() => expect(data).toBeUndefined());
+
+      fireEvent.click(fetchButton);
+      expect(getRenderCount()).toBe(2);
+
+      await waitFor(() => expect(uninitializedControl).toHaveTextContent('false'));
+      await waitFor(() => expect(fetchingControl).toHaveTextContent('false'));
+      expect(getRenderCount()).toBe(3);
+
+      fireEvent.click(screen.getByTestId('fetchButton'));
+      await waitFor(() => expect(fetchingControl).toHaveTextContent('true'));
+      await waitFor(() => expect(fetchingControl).toHaveTextContent('false'));
+      expect(getRenderCount()).toBe(5);
+    });
+
+    // eslint-disable-next-line max-len
+    test('useLazyQuery accepts updated subscription options and only dispatches updateSubscriptionOptions when values are updated', async () => {
+      const { fixture } = await render(HooksComponents.LazyFetchingComponent, { imports: storeRef.imports });
+      getRenderCount = fixture.componentInstance.renderCounter.getRenderCount;
+      data = fixture.componentInstance.data;
+
+      const uninitializedControl = screen.getByTestId('isUninitialized');
+      const fetchingControl = screen.getByTestId('isFetching');
+      const fetchButton = screen.getByTestId('fetchButton');
+      const updateOptionsButton = screen.getByTestId('updateOptions');
+
+      expect(getRenderCount()).toBe(1); // hook mount
+
+      await waitFor(() => expect(uninitializedControl).toHaveTextContent('true'));
+      await waitFor(() => expect(data).toBeUndefined());
+
+      fireEvent.click(fetchButton);
+      expect(getRenderCount()).toBe(2);
+
+      await waitFor(() => expect(fetchingControl).toHaveTextContent('true'));
+      await waitFor(() => expect(fetchingControl).toHaveTextContent('false'));
+      expect(getRenderCount()).toBe(3);
+
+      fireEvent.click(updateOptionsButton); // setState = 1
+      expect(getRenderCount()).toBe(4);
+
+      fireEvent.click(screen.getByTestId('fetchButton')); // perform new request = 2
+      await waitFor(() => expect(fetchingControl).toHaveTextContent('true'));
+      await waitFor(() => expect(fetchingControl).toHaveTextContent('false'));
+      expect(getRenderCount()).toBe(6);
+
+      fireEvent.click(screen.getByTestId('updateOptions')); // setState = 1
+      expect(getRenderCount()).toBe(7);
+
+      fireEvent.click(screen.getByTestId('fetchButton'));
+      await waitFor(() => expect(fetchingControl).toHaveTextContent('true'));
+      await waitFor(() => expect(fetchingControl).toHaveTextContent('false'));
+      expect(getRenderCount()).toBe(9);
+
+      expect(getState().actions.filter(api.internalActions.updateSubscriptionOptions.match)).toHaveLength(1);
+    });
+
+    test('useLazyQuery accepts updated args and unsubscribes the original query', async () => {
+      const { fixture } = await render(HooksComponents.LazyFetchingMultiComponent, { imports: storeRef.imports });
+      data = fixture.componentInstance.data;
+
+      const uninitializedControl = screen.getByTestId('isUninitialized');
+      const fetchingControl = screen.getByTestId('isFetching');
+      const fetchUser1Button = screen.getByTestId('fetchUser1');
+      const fetchUser2Button = screen.getByTestId('fetchUser2');
+
+      await waitFor(() => expect(uninitializedControl).toHaveTextContent('true'));
+      await waitFor(() => expect(data).toBeUndefined());
+
+      fireEvent.click(fetchUser1Button);
+
+      await waitFor(() => expect(fetchingControl).toHaveTextContent('true'));
+      await waitFor(() => expect(fetchingControl).toHaveTextContent('false'));
+
+      // Being that there is only the initial query, no unsubscribe should be dispatched
+      expect(getState().actions.filter(api.internalActions.unsubscribeQueryResult.match)).toHaveLength(0);
+
+      fireEvent.click(fetchUser2Button);
+
+      await waitFor(() => expect(fetchingControl).toHaveTextContent('true'));
+      await waitFor(() => expect(fetchingControl).toHaveTextContent('false'));
+
+      expect(getState().actions.filter(api.internalActions.unsubscribeQueryResult.match)).toHaveLength(1);
+
+      fireEvent.click(fetchUser1Button);
+
+      expect(getState().actions.filter(api.internalActions.unsubscribeQueryResult.match)).toHaveLength(2);
+
+      // we always unsubscribe the original promise and create a new one
+      fireEvent.click(fetchUser1Button);
+      expect(getState().actions.filter(api.internalActions.unsubscribeQueryResult.match)).toHaveLength(3);
+
+      fixture.destroy();
+
+      // We unsubscribe after the component unmounts
+      expect(getState().actions.filter(api.internalActions.unsubscribeQueryResult.match)).toHaveLength(4);
+    });
   });
 
   describe('useMutation', () => {
     test('useMutation hook sets and unsets the isLoading flag when running', async () => {
-      await render(MutationComponent, { imports: storeRef.imports });
+      await render(HooksComponents.MutationComponent, { imports: storeRef.imports });
 
       const loadingControl = screen.getByTestId('isLoading');
       const updateControl = screen.getByRole('button', { name: /Update User/i });
@@ -342,7 +438,7 @@ describe('hooks tests', () => {
     test('useMutation hook sets data to the resolved response on success', async () => {
       const result = { name: 'Banana' };
 
-      await render(MutationComponent, { imports: storeRef.imports });
+      await render(HooksComponents.MutationComponent, { imports: storeRef.imports });
 
       const resultControl = screen.getByTestId('result');
       const updateControl = screen.getByRole('button', { name: /Update User/i });
@@ -354,7 +450,7 @@ describe('hooks tests', () => {
 
   describe('usePrefetch', () => {
     test('usePrefetch respects force arg', async () => {
-      await render(PrefetchHighPriorityComponent, { imports: storeRef.imports });
+      await render(HooksComponents.PrefetchHighPriorityComponent, { imports: storeRef.imports });
 
       const fetchControl = screen.getByTestId('isFetching');
       const prefetchControl = screen.getByTestId('highPriority');
@@ -363,7 +459,7 @@ describe('hooks tests', () => {
       await waitFor(() => expect(fetchControl).toHaveTextContent('false'));
 
       userEvent.hover(prefetchControl);
-      expect(api.endpoints.getUser.select(HIGH_PRIORITY_USER_ID)(getState())).toEqual({
+      expect(api.endpoints.getUser.select(HooksComponents.HIGH_PRIORITY_USER_ID)(getState())).toEqual({
         data: undefined,
         endpointName: 'getUser',
         error: undefined,
@@ -372,7 +468,7 @@ describe('hooks tests', () => {
         isLoading: true,
         isSuccess: false,
         isUninitialized: false,
-        originalArgs: HIGH_PRIORITY_USER_ID,
+        originalArgs: HooksComponents.HIGH_PRIORITY_USER_ID,
         requestId: expect.any(String),
         startedTimeStamp: expect.any(Number),
         status: QueryStatus.pending,
@@ -380,7 +476,7 @@ describe('hooks tests', () => {
 
       await waitFor(() => expect(fetchControl).toHaveTextContent('false'));
 
-      expect(api.endpoints.getUser.select(HIGH_PRIORITY_USER_ID)(getState())).toEqual({
+      expect(api.endpoints.getUser.select(HooksComponents.HIGH_PRIORITY_USER_ID)(getState())).toEqual({
         data: undefined,
         endpointName: 'getUser',
         fulfilledTimeStamp: expect.any(Number),
@@ -388,7 +484,7 @@ describe('hooks tests', () => {
         isLoading: false,
         isSuccess: true,
         isUninitialized: false,
-        originalArgs: HIGH_PRIORITY_USER_ID,
+        originalArgs: HooksComponents.HIGH_PRIORITY_USER_ID,
         requestId: expect.any(String),
         startedTimeStamp: expect.any(Number),
         status: QueryStatus.fulfilled,
@@ -396,7 +492,7 @@ describe('hooks tests', () => {
     });
 
     test('usePrefetch does not make an additional request if already in the cache and force=false', async () => {
-      await render(PrefetchLowPriorityComponent, { imports: storeRef.imports });
+      await render(HooksComponents.PrefetchLowPriorityComponent, { imports: storeRef.imports });
 
       const fetchControl = screen.getByTestId('isFetching');
       const prefetchControl = screen.getByTestId('lowPriority');
@@ -406,7 +502,7 @@ describe('hooks tests', () => {
 
       // Try to prefetch what we just loaded
       userEvent.hover(prefetchControl);
-      expect(api.endpoints.getUser.select(LOW_PRIORITY_USER_ID)(getState())).toEqual({
+      expect(api.endpoints.getUser.select(HooksComponents.LOW_PRIORITY_USER_ID)(getState())).toEqual({
         data: undefined,
         endpointName: 'getUser',
         fulfilledTimeStamp: expect.any(Number),
@@ -414,7 +510,7 @@ describe('hooks tests', () => {
         isLoading: false,
         isSuccess: true,
         isUninitialized: false,
-        originalArgs: LOW_PRIORITY_USER_ID,
+        originalArgs: HooksComponents.LOW_PRIORITY_USER_ID,
         requestId: expect.any(String),
         startedTimeStamp: expect.any(Number),
         status: QueryStatus.fulfilled,
@@ -422,7 +518,7 @@ describe('hooks tests', () => {
 
       await waitMs();
 
-      expect(api.endpoints.getUser.select(LOW_PRIORITY_USER_ID)(getState())).toEqual({
+      expect(api.endpoints.getUser.select(HooksComponents.LOW_PRIORITY_USER_ID)(getState())).toEqual({
         data: undefined,
         endpointName: 'getUser',
         fulfilledTimeStamp: expect.any(Number),
@@ -430,7 +526,7 @@ describe('hooks tests', () => {
         isLoading: false,
         isSuccess: true,
         isUninitialized: false,
-        originalArgs: LOW_PRIORITY_USER_ID,
+        originalArgs: HooksComponents.LOW_PRIORITY_USER_ID,
         requestId: expect.any(String),
         startedTimeStamp: expect.any(Number),
         status: QueryStatus.fulfilled,
@@ -438,10 +534,10 @@ describe('hooks tests', () => {
     });
 
     test('usePrefetch respects ifOlderThan when it evaluates to true', async () => {
-      await render(PrefetchLowPriorityComponent, {
+      await render(HooksComponents.PrefetchLowPriorityComponent, {
         imports: storeRef.imports,
         componentProperties: {
-          prefetchUser: () => api.usePrefetch('getUser', { ifOlderThan: 0.2 })(LOW_PRIORITY_USER_ID),
+          prefetchUser: () => api.usePrefetch('getUser', { ifOlderThan: 0.2 })(HooksComponents.LOW_PRIORITY_USER_ID),
         },
       });
 
@@ -456,7 +552,7 @@ describe('hooks tests', () => {
 
       // This should run the query being that we're past the threshold
       userEvent.hover(prefetchControl);
-      expect(api.endpoints.getUser.select(LOW_PRIORITY_USER_ID)(getState())).toEqual({
+      expect(api.endpoints.getUser.select(HooksComponents.LOW_PRIORITY_USER_ID)(getState())).toEqual({
         data: undefined,
         endpointName: 'getUser',
         fulfilledTimeStamp: expect.any(Number),
@@ -464,7 +560,7 @@ describe('hooks tests', () => {
         isLoading: true,
         isSuccess: false,
         isUninitialized: false,
-        originalArgs: LOW_PRIORITY_USER_ID,
+        originalArgs: HooksComponents.LOW_PRIORITY_USER_ID,
         requestId: expect.any(String),
         startedTimeStamp: expect.any(Number),
         status: QueryStatus.pending,
@@ -472,7 +568,7 @@ describe('hooks tests', () => {
 
       await waitFor(() => expect(fetchControl).toHaveTextContent('false'));
 
-      expect(api.endpoints.getUser.select(LOW_PRIORITY_USER_ID)(getState())).toEqual({
+      expect(api.endpoints.getUser.select(HooksComponents.LOW_PRIORITY_USER_ID)(getState())).toEqual({
         data: undefined,
         endpointName: 'getUser',
         fulfilledTimeStamp: expect.any(Number),
@@ -480,7 +576,7 @@ describe('hooks tests', () => {
         isLoading: false,
         isSuccess: true,
         isUninitialized: false,
-        originalArgs: LOW_PRIORITY_USER_ID,
+        originalArgs: HooksComponents.LOW_PRIORITY_USER_ID,
         requestId: expect.any(String),
         startedTimeStamp: expect.any(Number),
         status: QueryStatus.fulfilled,
@@ -488,10 +584,10 @@ describe('hooks tests', () => {
     });
 
     test('usePrefetch returns the last success result when ifOlderThan evalutes to false', async () => {
-      await render(PrefetchLowPriorityComponent, {
+      await render(HooksComponents.PrefetchLowPriorityComponent, {
         imports: storeRef.imports,
         componentProperties: {
-          prefetchUser: () => api.usePrefetch('getUser', { ifOlderThan: 10 })(LOW_PRIORITY_USER_ID),
+          prefetchUser: () => api.usePrefetch('getUser', { ifOlderThan: 10 })(HooksComponents.LOW_PRIORITY_USER_ID),
         },
       });
 
@@ -503,27 +599,27 @@ describe('hooks tests', () => {
       await waitMs();
 
       // Get a snapshot of the last result
-      const latestQueryData = api.endpoints.getUser.select(LOW_PRIORITY_USER_ID)(getState());
+      const latestQueryData = api.endpoints.getUser.select(HooksComponents.LOW_PRIORITY_USER_ID)(getState());
 
       userEvent.hover(prefetchControl);
       //  Serve up the result from the cache being that the condition wasn't met
-      expect(api.endpoints.getUser.select(LOW_PRIORITY_USER_ID)(getState())).toEqual(latestQueryData);
+      expect(api.endpoints.getUser.select(HooksComponents.LOW_PRIORITY_USER_ID)(getState())).toEqual(latestQueryData);
     });
 
     test('usePrefetch executes a query even if conditions fail when the cache is empty', async () => {
-      await render(PrefetchUncachedComponent, { imports: storeRef.imports });
+      await render(HooksComponents.PrefetchUncachedComponent, { imports: storeRef.imports });
 
       const prefetchControl = screen.getByTestId('lowPriority');
 
       userEvent.hover(prefetchControl);
 
-      expect(api.endpoints.getUser.select(LOW_PRIORITY_USER_ID)(getState())).toEqual({
+      expect(api.endpoints.getUser.select(HooksComponents.LOW_PRIORITY_USER_ID)(getState())).toEqual({
         endpointName: 'getUser',
         isError: false,
         isLoading: true,
         isSuccess: false,
         isUninitialized: false,
-        originalArgs: LOW_PRIORITY_USER_ID,
+        originalArgs: HooksComponents.LOW_PRIORITY_USER_ID,
         requestId: expect.any(String),
         startedTimeStamp: expect.any(Number),
         status: 'pending',
@@ -536,7 +632,9 @@ describe('hooks with createApi defaults set', () => {
   const defaultStoreRef = setupApiStore(defaultApi);
 
   test('useQuery hook respects refetchOnMountOrArgChange: true when set in createApi options', async () => {
-    const { rerender } = await render(RefetchOnMountDefaultsComponent, { imports: defaultStoreRef.imports });
+    const { rerender } = await render(HooksComponents.RefetchOnMountDefaultsComponent, {
+      imports: defaultStoreRef.imports,
+    });
 
     const fetchControl = screen.getByTestId('isFetching');
     const loadingControl = screen.getByTestId('isLoading');
@@ -559,7 +657,9 @@ describe('hooks with createApi defaults set', () => {
   });
 
   test('useQuery hook overrides default refetchOnMountOrArgChange: false that was set by createApi', async () => {
-    const { rerender } = await render(RefetchOnMountDefaultsComponent, { imports: defaultStoreRef.imports });
+    const { rerender } = await render(HooksComponents.RefetchOnMountDefaultsComponent, {
+      imports: defaultStoreRef.imports,
+    });
 
     const fetchControl = screen.getByTestId('isFetching');
     const loadingControl = screen.getByTestId('isLoading');
@@ -589,8 +689,8 @@ describe('selectFromResult behaviors', () => {
   });
 
   test('useQueryState serves a deeply memoized value and does not rerender unnecessarily', async () => {
-    await render(PostsContainerComponent, {
-      declarations: [PostComponent, SelectedPostComponent],
+    await render(HooksComponents.PostsContainerComponent, {
+      declarations: [HooksComponents.PostComponent, HooksComponents.SelectedPostComponent],
       imports: postStoreRef.imports,
     });
 
@@ -613,8 +713,8 @@ describe('selectFromResult behaviors', () => {
 
   // eslint-disable-next-line max-len
   test('useQuery with selectFromResult option serves a deeply memoized value and does not rerender unnecessarily', async () => {
-    await render(PostsHookContainerComponent, {
-      declarations: [PostComponent, SelectedPostHookComponent],
+    await render(HooksComponents.PostsHookContainerComponent, {
+      declarations: [HooksComponents.PostComponent, HooksComponents.SelectedPostHookComponent],
       imports: postStoreRef.imports,
     });
 
@@ -634,8 +734,8 @@ describe('selectFromResult behaviors', () => {
 
   // eslint-disable-next-line max-len
   test('useQuery with selectFromResult option serves a deeply memoized value, then ONLY updates when the underlying data changes', async () => {
-    await render(PostsHookContainerComponent, {
-      declarations: [PostComponent, SelectedPostHookComponent],
+    await render(HooksComponents.PostsHookContainerComponent, {
+      declarations: [HooksComponents.PostComponent, HooksComponents.SelectedPostHookComponent],
       imports: postStoreRef.imports,
     });
 
