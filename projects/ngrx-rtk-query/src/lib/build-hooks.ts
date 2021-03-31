@@ -22,7 +22,9 @@ import {
   QueryHooks,
   QueryStateSelector,
   UseLazyQuery,
+  UseLazyQueryLastPromiseInfo,
   UseLazyQuerySubscription,
+  UseLazyTrigger,
   UseQuery,
   UseQueryState,
   UseQueryStateDefaultResult,
@@ -115,7 +117,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         promiseRef.current?.updateSubscriptionOptions(subscriptionOptions);
       }
 
-      const trigger = (arg: any, preferCacheValue = false) => {
+      const trigger: UseLazyTrigger<any> = (arg: any, { preferCacheValue = false } = {}) => {
         promiseRef.current?.unsubscribe();
 
         promiseRef.current = dispatch(initiate(arg, { subscriptionOptions, forceRefetch: !preferCacheValue }));
@@ -124,7 +126,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
 
       /* if "cleanup on unmount" was triggered from a fast refresh, we want to reinstate the query */
       if (argState !== UNINITIALIZED_VALUE && !promiseRef.current) {
-        trigger(argState, true);
+        trigger(argState, { preferCacheValue: true });
       }
 
       return [trigger, argState];
@@ -176,10 +178,10 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       // Refs
       const promiseRef: { current?: QueryActionCreatorResult<any> } = {};
       const lastValue: { current?: any } = {};
-      const triggerRef: { current?: (arg: any) => void } = {};
+      const triggerRef: { current?: UseLazyTrigger<any> } = {};
 
-      const lastArgSubject = new BehaviorSubject<any>(UNINITIALIZED_VALUE);
-      const lastArg$ = lastArgSubject.asObservable();
+      const infoSubject = new BehaviorSubject<UseLazyQueryLastPromiseInfo<any>>({ lastArg: UNINITIALIZED_VALUE });
+      const info$ = infoSubject.asObservable();
       const options$ = isObservable(options) ? options : of(options);
 
       const state$ = combineLatest([
@@ -189,12 +191,13 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
             triggerRef.current = trigger;
           }),
         ),
-        lastArg$.pipe(
-          tap((currentArg) => {
-            if (currentArg !== UNINITIALIZED_VALUE) {
-              triggerRef.current?.(currentArg);
+        info$.pipe(
+          tap(({ lastArg, extra }) => {
+            if (lastArg !== UNINITIALIZED_VALUE) {
+              triggerRef.current?.(lastArg, extra);
             }
           }),
+          map(({ lastArg }) => lastArg),
         ),
       ]).pipe(
         switchMap(([currentOptions, currentArg]) =>
@@ -210,7 +213,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         }),
       );
 
-      return { fetch: (arg: any) => lastArgSubject.next(arg), state$, lastArg$ };
+      return { fetch: (arg, extra) => infoSubject.next({ lastArg: arg, extra }), state$, info$ };
     };
 
     return {

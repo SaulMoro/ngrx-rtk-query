@@ -52,12 +52,22 @@ export type UseQuerySubscription<D extends QueryDefinition<any, any, any, any>> 
   promiseRef?: { current?: QueryActionCreatorResult<D> },
 ) => Pick<QueryActionCreatorResult<D>, 'refetch'>;
 
+export type UseLazyTrigger<D extends QueryDefinition<any, any, any, any>> = (
+  arg: QueryArgFrom<D>,
+  extra?: { preferCacheValue?: boolean },
+) => void;
+
+export type UseLazyQueryLastPromiseInfo<D extends QueryDefinition<any, any, any, any>> = {
+  lastArg: QueryArgFrom<D>;
+  extra?: Parameters<UseLazyTrigger<D>>[1];
+};
+
 export type UseLazyQuery<D extends QueryDefinition<any, any, any, any>> = <R = UseQueryStateDefaultResult<D>>(
   options?: UseLazyQueryOptions<D, R> | Observable<UseLazyQueryOptions<D, R>>,
 ) => {
-  fetch: (arg: QueryArgFrom<D>) => void;
+  fetch: UseLazyTrigger<D>;
   state$: Observable<UseQueryStateResult<D, R>>;
-  lastArg$: Observable<QueryArgFrom<D>>;
+  info$: Observable<UseLazyQueryLastPromiseInfo<D>>;
 };
 
 export type UseLazyQueryOptions<
@@ -72,7 +82,7 @@ export type LazyQueryOptions<
 export type UseLazyQuerySubscription<D extends QueryDefinition<any, any, any, any>> = (
   options?: SubscriptionOptions,
   promiseRef?: { current?: QueryActionCreatorResult<any> },
-) => [(arg: QueryArgFrom<D>) => void, QueryArgFrom<D> | UninitializedValue];
+) => [UseLazyTrigger<D>, QueryArgFrom<D> | UninitializedValue];
 
 export type QueryStateSelector<R, D extends QueryDefinition<any, any, any, any>> = (
   state: QueryResultSelectorResult<D>,
