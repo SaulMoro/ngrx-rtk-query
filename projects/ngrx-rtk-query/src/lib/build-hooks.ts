@@ -11,17 +11,8 @@ import {
   PrefetchOptions,
 } from '@rtk-incubator/rtk-query/dist/esm/ts/core/module';
 import { createSelectorFactory, MemoizedSelectorWithProps, resultMemoize } from '@ngrx/store';
-import { BehaviorSubject, of, isObservable, merge } from 'rxjs';
-import {
-  concatMap,
-  distinctUntilChanged,
-  finalize,
-  map,
-  shareReplay,
-  switchMap,
-  tap,
-  withLatestFrom,
-} from 'rxjs/operators';
+import { BehaviorSubject, of, isObservable, combineLatest } from 'rxjs';
+import { finalize, map, shareReplay, switchMap, tap } from 'rxjs/operators';
 
 import { AngularHooksModuleOptions } from './module';
 import {
@@ -30,12 +21,16 @@ import {
   MutationHook,
   QueryHooks,
   QueryStateSelector,
+  UseLazyQuery,
+  UseLazyQueryLastPromiseInfo,
+  UseLazyQuerySubscription,
+  UseLazyTrigger,
   UseQuery,
-  UseQueryOptions,
   UseQueryState,
   UseQueryStateDefaultResult,
   UseQuerySubscription,
 } from './types';
+import { UNINITIALIZED_VALUE } from './constants';
 import { shallowEqual } from './utils';
 
 const defaultQueryStateSelector: DefaultQueryStateSelector<any> = (currentState, lastResult) => {
@@ -63,7 +58,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
   api,
   moduleOptions: { useDispatch: dispatch, useSelector },
 }: {
-  api: Api<any, Definitions, any, string, CoreModule>;
+  api: Api<any, Definitions, any, any, CoreModule>;
   moduleOptions: Required<AngularHooksModuleOptions>;
 }) {
   return { buildQueryHooks, buildMutationHook, usePrefetch };
@@ -93,29 +88,48 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       promiseRef = {},
     ) => {
       if (!skip) {
+        const subscriptionOptions = { refetchOnReconnect, refetchOnFocus, pollingInterval };
         const lastPromise = promiseRef?.current;
-        if (lastPromise && lastPromise.arg === arg) {
-          // arg did not change, but options did probably, update them
-          lastPromise.updateSubscriptionOptions({
-            pollingInterval,
-            refetchOnReconnect,
-            refetchOnFocus,
-          });
-        } else {
-          if (lastPromise) {
-            lastPromise.unsubscribe();
-          }
-          const promise = dispatch(
-            initiate(arg, {
-              subscriptionOptions: { pollingInterval, refetchOnReconnect, refetchOnFocus },
-              forceRefetch: refetchOnMountOrArgChange,
-            }),
+        const lastSubscriptionOptions = promiseRef.current?.subscriptionOptions;
+
+        if (!lastPromise || !shallowEqual(lastPromise.arg, arg)) {
+          lastPromise?.unsubscribe();
+          promiseRef.current = dispatch(
+            initiate(arg, { subscriptionOptions, forceRefetch: refetchOnMountOrArgChange }),
           );
-          promiseRef.current = promise;
+        } else if (!shallowEqual(subscriptionOptions, lastSubscriptionOptions)) {
+          lastPromise.updateSubscriptionOptions(subscriptionOptions);
         }
       }
 
       return { refetch: () => void promiseRef.current?.refetch() };
+    };
+
+    const useLazyQuerySubscription: UseLazyQuerySubscription<any> = (
+      { refetchOnReconnect, refetchOnFocus, pollingInterval = 0 } = {},
+      promiseRef = {},
+    ) => {
+      let argState: any = UNINITIALIZED_VALUE;
+      const subscriptionOptions = { refetchOnReconnect, refetchOnFocus, pollingInterval };
+
+      const lastSubscriptionOptions = promiseRef.current?.subscriptionOptions;
+      if (!shallowEqual(subscriptionOptions, lastSubscriptionOptions)) {
+        promiseRef.current?.updateSubscriptionOptions(subscriptionOptions);
+      }
+
+      const trigger: UseLazyTrigger<any> = (arg: any, { preferCacheValue = false } = {}) => {
+        promiseRef.current?.unsubscribe();
+
+        promiseRef.current = dispatch(initiate(arg, { subscriptionOptions, forceRefetch: !preferCacheValue }));
+        argState = arg;
+      };
+
+      /* if "cleanup on unmount" was triggered from a fast refresh, we want to reinstate the query */
+      if (argState !== UNINITIALIZED_VALUE && !promiseRef.current) {
+        trigger(argState, { preferCacheValue: true });
+      }
+
+      return [trigger, argState];
     };
 
     const useQueryState: UseQueryState<any> = (
@@ -142,21 +156,12 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
 
       const arg$ = isObservable(arg) ? arg : of(arg);
       const options$ = isObservable(options) ? options : of(options);
-      return merge(
-        arg$.pipe(
-          concatMap((currentArg) => of(currentArg).pipe(withLatestFrom(options$))),
-          map(([currentArg, currentOptions]) => ({ currentArg, currentOptions })),
-        ),
-        options$.pipe(
-          concatMap((currentOptions) => of(currentOptions).pipe(withLatestFrom(arg$))),
-          map(([currentOptions, currentArg]) => ({ currentArg, currentOptions })),
-        ),
-      ).pipe(
-        distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
-        switchMap(({ currentArg, currentOptions }: { currentArg: any; currentOptions?: UseQueryOptions<any, any> }) => {
+
+      return combineLatest([arg$, options$]).pipe(
+        switchMap(([currentArg, currentOptions]) => {
           const querySubscriptionResults = useQuerySubscription(currentArg, currentOptions, promiseRef);
-          const queryStateResults = useQueryState(currentArg, currentOptions, lastValue);
-          return queryStateResults.pipe(map((queryState) => ({ ...queryState, ...querySubscriptionResults })));
+          const queryStateResults$ = useQueryState(currentArg, currentOptions, lastValue);
+          return queryStateResults$.pipe(map((queryState) => ({ ...queryState, ...querySubscriptionResults })));
         }),
         shareReplay({
           bufferSize: 1,
@@ -169,9 +174,53 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       );
     };
 
+    const useLazyQuery: UseLazyQuery<any> = (options) => {
+      // Refs
+      const promiseRef: { current?: QueryActionCreatorResult<any> } = {};
+      const lastValue: { current?: any } = {};
+      const triggerRef: { current?: UseLazyTrigger<any> } = {};
+
+      const infoSubject = new BehaviorSubject<UseLazyQueryLastPromiseInfo<any>>({ lastArg: UNINITIALIZED_VALUE });
+      const info$ = infoSubject.asObservable();
+      const options$ = isObservable(options) ? options : of(options);
+
+      const state$ = combineLatest([
+        options$.pipe(
+          tap((currentOptions) => {
+            const [trigger] = useLazyQuerySubscription(currentOptions, promiseRef);
+            triggerRef.current = trigger;
+          }),
+        ),
+        info$.pipe(
+          tap(({ lastArg, extra }) => {
+            if (lastArg !== UNINITIALIZED_VALUE) {
+              triggerRef.current?.(lastArg, extra);
+            }
+          }),
+          map(({ lastArg }) => lastArg),
+        ),
+      ]).pipe(
+        switchMap(([currentOptions, currentArg]) =>
+          useQueryState(currentArg, { ...currentOptions, skip: currentArg === UNINITIALIZED_VALUE }, lastValue),
+        ),
+        shareReplay({
+          bufferSize: 1,
+          refCount: true,
+        }),
+        finalize(() => {
+          void promiseRef.current?.unsubscribe();
+          promiseRef.current = undefined;
+        }),
+      );
+
+      return { fetch: (arg, extra) => infoSubject.next({ lastArg: arg, extra }), state$, info$ };
+    };
+
     return {
-      useQuerySubscription,
       useQueryState,
+      useQuerySubscription,
+      useLazyQuerySubscription,
+      useLazyQuery,
       useQuery,
     };
   }
@@ -187,12 +236,10 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       const requestIdSubject = new BehaviorSubject<string>('');
       const requestId$ = requestIdSubject.asObservable();
 
-      const triggerMutation = (args: any) => {
-        if (promiseRef.current) {
-          promiseRef.current.unsubscribe();
-        }
+      const triggerMutation = (arg: any) => {
+        promiseRef.current?.unsubscribe();
 
-        const promise = dispatch(initiate(args));
+        const promise = dispatch(initiate(arg));
         promiseRef.current = promise;
         requestIdSubject.next(promise.requestId);
 

@@ -4,6 +4,7 @@ import { rest } from 'msw';
 let count = 0;
 const counters: { [id: string]: number } = {};
 
+/* eslint-disable @typescript-eslint/no-shadow */
 export const counterHandlers = [
   rest.get('/count', (_req, res, ctx) => {
     return res(ctx.delay(), ctx.json({ count }));

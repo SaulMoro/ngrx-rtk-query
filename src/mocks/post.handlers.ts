@@ -7,6 +7,7 @@ let startingId = 3; // Just a silly counter for usage when adding new posts
 
 const adapter = createEntityAdapter<Post>();
 
+/* eslint-disable @typescript-eslint/naming-convention */
 let state = adapter.getInitialState();
 state = adapter.setAll(state, [
   { id: 1, name: 'A sample post', fetched_at: new Date().toUTCString() },

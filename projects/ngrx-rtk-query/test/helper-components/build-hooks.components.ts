@@ -221,6 +221,7 @@ export class PostComponent {
   updatePostMutation = libPostsApi.useUpdatePostMutation();
 
   addPost(posts: Post[] | undefined): void {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     this.addPostMutation.dispatch({ name: `some text ${posts?.length}`, fetched_at: new Date().toISOString() });
   }
 

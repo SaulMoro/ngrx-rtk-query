@@ -2,6 +2,7 @@ import { rest } from 'msw';
 import { Post } from '../helper-apis';
 
 let startingId = 3;
+/* eslint-disable @typescript-eslint/naming-convention */
 const initialPosts = [
   { id: 1, name: 'A sample post', fetched_at: new Date().toUTCString() },
   { id: 2, name: 'A post about rtk-query', fetched_at: new Date().toUTCString() },

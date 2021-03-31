@@ -24,7 +24,9 @@ export const rickMortyApi = createApi({
 
 export const {
   useGetCharactersQuery,
+  useLazyGetCharactersQuery,
   useGetEpisodeQuery,
+  useLazyGetEpisodeQuery,
   usePrefetch: useRickMortyPrefetch,
   endpoints: rickMortyApiEndpoints,
 } = rickMortyApi;
