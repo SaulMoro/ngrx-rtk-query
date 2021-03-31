@@ -18,5 +18,5 @@
     "strictInjectionParameters": true,
     "enableResourceInlining": true
   },
-  "exclude": ["**/*.spec.ts", "**/*.test.ts"]
+  "exclude": ["jest.setup.ts", "**/*.spec.ts", "**/*.test.ts"]
 }
