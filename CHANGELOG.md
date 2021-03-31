@@ -1,3 +1,10 @@
+# [1.6.0-next.3](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.6.0-next.2...v1.6.0-next.3) (2021-03-31)
+
+
+### Bug Fixes
+
+* **lib:** peer dependencies ([93a68ca](https://github.com/SaulMoro/ngrx-rtk-query/commit/93a68ca4eac50f6033074d1ef38579878256d87c))
+
 # [1.6.0-next.2](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.6.0-next.1...v1.6.0-next.2) (2021-03-31)
 
 
