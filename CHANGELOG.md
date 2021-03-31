@@ -1,3 +1,22 @@
+# [1.6.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.5.0...v1.6.0) (2021-03-31)
+
+
+### Bug Fixes
+
+* **lazy-query:** initital options on create hook ([5697793](https://github.com/SaulMoro/ngrx-rtk-query/commit/569779375d589534cd8cadb73a3ef695852aa48f))
+* **lib:** change merge operator to combineLatests ([da277fe](https://github.com/SaulMoro/ngrx-rtk-query/commit/da277fe4438d73797b58cc78fefa26ec4eb32799))
+* **lib:** peer dependencies ([93a68ca](https://github.com/SaulMoro/ngrx-rtk-query/commit/93a68ca4eac50f6033074d1ef38579878256d87c))
+
+
+### Features
+
+* **hooks:** add initial version of Lazy Query ([6161665](https://github.com/SaulMoro/ngrx-rtk-query/commit/61616656a360aa8be813e84e77c48e1addbdb3fe))
+* **lazy-query:** add ts41 types ([3e544d2](https://github.com/SaulMoro/ngrx-rtk-query/commit/3e544d28a30b85de2758e5ac97236c582e646aca))
+* **lazyQuery:** add preferCacheValue option ([c50520b](https://github.com/SaulMoro/ngrx-rtk-query/commit/c50520bc62aaa7615cafccc748178f181baf6672))
+* **lazyQuery:** add unitializedValue to info ([d96dccd](https://github.com/SaulMoro/ngrx-rtk-query/commit/d96dccdba9a949322d7bc789747a9219b2280bdf))
+* **lib:** exports thunk service ([20e60be](https://github.com/SaulMoro/ngrx-rtk-query/commit/20e60bec0ee7750c4d49d21a5fcda5e12da2678d))
+* **lib:** typescript 4-1 peer dependency and deep imports fix ([3907688](https://github.com/SaulMoro/ngrx-rtk-query/commit/390768874dc677eada33111af21c4b502a1a4c0a))
+
 # [1.6.0-next.4](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.6.0-next.3...v1.6.0-next.4) (2021-03-31)
 
 
