@@ -14,7 +14,7 @@ export class StoreRtkQueryModule {
 
     return {
       ngModule: StoreRtkQueryModule,
-      providers: [{ provide: STORE_RTK_QUERY_CONFIG, useValue: moduleConfig }],
+      providers: [{ provide: STORE_RTK_QUERY_CONFIG, useValue: moduleConfig }, ThunkService],
     };
   }
 
