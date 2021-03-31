@@ -1,12 +1,8 @@
 import { rest } from 'msw';
 
 export const libHandlers = [
-  rest.get('http://example.com/echo', (req, res, ctx) =>
-    res(ctx.json({ ...req, headers: req.headers.getAllHeaders() })),
-  ),
-  rest.post('http://example.com/echo', (req, res, ctx) =>
-    res(ctx.json({ ...req, headers: req.headers.getAllHeaders() })),
-  ),
+  rest.get('http://example.com/echo', (req, res, ctx) => res(ctx.json({ ...req, headers: req.headers }))),
+  rest.post('http://example.com/echo', (req, res, ctx) => res(ctx.json({ ...req, headers: req.headers }))),
   rest.get('http://example.com/success', (_, res, ctx) => res(ctx.json({ value: 'success' }))),
   rest.post('http://example.com/success', (_, res, ctx) => res(ctx.json({ value: 'success' }))),
   rest.get('http://example.com/empty', (_, res, ctx) => res(ctx.body(''))),

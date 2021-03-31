@@ -259,7 +259,7 @@ describe('hooks tests', () => {
       skip$,
       query$: api.endpoints.getIncrementedAmount.useQuery(
         undefined,
-        skip$.pipe(map((skip) => ({ refetchOnMountOrArgChange: 0.5, skip }))),
+        skip$.pipe(map((currentSkip) => ({ refetchOnMountOrArgChange: 0.5, skip: currentSkip }))),
       ),
     });
 
@@ -281,7 +281,7 @@ describe('hooks tests', () => {
       skip$,
       query$: api.endpoints.getIncrementedAmount.useQuery(
         undefined,
-        skip$.pipe(map((skip) => ({ refetchOnMountOrArgChange: 0.5, skip }))),
+        skip$.pipe(map((currentSkip) => ({ refetchOnMountOrArgChange: 0.5, skip: currentSkip }))),
       ),
     });
 
@@ -496,10 +496,10 @@ describe('hooks tests', () => {
 });
 
 describe('hooks with createApi defaults set', () => {
-  const storeRef = setupApiStore(defaultApi);
+  const defaultStoreRef = setupApiStore(defaultApi);
 
   test('useQuery hook respects refetchOnMountOrArgChange: true when set in createApi options', async () => {
-    const { rerender } = await render(RefetchOnMountDefaultsComponent, { imports: storeRef.imports });
+    const { rerender } = await render(RefetchOnMountDefaultsComponent, { imports: defaultStoreRef.imports });
 
     const fetchControl = screen.getByTestId('isFetching');
     const loadingControl = screen.getByTestId('isLoading');
@@ -522,7 +522,7 @@ describe('hooks with createApi defaults set', () => {
   });
 
   test('useQuery hook overrides default refetchOnMountOrArgChange: false that was set by createApi', async () => {
-    const { rerender } = await render(RefetchOnMountDefaultsComponent, { imports: storeRef.imports });
+    const { rerender } = await render(RefetchOnMountDefaultsComponent, { imports: defaultStoreRef.imports });
 
     const fetchControl = screen.getByTestId('isFetching');
     const loadingControl = screen.getByTestId('isLoading');
@@ -546,7 +546,7 @@ describe('hooks with createApi defaults set', () => {
 });
 
 describe('selectFromResult behaviors', () => {
-  const storeRef = setupApiStore(libPostsApi);
+  const postStoreRef = setupApiStore(libPostsApi);
 
   beforeEach(() => {
     resetPostsApi();
@@ -555,7 +555,7 @@ describe('selectFromResult behaviors', () => {
   test('useQueryState serves a deeply memoized value and does not rerender unnecessarily', async () => {
     await render(PostsContainerComponent, {
       declarations: [PostComponent, SelectedPostComponent],
-      imports: storeRef.imports,
+      imports: postStoreRef.imports,
     });
 
     const renderCount = screen.getByTestId('renderCount');
@@ -579,7 +579,7 @@ describe('selectFromResult behaviors', () => {
   test('useQuery with selectFromResult option serves a deeply memoized value and does not rerender unnecessarily', async () => {
     await render(PostsHookContainerComponent, {
       declarations: [PostComponent, SelectedPostHookComponent],
-      imports: storeRef.imports,
+      imports: postStoreRef.imports,
     });
 
     const renderCount = screen.getByTestId('renderCount');
@@ -600,7 +600,7 @@ describe('selectFromResult behaviors', () => {
   test('useQuery with selectFromResult option serves a deeply memoized value, then ONLY updates when the underlying data changes', async () => {
     await render(PostsHookContainerComponent, {
       declarations: [PostComponent, SelectedPostHookComponent],
-      imports: storeRef.imports,
+      imports: postStoreRef.imports,
     });
 
     const renderCount = screen.getByTestId('renderCount');

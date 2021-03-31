@@ -3,4 +3,4 @@
  */
 export * from './lib/store-rtk-query.module';
 export { createApi, angularHooksModule } from './lib/module';
-export { QueryResult, QueryOptions } from './lib/types';
+export { QueryOptions, LazyQueryOptions } from './lib/types';

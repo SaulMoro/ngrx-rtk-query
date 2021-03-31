@@ -1,7 +1,6 @@
 import { Component, ChangeDetectionStrategy, Input, OnInit } from '@angular/core';
-import { Observable } from 'rxjs';
-import { useGetEpisodeQuery } from '../services';
-import { Character, CharacterStatus, Episode } from '../models';
+import { useLazyGetEpisodeQuery } from '../services';
+import { Character, CharacterStatus } from '../models';
 
 @Component({
   selector: 'app-character-card',
@@ -36,7 +35,7 @@ import { Character, CharacterStatus, Episode } from '../models';
         <span class="inline-block text-indigo-700 hover:text-indigo-800">{{ character.location?.name }}</span>
       </p>
       <div
-        *ngIf="episodeQuery$ | async as episodeQuery"
+        *ngIf="episodeQuery.state$ | async as episodeQuery"
         class="self-start mt-3 text-xs text-gray-500 dark:text-gray-400"
       >
         First seen:
@@ -58,12 +57,12 @@ import { Character, CharacterStatus, Episode } from '../models';
 export class CharacterCardComponent implements OnInit {
   @Input() character!: Character;
 
-  episodeQuery$!: Observable<{ data?: Episode; isLoading: boolean }>;
+  episodeQuery = useLazyGetEpisodeQuery();
   statusTypes = CharacterStatus;
 
   constructor() {}
 
   ngOnInit(): void {
-    this.episodeQuery$ = useGetEpisodeQuery(+this.character.episode[0].split('episode/')[1]);
+    this.episodeQuery.fetch(+this.character.episode[0].split('episode/')[1], { preferCacheValue: true });
   }
 }
