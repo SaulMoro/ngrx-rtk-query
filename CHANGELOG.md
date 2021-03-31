@@ -1,3 +1,10 @@
+# [1.6.0-next.2](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.6.0-next.1...v1.6.0-next.2) (2021-03-31)
+
+
+### Features
+
+* **lib:** typescript 4-1 peer dependency and deep imports fix ([3907688](https://github.com/SaulMoro/ngrx-rtk-query/commit/390768874dc677eada33111af21c4b502a1a4c0a))
+
 # [1.6.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.5.0...v1.6.0-next.1) (2021-03-31)
 
 
