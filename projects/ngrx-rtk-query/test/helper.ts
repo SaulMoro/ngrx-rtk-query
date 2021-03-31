@@ -1,4 +1,5 @@
 import { ActionReducer, MetaReducer, StoreModule } from '@ngrx/store';
+import { AnyAction } from '@reduxjs/toolkit';
 import { StoreRtkQueryModule } from 'ngrx-rtk-query';
 
 export const DEFAULT_DELAY_MS = 150;
@@ -9,6 +10,12 @@ export async function waitMs(time = DEFAULT_DELAY_MS) {
     await new Promise((res) => process.nextTick(res));
   }
 }
+
+export const actionsReducer = {
+  actions: (state: AnyAction[] = [], action: AnyAction) => {
+    return [...state, action];
+  },
+};
 
 export function setupApiStore<
   A extends { reducerPath: any; reducer: ActionReducer<any, any>; metareducer: MetaReducer<any> },
@@ -45,3 +52,9 @@ export function setupApiStore<
 
   return refObj;
 }
+
+export const useRenderCounter = () => {
+  let count = 0;
+  const increment = () => (count = count + 1);
+  return { increment, getRenderCount: () => count };
+};

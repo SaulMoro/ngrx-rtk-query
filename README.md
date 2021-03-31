@@ -23,7 +23,7 @@
 
 ## Installation
 
-> ⚠️ ngrx-rtk-query library requires TypeScript 4.1 or higher.
+> ⚠️  ngrx-rtk-query library requires TypeScript 4.1 or higher.
 
 You can install it through **Angular CLI**:
 

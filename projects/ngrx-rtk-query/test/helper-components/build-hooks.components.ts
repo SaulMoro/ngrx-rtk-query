@@ -2,11 +2,31 @@ import { CommonModule } from '@angular/common';
 import { Component, ChangeDetectionStrategy, NgModule } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
+import { useRenderCounter } from '../helper';
 import { api, defaultApi, libPostsApi, Post } from '../helper-apis';
+
+class BaseRenderCounterComponent {
+  renderCounter = useRenderCounter();
+}
+
+@Component({
+  selector: 'lib-test-query-base',
+  template: `
+    {{ renderCounter.increment() }}
+    <div *ngIf="query$ | async as query">
+      <div data-testid="isFetching">{{ '' + query.isFetching }}</div>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class FetchingBaseComponent extends BaseRenderCounterComponent {
+  query$ = api.endpoints.getUser.useQuery(1);
+}
 
 @Component({
   selector: 'lib-test-query',
   template: `
+    {{ renderCounter.increment() }}
     <div *ngIf="query$ | async as query">
       <div data-testid="isFetching">{{ '' + query.isFetching }}</div>
       <button type="button" (click)="increment()">Increment value</button>
@@ -14,7 +34,7 @@ import { api, defaultApi, libPostsApi, Post } from '../helper-apis';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FetchingComponent {
+export class FetchingComponent extends BaseRenderCounterComponent {
   value = new BehaviorSubject<number>(0);
   value$ = this.value.asObservable();
 
@@ -52,6 +72,7 @@ export class LoadingComponent {
 @Component({
   selector: 'lib-test-query',
   template: `
+    {{ renderCounter.increment() }}
     <div *ngIf="query$ | async as query">
       <div data-testid="isFetching">{{ '' + query.isFetching }}</div>
       <div data-testid="isLoading">{{ '' + query.isLoading }}</div>
@@ -61,7 +82,7 @@ export class LoadingComponent {
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FetchingLoadingComponent {
+export class FetchingLoadingComponent extends BaseRenderCounterComponent {
   value = new BehaviorSubject<number>(0);
   value$ = this.value.asObservable();
 
