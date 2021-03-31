@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "description": "Make RTK Query works in Angular Applications",
   "peerDependencies": {
-    "@angular/core": ">= 9.0.0 < 12",
-    "@ngrx/store": ">=9.0.0 < 12",
+    "typescript": "^4.1.0",
+    "@angular/core": "^11.0.0",
+    "@ngrx/store": "^11.0.0",
     "rxjs": "^6.5.3",
     "@reduxjs/toolkit": "^1.5.0",
     "@rtk-incubator/rtk-query": "^0.2.0"
@@ -20,6 +21,7 @@
     "rtk-query",
     "ngrx"
   ],
+  "author": "Saul Moro",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
