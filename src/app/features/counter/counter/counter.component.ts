@@ -1,9 +1,13 @@
 import { Component, OnInit, ChangeDetectionStrategy, Input } from '@angular/core';
-import { QueryOptions, QueryResult } from 'ngrx-rtk-query';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { LazyQueryOptions } from 'ngrx-rtk-query';
+import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { useDecrementCountByIdMutation, useGetCountByIdQuery, useIncrementCountByIdMutation } from '@app/core/services';
+import {
+  useDecrementCountByIdMutation,
+  useIncrementCountByIdMutation,
+  useLazyGetCountByIdQuery,
+} from '@app/core/services';
 import { pollingOptions } from '../utils/polling-options';
 
 @Component({
@@ -21,7 +25,7 @@ import { pollingOptions } from '../utils/polling-options';
           +
         </button>
         <span
-          *ngIf="countQuery$ | async as countQuery"
+          *ngIf="countQuery.state$ | async as countQuery"
           class="text-3xl font-bold"
           [class.bg-green-100]="countQuery.isFetching"
           >{{ countQuery.data?.count || 0 }}</span
@@ -49,23 +53,21 @@ import { pollingOptions } from '../utils/polling-options';
 export class CounterComponent implements OnInit {
   @Input() id = '';
 
-  // Queries
-  countQuery$!: Observable<QueryResult>;
-  increment = useIncrementCountByIdMutation();
-  decrement = useDecrementCountByIdMutation();
-
   // Polling
   pollingOptions = pollingOptions;
   pollingInterval = new BehaviorSubject<number>(this.pollingOptions[0].value);
   pollingInterval$ = this.pollingInterval.asObservable();
+  options$ = this.pollingInterval$.pipe(map((pollingInterval) => ({ pollingInterval } as LazyQueryOptions)));
+
+  // Queries
+  countQuery = useLazyGetCountByIdQuery(this.options$);
+  increment = useIncrementCountByIdMutation();
+  decrement = useDecrementCountByIdMutation();
 
   constructor() {}
 
   ngOnInit(): void {
-    this.countQuery$ = useGetCountByIdQuery(
-      this.id,
-      this.pollingInterval$.pipe(map((pollingInterval): QueryOptions => ({ pollingInterval }))),
-    );
+    this.countQuery.fetch(this.id);
   }
 
   changePollingInterval(interval: number): void {

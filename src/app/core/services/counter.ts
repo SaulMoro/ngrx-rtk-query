@@ -70,9 +70,11 @@ export const counterApi = createApi({
 
 export const {
   useGetCountQuery,
+  useLazyGetCountQuery,
   useIncrementCountMutation,
   useDecrementCountMutation,
   useGetCountByIdQuery,
+  useLazyGetCountByIdQuery,
   useIncrementCountByIdMutation,
   useDecrementCountByIdMutation,
   usePrefetch: useCountPrefetch,

@@ -11,17 +11,8 @@ import {
   PrefetchOptions,
 } from '@rtk-incubator/rtk-query/dist/esm/ts/core/module';
 import { createSelectorFactory, MemoizedSelectorWithProps, resultMemoize } from '@ngrx/store';
-import { BehaviorSubject, of, isObservable, merge } from 'rxjs';
-import {
-  concatMap,
-  distinctUntilChanged,
-  finalize,
-  map,
-  shareReplay,
-  switchMap,
-  tap,
-  withLatestFrom,
-} from 'rxjs/operators';
+import { BehaviorSubject, of, isObservable, combineLatest } from 'rxjs';
+import { finalize, map, shareReplay, switchMap, tap } from 'rxjs/operators';
 
 import { AngularHooksModuleOptions } from './module';
 import {
@@ -33,7 +24,6 @@ import {
   UseLazyQuery,
   UseLazyQuerySubscription,
   UseQuery,
-  UseQueryOptions,
   UseQueryState,
   UseQueryStateDefaultResult,
   UseQuerySubscription,
@@ -164,18 +154,9 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
 
       const arg$ = isObservable(arg) ? arg : of(arg);
       const options$ = isObservable(options) ? options : of(options);
-      return merge(
-        arg$.pipe(
-          concatMap((currentArg) => of(currentArg).pipe(withLatestFrom(options$))),
-          map(([currentArg, currentOptions]) => ({ currentArg, currentOptions })),
-        ),
-        options$.pipe(
-          concatMap((currentOptions) => of(currentOptions).pipe(withLatestFrom(arg$))),
-          map(([currentOptions, currentArg]) => ({ currentArg, currentOptions })),
-        ),
-      ).pipe(
-        distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
-        switchMap(({ currentArg, currentOptions }: { currentArg: any; currentOptions?: UseQueryOptions<any, any> }) => {
+
+      return combineLatest([arg$, options$]).pipe(
+        switchMap(([currentArg, currentOptions]) => {
           const querySubscriptionResults = useQuerySubscription(currentArg, currentOptions, promiseRef);
           const queryStateResults$ = useQueryState(currentArg, currentOptions, lastValue);
           return queryStateResults$.pipe(map((queryState) => ({ ...queryState, ...querySubscriptionResults })));
@@ -201,26 +182,22 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       const lastArg$ = lastArgSubject.asObservable();
       const options$ = isObservable(options) ? options : of(options);
 
-      const newOptions = (currentOptions: any) => {
-        const [trigger] = useLazyQuerySubscription(currentOptions, promiseRef);
-        triggerRef.current = trigger;
-      };
-
-      const state$ = merge(
-        lastArg$.pipe(
-          concatMap((currentArg) => of(currentArg).pipe(withLatestFrom(options$))),
-          map(([currentArg, currentOptions]) => ({ currentArg, currentOptions })),
-          tap(({ currentArg, currentOptions }) =>
-            currentArg !== UNINITIALIZED_VALUE ? triggerRef.current?.(currentArg) : newOptions(currentOptions),
-          ),
-        ),
+      const state$ = combineLatest([
         options$.pipe(
-          tap((currentOptions) => newOptions(currentOptions)),
-          concatMap((currentOptions) => of(currentOptions).pipe(withLatestFrom(lastArg$))),
-          map(([currentOptions, currentArg]) => ({ currentArg, currentOptions })),
+          tap((currentOptions) => {
+            const [trigger] = useLazyQuerySubscription(currentOptions, promiseRef);
+            triggerRef.current = trigger;
+          }),
         ),
-      ).pipe(
-        switchMap(({ currentArg, currentOptions }) =>
+        lastArg$.pipe(
+          tap((currentArg) => {
+            if (currentArg !== UNINITIALIZED_VALUE) {
+              triggerRef.current?.(currentArg);
+            }
+          }),
+        ),
+      ]).pipe(
+        switchMap(([currentOptions, currentArg]) =>
           useQueryState(currentArg, { ...currentOptions, skip: currentArg === UNINITIALIZED_VALUE }, lastValue),
         ),
         shareReplay({
@@ -233,7 +210,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         }),
       );
 
-      return { fetch: lastArgSubject.next, state$, lastArg$ };
+      return { fetch: (arg: any) => lastArgSubject.next(arg), state$, lastArg$ };
     };
 
     return {
