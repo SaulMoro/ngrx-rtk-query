@@ -167,7 +167,7 @@ export class CounterManagerComponent {
 ### **Use on code-splitted/feature/lazy modules**
 
 To introduce a lazy/feature/code-splitted query, you must export it through an angular module.
-Import this module where needed. You can look at the example of posts from this repository.
+Import this module where needed. You can look at posts feature example from this repository.
 
 ```ts
 // ...
@@ -191,7 +191,7 @@ export class PostsQueryModule {}
 
 ### **Queries**
 
-The use of queries is a bit different compared to the original [Queries - RTK Query guide](https://rtk-query-docs.netlify.app/concepts/queries).
+The use of queries is a bit different compared to the original [Queries - RTK Query guide](https://rtk-query-docs.netlify.app/concepts/queries). You can look at the examples from this repository.
 
 The parameters and options of the Query can be static or Observables.
 
@@ -210,13 +210,77 @@ postQuery$ = useGetPostsQuery(2, {
 postQuery$ = useGetPostsQuery(id$, options$);
 ```
 
+### **Lazy Queries**
+
+The use of lazy queries is a bit different compared to the original. As in the case of queries, the parameters and options of the Query can be static or Observables. You can look at lazy feature example from this repository.
+
+Like in the original library, a lazy returns a object (not array) of 3 items, but the structure and naming of the items is different.
+
+- `fetch(arg)`: This function is the trigger to run the fetch action.
+- `state$`: Observable that returns an object with the query state.
+- `lastArg$`: Observable that returns the last argument.
+
+```ts
+// Use query without options
+postsQuery = useLazyGetPostsQuery();
+// Use query with static options
+postQuery = useLazyGetPostsQuery({
+  selectFromResult: ({ data: post, isLoading }) => ({ post, isLoading }),
+});
+// Use query with Observable options
+postQuery = useLazyGetPostsQuery(options$);
+```
+
+Use when data needs to be loaded on demand
+
+```ts
+<span *ngIf="xxxQuery.state$ | async as xxxQuery">{{ xxxQuery.data }}</span>
+<span>{{ xxxQuery.lastArg$ | async }}</span>
+
+//...
+
+export class XxxComponent {
+  xxxQuery = useLazyGetXxxQuery();
+
+// ...
+
+  xxx(id: string) {
+    this.xxxQuery.fetch(id);
+  }
+
+// ...
+```
+
+Another good use case is to work with nested or relational data
+
+```ts
+<ng-container *ngIf="locationQuery.state$ | async as locationQuery">
+//...
+</ng-container>
+
+export class CharacterCardComponent implements OnInit {
+  @Input() character: Character;
+
+  locationQuery = useLazyGetLocationQuery();
+
+  ngOnInit(): void {
+    this.locationQuery.fetch(this.character.currentLocation, { preferCacheValue: true });
+  }
+
+// ...
+```
+
+`preferCacheValue` is `false` by default. When `true`, if the request exists in cache, it will not be dispatched again.
+Perfect for ngOnInit cases. You can look at pagination feature example from this repository.
+
 ### **Mutations**
 
-The use of mutations is a bit different compared to the original [Mutations - RTK Query guide](https://rtk-query-docs.netlify.app/concepts/mutations).
+The use of mutations is a bit different compared to the original [Mutations - RTK Query guide](https://rtk-query-docs.netlify.app/concepts/mutations). You can look at the examples from this repository.
 
-Like in the original library, a mutation is a tuple with two items, but the structure and naming of the items is different.
-The first item is a function called `dispatch(params)`. This function is the trigger to run the mutation action.
-The second item (`state$`) is an observable that returns an object with the state, including the status flags and other info (see official docs).
+Like in the original library, a mutation is a object (not array) of 2 items, but the structure and naming of the items is different.
+
+- `dispatch(params)`: This function is the trigger to run the mutation action.
+- `state$`: Observable that returns an object with the state, including the status flags and other info (see official docs).
 
 ```ts
 // Use mutation hook
