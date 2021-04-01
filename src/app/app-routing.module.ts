@@ -10,6 +10,7 @@ const routes: Routes = [
     path: 'pagination',
     loadChildren: () => import('./features/pagination/pagination.module').then((m) => m.PaginationModule),
   },
+  { path: 'lazy', loadChildren: () => import('./features/lazy/lazy.module').then((m) => m.LazyModule) },
 ];
 
 @NgModule({
