@@ -3,10 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { LazyRoutingModule } from './lazy-routing.module';
-import { LazyComponent } from './lazy.component';
+import { LazyComponent } from './lazy-counter/lazy.component';
+import { CounterRowComponent } from './counter-row/counter-row.component';
 
 @NgModule({
-  declarations: [LazyComponent],
+  declarations: [LazyComponent, CounterRowComponent],
   imports: [CommonModule, LazyRoutingModule, FormsModule, ReactiveFormsModule],
 })
 export class LazyModule {}
