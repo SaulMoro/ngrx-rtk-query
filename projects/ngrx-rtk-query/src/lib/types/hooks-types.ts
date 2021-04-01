@@ -96,7 +96,7 @@ export type DefaultQueryStateSelector<D extends QueryDefinition<any, any, any, a
 ) => UseQueryStateDefaultResult<D>;
 
 export type UseQueryState<D extends QueryDefinition<any, any, any, any>> = <R = UseQueryStateDefaultResult<D>>(
-  arg: QueryArgFrom<D>,
+  arg: QueryArgFrom<D> | Observable<QueryArgFrom<D> | UninitializedValue>,
   options?: UseQueryStateOptions<D, R>,
   lastValue?: { current?: any },
 ) => Observable<UseQueryStateResult<D, R>>;
