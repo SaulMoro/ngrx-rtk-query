@@ -7,6 +7,6 @@
     "esModuleInterop": true,
     "allowJs": true
   },
-  "files": ["src/polyfills.ts"],
+  "files": ["jest.setup.ts", "src/polyfills.ts"],
   "include": ["src/**/*.spec.ts", "src/**/*.test.ts", "src/**/*.d.ts"]
 }

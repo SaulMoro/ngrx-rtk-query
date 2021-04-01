@@ -7,6 +7,6 @@
     "esModuleInterop": true,
     "allowJs": true
   },
-  "files": [],
+  "files": ["jest.setup.ts"],
   "include": ["**/*.spec.ts", "**/*.test.ts", "**/*.d.ts"]
 }
