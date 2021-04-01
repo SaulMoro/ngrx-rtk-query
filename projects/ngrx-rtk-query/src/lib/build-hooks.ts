@@ -87,7 +87,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       { refetchOnReconnect, refetchOnFocus, refetchOnMountOrArgChange, skip = false, pollingInterval = 0 } = {},
       promiseRef = {},
     ) => {
-      if (!skip) {
+      if (!skip && arg !== UNINITIALIZED_VALUE) {
         const subscriptionOptions = { refetchOnReconnect, refetchOnFocus, pollingInterval };
         const lastPromise = promiseRef?.current;
         const lastSubscriptionOptions = promiseRef.current?.subscriptionOptions;
@@ -229,7 +229,11 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         }),
       );
 
-      return { fetch: (arg, extra) => infoSubject.next({ lastArg: arg, extra }), state$, info$ };
+      return {
+        fetch: (arg, extra) => infoSubject.next({ lastArg: arg, extra }),
+        state$,
+        lastArg$: info$.pipe(map(({ lastArg }) => lastArg)),
+      };
     };
 
     return {

@@ -1,10 +1,10 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-import { map } from 'rxjs/operators';
 
 import {
   counterApiEndpoints,
   useDecrementCountByIdMutation,
+  useGetCountByIdQuery,
   useIncrementCountByIdMutation,
   useLazyGetCountByIdQuery,
 } from '@app/core/services';
@@ -57,7 +57,7 @@ const { getCountById } = counterApiEndpoints;
 
     <div class="mt-8 space-y-6">
       <section *ngIf="countQuery.state$ | async as countQuery" class="space-y-4">
-        <h1 class="font-medium text-md">Duplicate Subscription (Share subscription)</h1>
+        <h1 class="font-medium text-md">Duplicate state (Share state & subscription)</h1>
         <div class="flex items-center space-x-4">
           <button
             *ngIf="increment.state$ | async as incrementState"
@@ -82,7 +82,32 @@ const { getCountById } = counterApiEndpoints;
       </section>
 
       <section *ngIf="selectFromState$ | async as countQuery" class="space-y-4">
-        <h1 class="font-medium text-md">Select from state (Share data)</h1>
+        <h1 class="font-medium text-md">Select from state (Share state & subscription)</h1>
+        <div class="flex items-center space-x-4">
+          <button
+            *ngIf="increment.state$ | async as incrementState"
+            class="btn-outline btn-primary"
+            [disabled]="incrementState.isLoading || countQuery.isUninitialized"
+            (click)="incrementCounter(countQuery.originalArgs)"
+          >
+            +
+          </button>
+          <span class="text-3xl font-bold" [class.bg-green-100]="countQuery.isFetching">{{
+            countQuery.data?.count || 0
+          }}</span>
+          <button
+            *ngIf="decrement.state$ | async as decrementState"
+            class="btn-outline btn-primary"
+            [disabled]="decrementState.isLoading || countQuery.isUninitialized"
+            (click)="decrementCounter(countQuery.originalArgs)"
+          >
+            -
+          </button>
+        </div>
+      </section>
+
+      <section *ngIf="countQuery$ | async as countQuery" class="space-y-4">
+        <h1 class="font-medium text-md">Select from query (Share data / another subscription)</h1>
         <div class="flex items-center space-x-4">
           <button
             *ngIf="increment.state$ | async as incrementState"
@@ -115,7 +140,11 @@ export class LazyComponent {
   increment = useIncrementCountByIdMutation();
   decrement = useDecrementCountByIdMutation();
 
-  selectFromState$ = getCountById.useQueryState(this.countQuery.info$.pipe(map(({ lastArg }) => lastArg)));
+  // Use in same component or child components (not subscripted by self)
+  selectFromState$ = getCountById.useQueryState(this.countQuery.lastArg$);
+
+  // Use anywhere (subscripted by self), skip subscribe with uninitialized value
+  countQuery$ = useGetCountByIdQuery(this.countQuery.lastArg$);
 
   form = this.formBuilder.group({
     id: ['', [Validators.required, Validators.minLength(2)]],

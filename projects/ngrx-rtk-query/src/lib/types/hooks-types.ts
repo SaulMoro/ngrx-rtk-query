@@ -28,7 +28,7 @@ export interface MutationHooks<Definition extends MutationDefinition<any, any, a
 }
 
 export type UseQuery<D extends QueryDefinition<any, any, any, any>> = <R = UseQueryStateDefaultResult<D>>(
-  arg: QueryArgFrom<D> | Observable<QueryArgFrom<D>>,
+  arg: QueryArgFrom<D> | Observable<QueryArgFrom<D> | UninitializedValue>,
   options?: UseQueryOptions<D, R> | Observable<UseQueryOptions<D, R>>,
 ) => Observable<UseQueryStateResult<D, R> & ReturnType<UseQuerySubscription<D>>>;
 
@@ -67,7 +67,7 @@ export type UseLazyQuery<D extends QueryDefinition<any, any, any, any>> = <R = U
 ) => {
   fetch: UseLazyTrigger<D>;
   state$: Observable<UseQueryStateResult<D, R>>;
-  info$: Observable<UseLazyQueryLastPromiseInfo<D>>;
+  lastArg$: Observable<QueryArgFrom<D> | UninitializedValue>;
 };
 
 export type UseLazyQueryOptions<
