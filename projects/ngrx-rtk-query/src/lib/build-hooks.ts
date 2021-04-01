@@ -12,7 +12,7 @@ import {
 } from '@rtk-incubator/rtk-query/dist/esm/ts/core/module';
 import { createSelectorFactory, MemoizedSelectorWithProps, resultMemoize } from '@ngrx/store';
 import { BehaviorSubject, of, isObservable, combineLatest } from 'rxjs';
-import { finalize, map, shareReplay, switchMap, tap } from 'rxjs/operators';
+import { distinctUntilChanged, finalize, map, shareReplay, switchMap, tap } from 'rxjs/operators';
 
 import { AngularHooksModuleOptions } from './module';
 import {
@@ -87,7 +87,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       { refetchOnReconnect, refetchOnFocus, refetchOnMountOrArgChange, skip = false, pollingInterval = 0 } = {},
       promiseRef = {},
     ) => {
-      if (!skip) {
+      if (!skip && arg !== UNINITIALIZED_VALUE) {
         const subscriptionOptions = { refetchOnReconnect, refetchOnFocus, pollingInterval };
         const lastPromise = promiseRef?.current;
         const lastSubscriptionOptions = promiseRef.current?.subscriptionOptions;
@@ -137,15 +137,28 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       { skip = false, selectFromResult = defaultQueryStateSelector as QueryStateSelector<any, any> } = {},
       lastValue = {},
     ) => {
-      const querySelector: MemoizedSelectorWithProps<any, any, any> = createSelectorFactory((projector) =>
-        resultMemoize(projector, shallowEqual),
-      )(
-        [select(skip ? 'skip selector' : arg), (_: any, lastResult: any) => lastResult],
-        (subState: any, lastResult: any) => selectFromResult(subState, lastResult, defaultQueryStateSelector),
-      );
+      const arg$ = isObservable(arg) ? arg : of(arg);
+      return arg$.pipe(
+        distinctUntilChanged(shallowEqual),
+        switchMap((currentArg) => {
+          const querySelector: MemoizedSelectorWithProps<any, any, any> = createSelectorFactory((projector) =>
+            resultMemoize(projector, shallowEqual),
+          )(
+            [
+              select(skip || currentArg === UNINITIALIZED_VALUE ? 'skip selector' : currentArg),
+              (_: any, lastResult: any) => lastResult,
+            ],
+            (subState: any, lastResult: any) => selectFromResult(subState, lastResult, defaultQueryStateSelector),
+          );
 
-      return useSelector((state: RootState<Definitions, any, any>) => querySelector(state, lastValue.current)).pipe(
-        tap((value) => (lastValue.current = value)),
+          return useSelector((state: RootState<Definitions, any, any>) => querySelector(state, lastValue.current)).pipe(
+            tap((value) => (lastValue.current = value)),
+          );
+        }),
+        shareReplay({
+          bufferSize: 1,
+          refCount: true,
+        }),
       );
     };
 
@@ -157,7 +170,10 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       const arg$ = isObservable(arg) ? arg : of(arg);
       const options$ = isObservable(options) ? options : of(options);
 
-      return combineLatest([arg$, options$]).pipe(
+      return combineLatest([
+        arg$.pipe(distinctUntilChanged(shallowEqual)),
+        options$.pipe(distinctUntilChanged((prev, curr) => shallowEqual(prev, curr))),
+      ]).pipe(
         switchMap(([currentArg, currentOptions]) => {
           const querySubscriptionResults = useQuerySubscription(currentArg, currentOptions, promiseRef);
           const queryStateResults$ = useQueryState(currentArg, currentOptions, lastValue);
@@ -186,6 +202,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
 
       const state$ = combineLatest([
         options$.pipe(
+          distinctUntilChanged((prev, curr) => shallowEqual(prev, curr)),
           tap((currentOptions) => {
             const [trigger] = useLazyQuerySubscription(currentOptions, promiseRef);
             triggerRef.current = trigger;
@@ -198,11 +215,10 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
             }
           }),
           map(({ lastArg }) => lastArg),
+          distinctUntilChanged(shallowEqual),
         ),
       ]).pipe(
-        switchMap(([currentOptions, currentArg]) =>
-          useQueryState(currentArg, { ...currentOptions, skip: currentArg === UNINITIALIZED_VALUE }, lastValue),
-        ),
+        switchMap(([currentOptions, currentArg]) => useQueryState(currentArg, currentOptions, lastValue)),
         shareReplay({
           bufferSize: 1,
           refCount: true,
@@ -213,7 +229,11 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         }),
       );
 
-      return { fetch: (arg, extra) => infoSubject.next({ lastArg: arg, extra }), state$, info$ };
+      return {
+        fetch: (arg, extra) => infoSubject.next({ lastArg: arg, extra }),
+        state$,
+        lastArg$: info$.pipe(map(({ lastArg }) => lastArg)),
+      };
     };
 
     return {

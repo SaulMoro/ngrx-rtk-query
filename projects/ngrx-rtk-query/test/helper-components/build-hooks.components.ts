@@ -1,12 +1,34 @@
 import { CommonModule } from '@angular/common';
 import { Component, ChangeDetectionStrategy, NgModule } from '@angular/core';
+import { LazyQueryOptions } from 'ngrx-rtk-query';
 import { BehaviorSubject } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
+
+import { useRenderCounter } from '../helper';
 import { api, defaultApi, libPostsApi, Post } from '../helper-apis';
+
+class BaseRenderCounterComponent {
+  renderCounter = useRenderCounter();
+}
+
+@Component({
+  selector: 'lib-test-query-base',
+  template: `
+    {{ renderCounter.increment() }}
+    <div *ngIf="query$ | async as query">
+      <div data-testid="isFetching">{{ '' + query.isFetching }}</div>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class FetchingBaseComponent extends BaseRenderCounterComponent {
+  query$ = api.endpoints.getUser.useQuery(1);
+}
 
 @Component({
   selector: 'lib-test-query',
   template: `
+    {{ renderCounter.increment() }}
     <div *ngIf="query$ | async as query">
       <div data-testid="isFetching">{{ '' + query.isFetching }}</div>
       <button type="button" (click)="increment()">Increment value</button>
@@ -14,7 +36,7 @@ import { api, defaultApi, libPostsApi, Post } from '../helper-apis';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FetchingComponent {
+export class FetchingComponent extends BaseRenderCounterComponent {
   value = new BehaviorSubject<number>(0);
   value$ = this.value.asObservable();
 
@@ -52,6 +74,7 @@ export class LoadingComponent {
 @Component({
   selector: 'lib-test-query',
   template: `
+    {{ renderCounter.increment() }}
     <div *ngIf="query$ | async as query">
       <div data-testid="isFetching">{{ '' + query.isFetching }}</div>
       <div data-testid="isLoading">{{ '' + query.isLoading }}</div>
@@ -61,7 +84,7 @@ export class LoadingComponent {
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FetchingLoadingComponent {
+export class FetchingLoadingComponent extends BaseRenderCounterComponent {
   value = new BehaviorSubject<number>(0);
   value$ = this.value.asObservable();
 
@@ -137,6 +160,10 @@ export class MutationComponent {
   }
 }
 
+/**
+ * Prefetch Query
+ */
+
 export const HIGH_PRIORITY_USER_ID = 4;
 @Component({
   selector: 'lib-test-prefetch',
@@ -190,6 +217,79 @@ export class PrefetchUncachedComponent {
   }
 }
 
+/**
+ * Lazy Query
+ */
+
+@Component({
+  selector: 'lib-test-lazy-query-base',
+  template: `
+    {{ renderCounter.increment() }}
+    <div *ngIf="userQueryState$ | async as query">
+      <div data-testid="isUninitialized">{{ '' + query.isUninitialized }}</div>
+      <div data-testid="isFetching">{{ '' + query.isFetching }}</div>
+
+      <button data-testid="fetchButton" (click)="userQuery.fetch(1)">fetchUser</button>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class LazyFetchingBaseComponent extends BaseRenderCounterComponent {
+  userQuery = api.endpoints.getUser.useLazyQuery();
+  userQueryState$ = this.userQuery.state$.pipe(tap(({ data }) => (this.data = data)));
+  data: any;
+}
+
+@Component({
+  selector: 'lib-test-lazy-query',
+  template: `
+    {{ renderCounter.increment() }}
+    <div *ngIf="userQueryState$ | async as query">
+      <div data-testid="isUninitialized">{{ '' + query.isUninitialized }}</div>
+      <div data-testid="isFetching">{{ '' + query.isFetching }}</div>
+
+      <button data-testid="fetchButton" (click)="userQuery.fetch(1)">fetchUser</button>
+      <button data-testid="updateOptions" (click)="updateOptions()">updateOptions</button>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class LazyFetchingComponent extends BaseRenderCounterComponent {
+  options$ = new BehaviorSubject<LazyQueryOptions>({});
+  optionsObs$ = this.options$.asObservable();
+
+  userQuery = api.endpoints.getUser.useLazyQuery(this.optionsObs$);
+  userQueryState$ = this.userQuery.state$.pipe(tap(({ data }) => (this.data = data)));
+  data: any;
+
+  updateOptions(pollingInterval = 1000): void {
+    this.options$.next({ pollingInterval });
+  }
+}
+
+@Component({
+  selector: 'lib-test-lazy-query-multi',
+  template: `
+    <div *ngIf="userQueryState$ | async as query">
+      <div data-testid="isUninitialized">{{ '' + query.isUninitialized }}</div>
+      <div data-testid="isFetching">{{ '' + query.isFetching }}</div>
+
+      <button data-testid="fetchUser1" (click)="userQuery.fetch(1)">fetchUser1</button>
+      <button data-testid="fetchUser2" (click)="userQuery.fetch(2)">fetchUser2</button>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class LazyFetchingMultiComponent {
+  userQuery = api.endpoints.getUser.useLazyQuery();
+  userQueryState$ = this.userQuery.state$.pipe(tap(({ data }) => (this.data = data)));
+  data: any;
+}
+
+/**
+ * createApi defaults
+ */
+
 @Component({
   selector: 'lib-test-query-defaults',
   template: `
@@ -204,6 +304,10 @@ export class PrefetchUncachedComponent {
 export class RefetchOnMountDefaultsComponent {
   query$ = defaultApi.endpoints.getIncrementedAmount.useQuery();
 }
+
+/**
+ *  Mutations / selectFromResult
+ */
 
 @Component({
   selector: 'lib-test-post',
@@ -256,6 +360,7 @@ export class SelectedPostComponent {
     })
     .pipe(tap(() => (this.renderCount = this.renderCount + 1)));
 }
+
 @Component({
   selector: 'lib-test-selected-post-hook',
   template: `
