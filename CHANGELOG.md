@@ -1,3 +1,11 @@
+## [1.6.1-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.6.0...v1.6.1-next.1) (2021-04-01)
+
+
+### Bug Fixes
+
+* **lib:** public api ([e03c853](https://github.com/SaulMoro/ngrx-rtk-query/commit/e03c8532b7758fb63d1c120af861530b774f255b))
+* **lib:** useQueryState accepts observables and better performance ([deffa6c](https://github.com/SaulMoro/ngrx-rtk-query/commit/deffa6c5ce08b79f2e08c5514672ef980f8809bb))
+
 # [1.6.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.5.0...v1.6.0) (2021-03-31)
 
 
