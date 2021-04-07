@@ -1,3 +1,10 @@
+## [1.6.2-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.6.1...v1.6.2-next.1) (2021-04-07)
+
+
+### Bug Fixes
+
+* **lib:** prevent that rerender on init ([1b13e9f](https://github.com/SaulMoro/ngrx-rtk-query/commit/1b13e9f419faaf9f4cebc0f5b7c52d04bb19f862))
+
 ## [1.6.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.6.0...v1.6.1) (2021-04-01)
 
 
