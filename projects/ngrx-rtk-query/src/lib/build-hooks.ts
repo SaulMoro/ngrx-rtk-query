@@ -1,4 +1,4 @@
-import { Api, EndpointDefinitions, MutationDefinition, QueryDefinition } from '@rtk-incubator/rtk-query';
+import { Api, EndpointDefinitions, MutationDefinition, QueryDefinition, QueryStatus } from '@rtk-incubator/rtk-query';
 import { QueryKeys, RootState } from '@rtk-incubator/rtk-query/dist/esm/ts/core/apiState';
 import {
   MutationActionCreatorResult,
@@ -45,13 +45,27 @@ const defaultQueryStateSelector: DefaultQueryStateSelector<any> = (currentState,
   // isSuccess = true when data is present
   const isSuccess = currentState.isSuccess || (isFetching && !!data);
 
-  return {
-    ...currentState,
-    data,
-    isFetching,
-    isLoading,
-    isSuccess,
-  } as UseQueryStateDefaultResult<any>;
+  return { ...currentState, data, isFetching, isLoading, isSuccess } as UseQueryStateDefaultResult<any>;
+};
+
+/**
+ * Wrapper around `defaultQueryStateSelector` to be used in `useQuery`.
+ * We want the initial render to already come back with
+ * `{ isUninitialized: false, isFetching: true, isLoading: true }`
+ * to prevent that the library user has to do an additional check for `isUninitialized`/
+ */
+const noPendingQueryStateSelector: DefaultQueryStateSelector<any> = (currentState, lastResult) => {
+  const selected = defaultQueryStateSelector(currentState, lastResult);
+  if (selected.isUninitialized) {
+    return {
+      ...selected,
+      isUninitialized: false,
+      isFetching: true,
+      isLoading: true,
+      status: QueryStatus.pending,
+    };
+  }
+  return selected;
 };
 
 export function buildHooks<Definitions extends EndpointDefinitions>({
@@ -176,7 +190,16 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       ]).pipe(
         switchMap(([currentArg, currentOptions]) => {
           const querySubscriptionResults = useQuerySubscription(currentArg, currentOptions, promiseRef);
-          const queryStateResults$ = useQueryState(currentArg, currentOptions, lastValue);
+          const queryStateResults$ = useQueryState(
+            currentArg,
+            {
+              selectFromResult: currentOptions?.skip
+                ? undefined
+                : (noPendingQueryStateSelector as QueryStateSelector<any, any>),
+              ...currentOptions,
+            },
+            lastValue,
+          );
           return queryStateResults$.pipe(map((queryState) => ({ ...queryState, ...querySubscriptionResults })));
         }),
         shareReplay({
