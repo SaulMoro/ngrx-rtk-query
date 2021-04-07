@@ -1,21 +1,24 @@
-const args = process.argv.join(' ');
+process.env.TAILWIND_MODE = isProductionMode() ? 'build' : 'watch';
 
 module.exports = {
-  purge: {
-    enabled:
-      process.env.WEBPACK_DEV_SERVER === 'true' && (args.indexOf('build') !== -1 || args.indexOf('deploy') !== -1),
-    content: ['./src/**/*.{html,ts}', './projects/**/*.{html,ts}'],
-  },
+  mode: 'jit',
+  purge: ['./src/**/*.{html,ts,scss}', './projects/**/*.{html,ts,scss}'],
   darkMode: false, // or 'media' or 'class'
   theme: {
     extend: {},
   },
   variants: {
-    extend: {
-      opacity: ['disabled'],
-      cursor: ['disabled'],
-      borderWidth: ['hover', 'group-hover'],
-    },
+    extend: {},
   },
   plugins: [require('@tailwindcss/forms')],
 };
+
+function isProductionMode() {
+  const argv = process.argv.join(' ').toLowerCase();
+  const isBuild = argv.includes(' build');
+  const isDeploy = argv.includes(' deploy');
+  const isBuildAlias = argv.includes('ng b');
+  const isFlag = argv.includes('--prod');
+  const isProdEnv = process.env.NODE_ENV === 'production';
+  return isBuild || isDeploy || isFlag || isProdEnv || isBuildAlias;
+}
