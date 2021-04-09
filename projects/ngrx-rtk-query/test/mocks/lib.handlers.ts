@@ -1,8 +1,18 @@
 import { rest } from 'msw';
 
+export type Post = {
+  id: number;
+  title: string;
+  body: string;
+};
+
+export const posts: Record<number, Post> = {
+  1: { id: 1, title: 'hello', body: 'extra body!' },
+};
+
 export const libHandlers = [
-  rest.get('http://example.com/echo', (req, res, ctx) => res(ctx.json({ ...req, headers: req.headers }))),
-  rest.post('http://example.com/echo', (req, res, ctx) => res(ctx.json({ ...req, headers: req.headers }))),
+  rest.get('http://example.com/echo', (req, res, ctx) => res(ctx.json({ ...req, headers: req.headers.all() }))),
+  rest.post('http://example.com/echo', (req, res, ctx) => res(ctx.json({ ...req, headers: req.headers.all() }))),
   rest.get('http://example.com/success', (_, res, ctx) => res(ctx.json({ value: 'success' }))),
   rest.post('http://example.com/success', (_, res, ctx) => res(ctx.json({ value: 'success' }))),
   rest.get('http://example.com/empty', (_, res, ctx) => res(ctx.body(''))),
@@ -13,4 +23,12 @@ export const libHandlers = [
   ),
   rest.get('http://example.com/mirror', (req, res, ctx) => res(ctx.json(req.params))),
   rest.post('http://example.com/mirror', (req, res, ctx) => res(ctx.json(req.params))),
+  rest.get('http://example.com/posts/random', (req, res, ctx) => {
+    // just simulate an api that returned a random ID
+    const { id } = posts[1];
+    return res(ctx.json({ id }));
+  }),
+  rest.get<Post, any, { id: number }>('http://example.com/posts/:id', (req, res, ctx) => {
+    return res(ctx.json(posts[req.params.id]));
+  }),
 ];
