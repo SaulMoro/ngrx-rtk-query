@@ -5,7 +5,7 @@ import { BehaviorSubject } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 
 import { useRenderCounter } from '../helper';
-import { api, defaultApi, libPostsApi, Post } from '../helper-apis';
+import { api, defaultApi, invalidationsApi, libPostsApi, Post } from '../helper-apis';
 
 class BaseRenderCounterComponent {
   renderCounter = useRenderCounter();
@@ -72,7 +72,7 @@ export class LoadingComponent {
 }
 
 @Component({
-  selector: 'lib-test-query',
+  selector: 'lib-test-fetching-query',
   template: `
     {{ renderCounter.increment() }}
     <div *ngIf="query$ | async as query">
@@ -284,6 +284,39 @@ export class LazyFetchingMultiComponent {
   userQuery = api.endpoints.getUser.useLazyQuery();
   userQueryState$ = this.userQuery.state$.pipe(tap(({ data }) => (this.data = data)));
   data: any;
+}
+
+/**
+ *  Query Invalidations
+ */
+
+@Component({
+  selector: 'lib-test-invalidations',
+  template: `
+    <div *ngIf="checkSessionQuery$ | async as query">
+      <div data-testid="isLoading">{{ '' + query.isLoading }}</div>
+      <div data-testid="isError">{{ '' + query.isError }}</div>
+      <div data-testid="user">{{ stringify(query.data) }}</div>
+      <div *ngIf="loginMutation.state$ | async as loginMutation" data-testid="loginLoading">
+        {{ '' + loginMutation.isLoading }}
+      </div>
+      <button data-testid="updatePost" (click)="login()">Login</button>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class InvalidationsComponent {
+  checkSessionQuery$ = invalidationsApi.endpoints.checkSession.useQuery();
+  loginMutation = invalidationsApi.endpoints.login.useMutation();
+
+  login(): void {
+    this.loginMutation.dispatch(null);
+  }
+
+  // no pipes here
+  stringify(data: any): string {
+    return JSON.stringify(data);
+  }
 }
 
 /**

@@ -3,20 +3,22 @@ import userEvent from '@testing-library/user-event';
 import { QueryStatus } from '@rtk-incubator/rtk-query';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { rest } from 'msw';
 
 import { getState } from '../src/lib/thunk.service';
 import { resetPostsApi } from './mocks/lib-posts.handlers';
+import { server } from './mocks/server';
 import * as HooksComponents from './helper-components';
-import { actionsReducer, setupApiStore, waitMs } from './helper';
-import { api, defaultApi, libPostsApi, resetAmount } from './helper-apis';
-
-const storeRef = setupApiStore(api, { ...actionsReducer });
-
-afterEach(() => {
-  resetAmount();
-});
+import { actionsReducer, matchSequence, setupApiStore, waitMs } from './helper';
+import { api, defaultApi, invalidationsApi, libPostsApi, resetAmount } from './helper-apis';
 
 describe('hooks tests', () => {
+  const storeRef = setupApiStore(api, { ...actionsReducer });
+
+  beforeEach(() => {
+    resetAmount();
+  });
+
   describe('useQuery', () => {
     let getRenderCount: () => number = () => 0;
 
@@ -624,12 +626,65 @@ describe('hooks tests', () => {
         startedTimeStamp: expect.any(Number),
         status: 'pending',
       });
+      await waitFor(() =>
+        expect(api.endpoints.getUser.select(HooksComponents.LOW_PRIORITY_USER_ID)(getState()).isSuccess).toBeTruthy(),
+      );
     });
+  });
+});
+
+describe('useQuery and useMutation invalidation behavior', () => {
+  const invalidationsStoreRef = setupApiStore(invalidationsApi, { ...actionsReducer });
+
+  // eslint-disable-next-line max-len
+  test('initially failed useQueries that provide an entity will refetch after a mutation invalidates it', async () => {
+    const checkSessionData = { name: 'matt' };
+    server.use(
+      rest.get('https://example.com/me', (_, res, ctx) => res.once(ctx.status(500))),
+      rest.get('https://example.com/me', (_, res, ctx) => res(ctx.json(checkSessionData))),
+      rest.post('https://example.com/login', (_, res, ctx) => res(ctx.status(200))),
+    );
+
+    await render(HooksComponents.InvalidationsComponent, { imports: invalidationsStoreRef.imports });
+
+    const isLoading = screen.getByTestId('isLoading');
+    const isError = screen.getByTestId('isError');
+    const user = screen.getByTestId('user');
+    const loginLoading = screen.getByTestId('loginLoading');
+
+    await waitFor(() => expect(isLoading).toHaveTextContent('true'));
+    await waitFor(() => expect(isLoading).toHaveTextContent('false'));
+    await waitFor(() => expect(isError).toHaveTextContent('true'));
+    await waitFor(() => expect(user).toHaveTextContent(''));
+
+    fireEvent.click(screen.getByRole('button', { name: /Login/i }));
+
+    await waitFor(() => expect(loginLoading).toHaveTextContent('true'));
+    await waitFor(() => expect(loginLoading).toHaveTextContent('false'));
+    // login mutation will cause the original errored out query to refire, clearing the error and setting the user
+    await waitFor(() => expect(isError).toHaveTextContent('false'));
+    await waitFor(() => expect(user).toHaveTextContent(JSON.stringify(checkSessionData)));
+
+    const { checkSession, login } = invalidationsApi.endpoints;
+    const completeSequence = [
+      checkSession.matchPending,
+      checkSession.matchRejected,
+      login.matchPending,
+      login.matchFulfilled,
+      checkSession.matchPending,
+      checkSession.matchFulfilled,
+    ];
+
+    matchSequence(getState().actions, ...completeSequence);
   });
 });
 
 describe('hooks with createApi defaults set', () => {
   const defaultStoreRef = setupApiStore(defaultApi);
+
+  beforeEach(() => {
+    resetAmount();
+  });
 
   test('useQuery hook respects refetchOnMountOrArgChange: true when set in createApi options', async () => {
     const { rerender } = await render(HooksComponents.RefetchOnMountDefaultsComponent, {

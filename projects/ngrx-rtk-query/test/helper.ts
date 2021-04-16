@@ -11,6 +11,32 @@ export async function waitMs(time = DEFAULT_DELAY_MS) {
   }
 }
 
+export const useRenderCounter = () => {
+  let count = 0;
+  const increment = () => (count = count + 1);
+  return { increment, getRenderCount: () => count };
+};
+
+export function matchSequence(_actions: AnyAction[], ...matchers: Array<(arg: any) => boolean>) {
+  const actions = _actions.concat();
+  actions.shift(); // remove INIT
+  expect(matchers.length).toBe(actions.length);
+  for (let i = 0; i < matchers.length; i++) {
+    expect(matchers[i](actions[i])).toBe(true);
+  }
+}
+
+export function notMatchSequence(_actions: AnyAction[], ...matchers: Array<Array<(arg: any) => boolean>>) {
+  const actions = _actions.concat();
+  actions.shift(); // remove INIT
+  expect(matchers.length).toBe(actions.length);
+  for (let i = 0; i < matchers.length; i++) {
+    for (const matcher of matchers[i]) {
+      expect(matcher(actions[i])).not.toBe(true);
+    }
+  }
+}
+
 export const actionsReducer = {
   actions: (state: AnyAction[] = [], action: AnyAction) => {
     return [...state, action];
@@ -52,9 +78,3 @@ export function setupApiStore<
 
   return refObj;
 }
-
-export const useRenderCounter = () => {
-  let count = 0;
-  const increment = () => (count = count + 1);
-  return { increment, getRenderCount: () => count };
-};

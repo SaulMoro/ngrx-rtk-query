@@ -1,3 +1,4 @@
+import { fetchBaseQuery } from '@rtk-incubator/rtk-query';
 import { createApi } from 'ngrx-rtk-query';
 import { waitMs } from '../helper';
 
@@ -57,4 +58,20 @@ export const defaultApi = createApi({
     }),
   }),
   refetchOnMountOrArgChange: true,
+});
+
+export const invalidationsApi = createApi({
+  reducerPath: 'invalidationsApi',
+  baseQuery: fetchBaseQuery({ baseUrl: 'https://example.com' }),
+  entityTypes: ['User'],
+  endpoints: (build) => ({
+    checkSession: build.query<any, void>({
+      query: () => '/me',
+      provides: ['User'],
+    }),
+    login: build.mutation<any, any>({
+      query: () => ({ url: '/login', method: 'POST' }),
+      invalidates: ['User'],
+    }),
+  }),
 });
