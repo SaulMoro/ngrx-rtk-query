@@ -28,10 +28,8 @@ export const postsApi = createApi({
   endpoints: (build) => ({
     getPosts: build.query<PostsResponse, void>({
       query: () => ({ url: 'posts' }),
-      provides: (result) => [
-        ...result.map(({ id }) => ({ type: 'Posts', id } as const)),
-        { type: 'Posts', id: 'LIST' },
-      ],
+      provides: (result) =>
+        result ? [...result.map(({ id }) => ({ type: 'Posts', id } as const)), { type: 'Posts', id: 'LIST' }] : [],
     }),
     addPost: build.mutation<Post, Partial<Post>>({
       query: (body) => ({
@@ -43,7 +41,7 @@ export const postsApi = createApi({
     }),
     getPost: build.query<Post, number>({
       query: (id) => `posts/${id}`,
-      provides: (_, id) => [{ type: 'Posts', id }],
+      provides: (_, error, id) => [{ type: 'Posts', id }],
     }),
     updatePost: build.mutation<Post, Partial<Post>>({
       query: (data) => {
@@ -54,14 +52,14 @@ export const postsApi = createApi({
           body,
         };
       },
-      invalidates: (_, { id }) => [{ type: 'Posts', id }],
+      invalidates: (_, error, { id }) => [{ type: 'Posts', id }],
     }),
     deletePost: build.mutation<{ success: boolean; id: number }, number>({
       query: (id) => ({
         url: `posts/${id}`,
         method: 'DELETE',
       }),
-      invalidates: (_, id) => [{ type: 'Posts', id }],
+      invalidates: (_, error, id) => [{ type: 'Posts', id }],
     }),
   }),
 });
