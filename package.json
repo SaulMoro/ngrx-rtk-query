@@ -26,7 +26,7 @@
     "semantic-release": "semantic-release",
     "update:msw": "npx msw init src --no-save",
     "prepare": "husky install",
-    "postinstall": "ngcc --properties es2015 browser module main --first-only --create-ivy-entry-points && update:msw"
+    "postinstall": "ngcc --properties es2015 browser module main --first-only --create-ivy-entry-points"
   },
   "private": true,
   "dependencies": {
