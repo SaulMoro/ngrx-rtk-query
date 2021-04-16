@@ -1,3 +1,10 @@
+# [1.7.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.6.2-next.1...v1.7.0-next.1) (2021-04-16)
+
+
+### Features
+
+* **lib:** refactor thunk svr for better perf ([5cf206b](https://github.com/SaulMoro/ngrx-rtk-query/commit/5cf206b455aa15df8af6f804b3e2af6aa621ec53))
+
 ## [1.6.2-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.6.1...v1.6.2-next.1) (2021-04-07)
 
 
