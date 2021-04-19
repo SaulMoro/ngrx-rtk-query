@@ -8,7 +8,7 @@
     "@ngrx/store": "^11.0.0",
     "rxjs": "^6.5.3",
     "@reduxjs/toolkit": "^1.5.0",
-    "@rtk-incubator/rtk-query": "^0.2.0"
+    "@rtk-incubator/rtk-query": "^0.3.0"
   },
   "dependencies": {
     "tslib": "^2.0.0"
