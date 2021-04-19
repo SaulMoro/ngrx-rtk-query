@@ -59,7 +59,7 @@ You can see the application of this repository for more examples.
 
 First, you need to install redux-toolkit and rtk-query:
 ```bash
-npm install @reduxjs/toolkit rtk-incubator/rtk-query@0.3.0-alpha.0
+npm install @reduxjs/toolkit rtk-incubator/rtk-query
 ```
 
 We'll create a service definition that queries the publicly available
