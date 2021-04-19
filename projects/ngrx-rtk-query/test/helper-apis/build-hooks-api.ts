@@ -60,6 +60,28 @@ export const defaultApi = createApi({
   refetchOnMountOrArgChange: true,
 });
 
+export const mutationApi = createApi({
+  reducerPath: 'mutationApi',
+  baseQuery: async (arg: any) => {
+    await waitMs();
+    if ('amount' in arg?.body) {
+      amount += 1;
+    }
+    return { data: arg?.body ? { ...arg.body, ...(amount ? { amount } : {}) } : undefined };
+  },
+  endpoints: (build) => ({
+    increment: build.mutation<{ amount: number }, number>({
+      query: (incrementAmount) => ({
+        url: '',
+        method: 'POST',
+        body: {
+          amount: incrementAmount,
+        },
+      }),
+    }),
+  }),
+});
+
 export const invalidationsApi = createApi({
   reducerPath: 'invalidationsApi',
   baseQuery: fetchBaseQuery({ baseUrl: 'https://example.com' }),

@@ -10,7 +10,7 @@ import { resetPostsApi } from './mocks/lib-posts.handlers';
 import { server } from './mocks/server';
 import * as HooksComponents from './helper-components';
 import { actionsReducer, expectExactType, matchSequence, setupApiStore, waitMs } from './helper';
-import { api, defaultApi, invalidationsApi, libPostsApi, resetAmount } from './helper-apis';
+import { api, defaultApi, invalidationsApi, libPostsApi, mutationApi, resetAmount } from './helper-apis';
 
 describe('hooks tests', () => {
   const storeRef = setupApiStore(api, { ...actionsReducer });
@@ -736,7 +736,7 @@ describe('hooks with createApi defaults set', () => {
   });
 });
 
-describe('selectFromResult behaviors', () => {
+describe('selectFromResult (query) behaviors', () => {
   const postStoreRef = setupApiStore(libPostsApi);
 
   beforeEach(() => {
@@ -816,5 +816,99 @@ describe('selectFromResult behaviors', () => {
 
     fireEvent.click(addPost);
     await waitFor(() => expect(renderCount).toHaveTextContent('3'));
+  });
+
+  test('useQuery with selectFromResult option has a type error if the result is not an object', async () => {
+    await render(HooksComponents.NoObjectQueryComponent, { imports: postStoreRef.imports });
+
+    expect(screen.getByTestId('size2')).toHaveTextContent('0');
+  });
+});
+
+describe('selectFromResult (mutation) behavior', () => {
+  const mutationStoreRef = setupApiStore(mutationApi, { ...actionsReducer });
+
+  let getRenderCount: () => number = () => 0;
+
+  beforeEach(() => {
+    resetAmount();
+  });
+
+  test('causes no more than one rerender when using selectFromResult with an empty object', async () => {
+    const { fixture } = await render(HooksComponents.MutationSelectComponent, { imports: mutationStoreRef.imports });
+    getRenderCount = fixture.componentInstance.renderCounter.getRenderCount;
+
+    const incrementButton = screen.getByTestId('incrementButton');
+
+    expect(getRenderCount()).toBe(1);
+
+    fireEvent.click(incrementButton);
+    await waitMs(200); // give our baseQuery a chance to return
+    expect(getRenderCount()).toBe(2);
+
+    fireEvent.click(incrementButton);
+    await waitMs(200);
+    expect(getRenderCount()).toBe(3);
+
+    const { increment } = mutationApi.endpoints;
+
+    const completeSequence = [
+      increment.matchPending,
+      increment.matchFulfilled,
+      mutationApi.internalActions.unsubscribeMutationResult.match,
+      increment.matchPending,
+      increment.matchFulfilled,
+    ];
+
+    matchSequence(getState().actions, ...completeSequence);
+  });
+
+  test('causes rerenders when only selected data changes', async () => {
+    const { fixture } = await render(HooksComponents.MutationSelectDataComponent, {
+      imports: mutationStoreRef.imports,
+    });
+    getRenderCount = fixture.componentInstance.renderCounter.getRenderCount;
+
+    const incrementButton = screen.getByTestId('incrementButton');
+    const data = screen.getByTestId('data');
+
+    expect(getRenderCount()).toBe(1);
+
+    fireEvent.click(incrementButton);
+    await waitFor(() => expect(data).toHaveTextContent(JSON.stringify({ amount: 1 })));
+    expect(getRenderCount()).toBe(3);
+
+    fireEvent.click(incrementButton);
+    await waitFor(() => expect(data).toHaveTextContent(JSON.stringify({ amount: 2 })));
+    expect(getRenderCount()).toBe(5);
+  });
+
+  test('causes the expected # of rerenders when NOT using selectFromResult', async () => {
+    const { fixture } = await render(HooksComponents.MutationSelectDefaultComponent, {
+      imports: mutationStoreRef.imports,
+    });
+    getRenderCount = fixture.componentInstance.renderCounter.getRenderCount;
+
+    const incrementButton = screen.getByTestId('incrementButton');
+    const status = screen.getByTestId('status');
+
+    expect(getRenderCount()).toBe(1); // mount, uninitialized status in substate
+
+    fireEvent.click(incrementButton);
+    expect(getRenderCount()).toBe(2); // will be pending, isLoading: true,
+    await waitFor(() => expect(status).toHaveTextContent('pending'));
+    await waitFor(() => expect(status).toHaveTextContent('fulfilled'));
+    expect(getRenderCount()).toBe(3);
+
+    fireEvent.click(incrementButton);
+    await waitFor(() => expect(status).toHaveTextContent('pending'));
+    await waitFor(() => expect(status).toHaveTextContent('fulfilled'));
+    expect(getRenderCount()).toBe(5);
+  });
+
+  test('useMutation with selectFromResult option has a type error if the result is not an object', async () => {
+    await render(HooksComponents.NoObjectMutationComponent, { imports: mutationStoreRef.imports });
+
+    expect(screen.getByTestId('incrementButton')).toBeInTheDocument();
   });
 });
