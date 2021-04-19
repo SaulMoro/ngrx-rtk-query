@@ -16,15 +16,17 @@ import { distinctUntilChanged, finalize, map, shareReplay, switchMap, tap } from
 
 import { AngularHooksModuleOptions } from './module';
 import {
+  DefaultMutationStateSelector,
   DefaultQueryStateSelector,
   GenericPrefetchThunk,
-  MutationHook,
+  MutationStateSelector,
   QueryHooks,
   QueryStateSelector,
   UseLazyQuery,
   UseLazyQueryLastPromiseInfo,
   UseLazyQuerySubscription,
   UseLazyTrigger,
+  UseMutation,
   UseQuery,
   UseQueryState,
   UseQueryStateDefaultResult,
@@ -48,6 +50,8 @@ const defaultQueryStateSelector: DefaultQueryStateSelector<any> = (currentState,
   return { ...currentState, data, isFetching, isLoading, isSuccess } as UseQueryStateDefaultResult<any>;
 };
 
+const defaultMutationStateSelector: DefaultMutationStateSelector<any> = (currentState) => currentState;
+
 /**
  * Wrapper around `defaultQueryStateSelector` to be used in `useQuery`.
  * We want the initial render to already come back with
@@ -68,6 +72,13 @@ const noPendingQueryStateSelector: DefaultQueryStateSelector<any> = (currentStat
   return selected;
 };
 
+/**
+ *
+ * @param opts.api - An API with defined endpoints to create hooks for
+ * @param opts.moduleOptions.useDispatch - The version of the `useDispatch` hook to be used
+ * @param opts.moduleOptions.useSelector - The version of the `useSelector` hook to be used
+ * @returns An object containing functions to generate hooks based on an endpoint
+ */
 export function buildHooks<Definitions extends EndpointDefinitions>({
   api,
   moduleOptions: { useDispatch: dispatch, useSelector },
@@ -82,12 +93,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
     defaultOptions?: PrefetchOptions,
   ) {
     return (arg: any, options?: PrefetchOptions) =>
-      dispatch(
-        (api.util.prefetchThunk as GenericPrefetchThunk)(endpointName, arg, {
-          ...defaultOptions,
-          ...options,
-        }),
-      );
+      dispatch((api.util.prefetch as GenericPrefetchThunk)(endpointName, arg, { ...defaultOptions, ...options }));
   }
 
   function buildQueryHooks(name: string): QueryHooks<any> {
@@ -116,7 +122,12 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         }
       }
 
-      return { refetch: () => void promiseRef.current?.refetch() };
+      return {
+        /**
+         * A method to manually refetch data for the query
+         */
+        refetch: () => void promiseRef.current?.refetch(),
+      };
     };
 
     const useLazyQuerySubscription: UseLazyQuerySubscription<any> = (
@@ -268,13 +279,13 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
     };
   }
 
-  function buildMutationHook(name: string): MutationHook<any> {
+  function buildMutationHook(name: string): UseMutation<any> {
     const { initiate, select } = api.endpoints[name] as ApiEndpointMutation<
       MutationDefinition<any, any, any, any, any>,
       Definitions
     >;
 
-    return () => {
+    return ({ selectFromResult = defaultMutationStateSelector as MutationStateSelector<any, any> } = {}) => {
       const promiseRef: { current?: MutationActionCreatorResult<any> } = {};
       const requestIdSubject = new BehaviorSubject<string>('');
       const requestId$ = requestIdSubject.asObservable();
@@ -294,7 +305,18 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
           promiseRef.current?.unsubscribe();
           promiseRef.current = undefined;
         }),
-        switchMap((requestId) => useSelector(select(requestId))),
+        distinctUntilChanged(shallowEqual),
+        switchMap((requestId) => {
+          const mutationSelector = createSelectorFactory((projector) => resultMemoize(projector, shallowEqual))(
+            select(requestId),
+            (subState: any) => selectFromResult(subState, defaultMutationStateSelector),
+          );
+          return useSelector((state: RootState<Definitions, any, any>) => mutationSelector(state));
+        }),
+        shareReplay({
+          bufferSize: 1,
+          refCount: true,
+        }),
       );
 
       return { dispatch: triggerMutation, state$ };

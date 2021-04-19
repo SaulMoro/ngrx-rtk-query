@@ -63,15 +63,15 @@ export const defaultApi = createApi({
 export const invalidationsApi = createApi({
   reducerPath: 'invalidationsApi',
   baseQuery: fetchBaseQuery({ baseUrl: 'https://example.com' }),
-  entityTypes: ['User'],
+  tagTypes: ['User'],
   endpoints: (build) => ({
     checkSession: build.query<any, void>({
       query: () => '/me',
-      provides: ['User'],
+      providesTags: ['User'],
     }),
     login: build.mutation<any, any>({
       query: () => ({ url: '/login', method: 'POST' }),
-      invalidates: ['User'],
+      invalidatesTags: ['User'],
     }),
   }),
 });

@@ -353,9 +353,9 @@ export class RefetchOnMountDefaultsComponent {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PostComponent {
-  postsQuery$ = libPostsApi.useGetPostsQuery();
-  addPostMutation = libPostsApi.useAddPostMutation();
-  updatePostMutation = libPostsApi.useUpdatePostMutation();
+  postsQuery$ = libPostsApi.endpoints.getPosts.useQuery();
+  addPostMutation = libPostsApi.endpoints.addPost.useMutation();
+  updatePostMutation = libPostsApi.endpoints.updatePost.useMutation();
 
   addPost(posts: Post[] | undefined): void {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -407,8 +407,8 @@ export class SelectedPostComponent {
 export class SelectedPostHookComponent {
   renderCount = 0;
 
-  postQuery$ = libPostsApi
-    .useGetPostsQuery(undefined, {
+  postQuery$ = libPostsApi.endpoints.getPosts
+    .useQuery(undefined, {
       selectFromResult: ({ data }) => ({ post: data?.find((post) => post.id === 1) }),
     })
     .pipe(tap(() => (this.renderCount = this.renderCount + 1)));

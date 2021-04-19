@@ -75,13 +75,13 @@ export interface CountResponse {
 export const counterApi = createApi({
   reducerPath: 'counterApi',
   baseQuery: fetchBaseQuery({ baseUrl: '/' }),
-  entityTypes: ['Counter'],
+  tagTypes: ['Counter'],
   endpoints: (build) => ({
     getCount: build.query<CountResponse, void>({
       query: () => ({
         url: `count`,
       }),
-      provides: ['Counter'],
+      providesTags: ['Counter'],
     }),
     incrementCount: build.mutation<CountResponse, number>({
       query: (amount) => ({
@@ -89,7 +89,7 @@ export const counterApi = createApi({
         method: 'PUT',
         body: { amount },
       }),
-      invalidates: ['Counter'],
+      invalidatesTags: ['Counter'],
     }),
     decrementCount: build.mutation<CountResponse, number>({
       query: (amount) => ({
@@ -97,7 +97,7 @@ export const counterApi = createApi({
         method: 'PUT',
         body: { amount },
       }),
-      invalidates: ['Counter'],
+      invalidatesTags: ['Counter'],
     }),
   }),
 });
@@ -175,7 +175,7 @@ Import this module where needed. You can look at posts feature example from this
 export const postsApi = createApi({
   reducerPath: 'postsApi',
   baseQuery: baseQueryWithRetry,
-  entityTypes: ['Posts'],
+  tagTypes: ['Posts'],
   endpoints: (build) => ({
     // ...
   }),
