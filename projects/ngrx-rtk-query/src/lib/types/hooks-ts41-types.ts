@@ -1,6 +1,6 @@
 import { EndpointDefinitions, MutationDefinition, QueryDefinition } from '@rtk-incubator/rtk-query';
 import { DefinitionType } from '@rtk-incubator/rtk-query/dist/esm/ts/endpointDefinitions';
-import { MutationHook, UseLazyQuery, UseQuery } from './hooks-types';
+import { UseLazyQuery, UseMutation, UseQuery } from './hooks-types';
 
 export type TS41Hooks<Definitions extends EndpointDefinitions> = keyof Definitions extends infer Keys
   ? Keys extends string
@@ -17,7 +17,7 @@ export type TS41Hooks<Definitions extends EndpointDefinitions> = keyof Definitio
           }
       : Definitions[Keys] extends { type: DefinitionType.mutation }
       ? {
-          [K in Keys as `use${Capitalize<K>}Mutation`]: MutationHook<
+          [K in Keys as `use${Capitalize<K>}Mutation`]: UseMutation<
             Extract<Definitions[K], MutationDefinition<any, any, any, any>>
           >;
         }

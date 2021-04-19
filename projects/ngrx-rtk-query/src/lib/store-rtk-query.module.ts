@@ -9,7 +9,7 @@ export class StoreRtkQueryModule {
     const moduleConfig = { ...defaultConfig, ...config };
 
     if (moduleConfig.setupListeners) {
-      setupListeners(dispatch);
+      setupListeners(dispatch, moduleConfig.customHandler);
     }
 
     return {

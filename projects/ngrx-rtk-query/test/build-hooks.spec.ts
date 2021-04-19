@@ -9,7 +9,7 @@ import { getState } from '../src/lib/thunk.service';
 import { resetPostsApi } from './mocks/lib-posts.handlers';
 import { server } from './mocks/server';
 import * as HooksComponents from './helper-components';
-import { actionsReducer, matchSequence, setupApiStore, waitMs } from './helper';
+import { actionsReducer, expectExactType, matchSequence, setupApiStore, waitMs } from './helper';
 import { api, defaultApi, invalidationsApi, libPostsApi, resetAmount } from './helper-apis';
 
 describe('hooks tests', () => {
@@ -637,7 +637,7 @@ describe('useQuery and useMutation invalidation behavior', () => {
   const invalidationsStoreRef = setupApiStore(invalidationsApi, { ...actionsReducer });
 
   // eslint-disable-next-line max-len
-  test('initially failed useQueries that provide an entity will refetch after a mutation invalidates it', async () => {
+  test('initially failed useQueries that provide an tag will refetch after a mutation invalidates it', async () => {
     const checkSessionData = { name: 'matt' };
     server.use(
       rest.get('https://example.com/me', (_, res, ctx) => res.once(ctx.status(500))),
@@ -742,6 +742,10 @@ describe('selectFromResult behaviors', () => {
   beforeEach(() => {
     resetPostsApi();
   });
+
+  expectExactType(libPostsApi.useGetPostsQuery)(libPostsApi.endpoints.getPosts.useQuery);
+  expectExactType(libPostsApi.useUpdatePostMutation)(libPostsApi.endpoints.updatePost.useMutation);
+  expectExactType(libPostsApi.useAddPostMutation)(libPostsApi.endpoints.addPost.useMutation);
 
   test('useQueryState serves a deeply memoized value and does not rerender unnecessarily', async () => {
     await render(HooksComponents.PostsContainerComponent, {

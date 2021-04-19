@@ -8,13 +8,13 @@ export interface CountResponse {
 export const counterApi = createApi({
   reducerPath: 'counterApi',
   baseQuery: fetchBaseQuery({ baseUrl: '/' }),
-  entityTypes: ['Counter'],
+  tagTypes: ['Counter'],
   endpoints: (build) => ({
     getCount: build.query<CountResponse, void>({
       query: () => ({
         url: `count`,
       }),
-      provides: ['Counter'],
+      providesTags: ['Counter'],
     }),
     incrementCount: build.mutation<CountResponse, number>({
       query: (amount) => ({
@@ -22,7 +22,7 @@ export const counterApi = createApi({
         method: 'PUT',
         body: { amount },
       }),
-      invalidates: ['Counter'],
+      invalidatesTags: ['Counter'],
     }),
     decrementCount: build.mutation<CountResponse, number>({
       query: (amount) => ({
@@ -42,12 +42,12 @@ export const counterApi = createApi({
         // If there is an error, roll it back
         dispatch(counterApi.util.patchQueryResult('getCount', undefined, context.undoPost));
       },
-      invalidates: ['Counter'],
+      invalidatesTags: ['Counter'],
     }),
 
     getCountById: build.query<CountResponse, string>({
       query: (id: string) => `count/${id}`,
-      provides: (_, error, id) => [{ type: 'Counter', id }],
+      providesTags: (result, error, id) => [{ type: 'Counter', id }],
     }),
     incrementCountById: build.mutation<CountResponse, { id: string; amount: number }>({
       query: ({ id, amount }) => ({
@@ -55,7 +55,7 @@ export const counterApi = createApi({
         method: 'PUT',
         body: { amount },
       }),
-      invalidates: (_, error, { id }) => [{ type: 'Counter', id }],
+      invalidatesTags: (result, error, { id }) => [{ type: 'Counter', id }],
     }),
     decrementCountById: build.mutation<CountResponse, { id: string; amount: number }>({
       query: ({ id, amount }) => ({
@@ -63,7 +63,7 @@ export const counterApi = createApi({
         method: 'PUT',
         body: { amount },
       }),
-      invalidates: (_, error, { id }) => [{ type: 'Counter', id }],
+      invalidatesTags: (result, error, { id }) => [{ type: 'Counter', id }],
     }),
   }),
 });
