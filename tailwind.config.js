@@ -15,10 +15,6 @@ module.exports = {
 
 function isProductionMode() {
   const argv = process.argv.join(' ').toLowerCase();
-  const isBuild = argv.includes(' build');
-  const isDeploy = argv.includes(' deploy');
-  const isBuildAlias = argv.includes('ng b');
-  const isFlag = argv.includes('--prod');
   const isProdEnv = process.env.NODE_ENV === 'production';
-  return isBuild || isDeploy || isFlag || isProdEnv || isBuildAlias;
+  return isProdEnv || [' build', ':build', ' deploy', 'ng b', '--prod'].some((command) => argv.includes(command));
 }

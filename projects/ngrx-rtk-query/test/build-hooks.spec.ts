@@ -3,20 +3,22 @@ import userEvent from '@testing-library/user-event';
 import { QueryStatus } from '@rtk-incubator/rtk-query';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { rest } from 'msw';
 
 import { getState } from '../src/lib/thunk.service';
 import { resetPostsApi } from './mocks/lib-posts.handlers';
+import { server } from './mocks/server';
 import * as HooksComponents from './helper-components';
-import { actionsReducer, setupApiStore, waitMs } from './helper';
-import { api, defaultApi, libPostsApi, resetAmount } from './helper-apis';
-
-const storeRef = setupApiStore(api, { ...actionsReducer });
-
-afterEach(() => {
-  resetAmount();
-});
+import { actionsReducer, expectExactType, matchSequence, setupApiStore, waitMs } from './helper';
+import { api, defaultApi, invalidationsApi, libPostsApi, mutationApi, resetAmount } from './helper-apis';
 
 describe('hooks tests', () => {
+  const storeRef = setupApiStore(api, { ...actionsReducer });
+
+  beforeEach(() => {
+    resetAmount();
+  });
+
   describe('useQuery', () => {
     let getRenderCount: () => number = () => 0;
 
@@ -624,12 +626,65 @@ describe('hooks tests', () => {
         startedTimeStamp: expect.any(Number),
         status: 'pending',
       });
+      await waitFor(() =>
+        expect(api.endpoints.getUser.select(HooksComponents.LOW_PRIORITY_USER_ID)(getState()).isSuccess).toBeTruthy(),
+      );
     });
+  });
+});
+
+describe('useQuery and useMutation invalidation behavior', () => {
+  const invalidationsStoreRef = setupApiStore(invalidationsApi, { ...actionsReducer });
+
+  // eslint-disable-next-line max-len
+  test('initially failed useQueries that provide an tag will refetch after a mutation invalidates it', async () => {
+    const checkSessionData = { name: 'matt' };
+    server.use(
+      rest.get('https://example.com/me', (_, res, ctx) => res.once(ctx.status(500))),
+      rest.get('https://example.com/me', (_, res, ctx) => res(ctx.json(checkSessionData))),
+      rest.post('https://example.com/login', (_, res, ctx) => res(ctx.status(200))),
+    );
+
+    await render(HooksComponents.InvalidationsComponent, { imports: invalidationsStoreRef.imports });
+
+    const isLoading = screen.getByTestId('isLoading');
+    const isError = screen.getByTestId('isError');
+    const user = screen.getByTestId('user');
+    const loginLoading = screen.getByTestId('loginLoading');
+
+    await waitFor(() => expect(isLoading).toHaveTextContent('true'));
+    await waitFor(() => expect(isLoading).toHaveTextContent('false'));
+    await waitFor(() => expect(isError).toHaveTextContent('true'));
+    await waitFor(() => expect(user).toHaveTextContent(''));
+
+    fireEvent.click(screen.getByRole('button', { name: /Login/i }));
+
+    await waitFor(() => expect(loginLoading).toHaveTextContent('true'));
+    await waitFor(() => expect(loginLoading).toHaveTextContent('false'));
+    // login mutation will cause the original errored out query to refire, clearing the error and setting the user
+    await waitFor(() => expect(isError).toHaveTextContent('false'));
+    await waitFor(() => expect(user).toHaveTextContent(JSON.stringify(checkSessionData)));
+
+    const { checkSession, login } = invalidationsApi.endpoints;
+    const completeSequence = [
+      checkSession.matchPending,
+      checkSession.matchRejected,
+      login.matchPending,
+      login.matchFulfilled,
+      checkSession.matchPending,
+      checkSession.matchFulfilled,
+    ];
+
+    matchSequence(getState().actions, ...completeSequence);
   });
 });
 
 describe('hooks with createApi defaults set', () => {
   const defaultStoreRef = setupApiStore(defaultApi);
+
+  beforeEach(() => {
+    resetAmount();
+  });
 
   test('useQuery hook respects refetchOnMountOrArgChange: true when set in createApi options', async () => {
     const { rerender } = await render(HooksComponents.RefetchOnMountDefaultsComponent, {
@@ -681,12 +736,16 @@ describe('hooks with createApi defaults set', () => {
   });
 });
 
-describe('selectFromResult behaviors', () => {
+describe('selectFromResult (query) behaviors', () => {
   const postStoreRef = setupApiStore(libPostsApi);
 
   beforeEach(() => {
     resetPostsApi();
   });
+
+  expectExactType(libPostsApi.useGetPostsQuery)(libPostsApi.endpoints.getPosts.useQuery);
+  expectExactType(libPostsApi.useUpdatePostMutation)(libPostsApi.endpoints.updatePost.useMutation);
+  expectExactType(libPostsApi.useAddPostMutation)(libPostsApi.endpoints.addPost.useMutation);
 
   test('useQueryState serves a deeply memoized value and does not rerender unnecessarily', async () => {
     await render(HooksComponents.PostsContainerComponent, {
@@ -757,5 +816,99 @@ describe('selectFromResult behaviors', () => {
 
     fireEvent.click(addPost);
     await waitFor(() => expect(renderCount).toHaveTextContent('3'));
+  });
+
+  test('useQuery with selectFromResult option has a type error if the result is not an object', async () => {
+    await render(HooksComponents.NoObjectQueryComponent, { imports: postStoreRef.imports });
+
+    expect(screen.getByTestId('size2')).toHaveTextContent('0');
+  });
+});
+
+describe('selectFromResult (mutation) behavior', () => {
+  const mutationStoreRef = setupApiStore(mutationApi, { ...actionsReducer });
+
+  let getRenderCount: () => number = () => 0;
+
+  beforeEach(() => {
+    resetAmount();
+  });
+
+  test('causes no more than one rerender when using selectFromResult with an empty object', async () => {
+    const { fixture } = await render(HooksComponents.MutationSelectComponent, { imports: mutationStoreRef.imports });
+    getRenderCount = fixture.componentInstance.renderCounter.getRenderCount;
+
+    const incrementButton = screen.getByTestId('incrementButton');
+
+    expect(getRenderCount()).toBe(1);
+
+    fireEvent.click(incrementButton);
+    await waitMs(200); // give our baseQuery a chance to return
+    expect(getRenderCount()).toBe(2);
+
+    fireEvent.click(incrementButton);
+    await waitMs(200);
+    expect(getRenderCount()).toBe(3);
+
+    const { increment } = mutationApi.endpoints;
+
+    const completeSequence = [
+      increment.matchPending,
+      increment.matchFulfilled,
+      mutationApi.internalActions.unsubscribeMutationResult.match,
+      increment.matchPending,
+      increment.matchFulfilled,
+    ];
+
+    matchSequence(getState().actions, ...completeSequence);
+  });
+
+  test('causes rerenders when only selected data changes', async () => {
+    const { fixture } = await render(HooksComponents.MutationSelectDataComponent, {
+      imports: mutationStoreRef.imports,
+    });
+    getRenderCount = fixture.componentInstance.renderCounter.getRenderCount;
+
+    const incrementButton = screen.getByTestId('incrementButton');
+    const data = screen.getByTestId('data');
+
+    expect(getRenderCount()).toBe(1);
+
+    fireEvent.click(incrementButton);
+    await waitFor(() => expect(data).toHaveTextContent(JSON.stringify({ amount: 1 })));
+    expect(getRenderCount()).toBe(3);
+
+    fireEvent.click(incrementButton);
+    await waitFor(() => expect(data).toHaveTextContent(JSON.stringify({ amount: 2 })));
+    expect(getRenderCount()).toBe(5);
+  });
+
+  test('causes the expected # of rerenders when NOT using selectFromResult', async () => {
+    const { fixture } = await render(HooksComponents.MutationSelectDefaultComponent, {
+      imports: mutationStoreRef.imports,
+    });
+    getRenderCount = fixture.componentInstance.renderCounter.getRenderCount;
+
+    const incrementButton = screen.getByTestId('incrementButton');
+    const status = screen.getByTestId('status');
+
+    expect(getRenderCount()).toBe(1); // mount, uninitialized status in substate
+
+    fireEvent.click(incrementButton);
+    expect(getRenderCount()).toBe(2); // will be pending, isLoading: true,
+    await waitFor(() => expect(status).toHaveTextContent('pending'));
+    await waitFor(() => expect(status).toHaveTextContent('fulfilled'));
+    expect(getRenderCount()).toBe(3);
+
+    fireEvent.click(incrementButton);
+    await waitFor(() => expect(status).toHaveTextContent('pending'));
+    await waitFor(() => expect(status).toHaveTextContent('fulfilled'));
+    expect(getRenderCount()).toBe(5);
+  });
+
+  test('useMutation with selectFromResult option has a type error if the result is not an object', async () => {
+    await render(HooksComponents.NoObjectMutationComponent, { imports: mutationStoreRef.imports });
+
+    expect(screen.getByTestId('incrementButton')).toBeInTheDocument();
   });
 });

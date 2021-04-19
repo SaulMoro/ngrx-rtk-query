@@ -13,11 +13,11 @@ type PostsResponse = Post[];
 export const libPostsApi = createApi({
   reducerPath: 'libPostsApi',
   baseQuery: fetchBaseQuery({ baseUrl: 'http://example.com/' }),
-  entityTypes: ['Posts'],
+  tagTypes: ['Posts'],
   endpoints: (build) => ({
     getPosts: build.query<PostsResponse, void>({
       query: () => ({ url: 'posts' }),
-      provides: (result) => [...result.map(({ id }) => ({ type: 'Posts', id } as const))],
+      providesTags: (result) => (result ? [...result.map(({ id }) => ({ type: 'Posts', id } as const))] : []),
     }),
     updatePost: build.mutation<Post, Partial<Post>>({
       query: ({ id, ...body }) => ({
@@ -25,7 +25,7 @@ export const libPostsApi = createApi({
         method: 'PUT',
         body,
       }),
-      invalidates: ({ id }) => [{ type: 'Posts', id }],
+      invalidatesTags: (result, error, { id }) => [{ type: 'Posts', id }],
     }),
     addPost: build.mutation<Post, Partial<Post>>({
       query: (body) => ({
@@ -33,7 +33,7 @@ export const libPostsApi = createApi({
         method: 'POST',
         body,
       }),
-      invalidates: ['Posts'],
+      invalidatesTags: ['Posts'],
     }),
   }),
 });

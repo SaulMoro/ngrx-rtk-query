@@ -5,7 +5,7 @@ import { BehaviorSubject } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 
 import { useRenderCounter } from '../helper';
-import { api, defaultApi, libPostsApi, Post } from '../helper-apis';
+import { api, defaultApi, invalidationsApi, libPostsApi, mutationApi, Post } from '../helper-apis';
 
 class BaseRenderCounterComponent {
   renderCounter = useRenderCounter();
@@ -72,7 +72,7 @@ export class LoadingComponent {
 }
 
 @Component({
-  selector: 'lib-test-query',
+  selector: 'lib-test-fetching-query',
   template: `
     {{ renderCounter.increment() }}
     <div *ngIf="query$ | async as query">
@@ -287,6 +287,39 @@ export class LazyFetchingMultiComponent {
 }
 
 /**
+ *  Query Invalidations
+ */
+
+@Component({
+  selector: 'lib-test-invalidations',
+  template: `
+    <div *ngIf="checkSessionQuery$ | async as query">
+      <div data-testid="isLoading">{{ '' + query.isLoading }}</div>
+      <div data-testid="isError">{{ '' + query.isError }}</div>
+      <div data-testid="user">{{ stringify(query.data) }}</div>
+      <div *ngIf="loginMutation.state$ | async as loginMutation" data-testid="loginLoading">
+        {{ '' + loginMutation.isLoading }}
+      </div>
+      <button data-testid="updatePost" (click)="login()">Login</button>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class InvalidationsComponent {
+  checkSessionQuery$ = invalidationsApi.endpoints.checkSession.useQuery();
+  loginMutation = invalidationsApi.endpoints.login.useMutation();
+
+  login(): void {
+    this.loginMutation.dispatch(null);
+  }
+
+  // no pipes here
+  stringify(data: any): string {
+    return JSON.stringify(data);
+  }
+}
+
+/**
  * createApi defaults
  */
 
@@ -310,6 +343,54 @@ export class RefetchOnMountDefaultsComponent {
  */
 
 @Component({
+  selector: 'lib-test-select-mutations',
+  template: `
+    {{ renderCounter.increment() }}
+    <div *ngIf="increment.state$ | async as incrementState">
+      <button data-testid="incrementButton" (click)="increment.dispatch(1)"></button>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class MutationSelectComponent extends BaseRenderCounterComponent {
+  increment = mutationApi.endpoints.increment.useMutation({ selectFromResult: () => ({}) });
+}
+
+@Component({
+  selector: 'lib-test-select-mutations-data',
+  template: `
+    {{ renderCounter.increment() }}
+    <div *ngIf="increment.state$ | async as incrementState">
+      <button data-testid="incrementButton" (click)="increment.dispatch(1)"></button>
+      <div data-testid="data">{{ stringify(incrementState.data) }}</div>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class MutationSelectDataComponent extends BaseRenderCounterComponent {
+  increment = mutationApi.endpoints.increment.useMutation({ selectFromResult: ({ data }) => ({ data }) });
+
+  stringify(data: any): string {
+    return JSON.stringify(data);
+  }
+}
+
+@Component({
+  selector: 'lib-test-select-mutations-default',
+  template: `
+    {{ renderCounter.increment() }}
+    <div *ngIf="increment.state$ | async as incrementState">
+      <button data-testid="incrementButton" (click)="increment.dispatch(1)"></button>
+      <div data-testid="status">{{ incrementState.status }}</div>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class MutationSelectDefaultComponent extends BaseRenderCounterComponent {
+  increment = mutationApi.endpoints.increment.useMutation();
+}
+
+@Component({
   selector: 'lib-test-post',
   template: `
     <div *ngIf="postsQuery$ | async as postsQuery">
@@ -320,9 +401,9 @@ export class RefetchOnMountDefaultsComponent {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PostComponent {
-  postsQuery$ = libPostsApi.useGetPostsQuery();
-  addPostMutation = libPostsApi.useAddPostMutation();
-  updatePostMutation = libPostsApi.useUpdatePostMutation();
+  postsQuery$ = libPostsApi.endpoints.getPosts.useQuery();
+  addPostMutation = libPostsApi.endpoints.addPost.useMutation();
+  updatePostMutation = libPostsApi.endpoints.updatePost.useMutation();
 
   addPost(posts: Post[] | undefined): void {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -374,8 +455,8 @@ export class SelectedPostComponent {
 export class SelectedPostHookComponent {
   renderCount = 0;
 
-  postQuery$ = libPostsApi
-    .useGetPostsQuery(undefined, {
+  postQuery$ = libPostsApi.endpoints.getPosts
+    .useQuery(undefined, {
       selectFromResult: ({ data }) => ({ post: data?.find((post) => post.id === 1) }),
     })
     .pipe(tap(() => (this.renderCount = this.renderCount + 1)));
@@ -414,3 +495,40 @@ export class PostsHookContainerComponent {}
   imports: [CommonModule],
 })
 export class PostLibTestModule {}
+
+@Component({
+  selector: 'lib-test-query-expect-error',
+  template: `
+    <div *ngIf="res2$ | async as res2">
+      <div data-testid="size2">{{ res2.size }}</div>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class NoObjectQueryComponent {
+  _res1$ = libPostsApi.endpoints.getPosts.useQuery(undefined, {
+    // @ts-expect-error selectFromResult must always return an object
+    selectFromResult: ({ data }) => data?.length ?? 0,
+  });
+
+  res2$ = libPostsApi.endpoints.getPosts.useQuery(undefined, {
+    // selectFromResult must always return an object
+    selectFromResult: ({ data }) => ({ size: data?.length ?? 0 }),
+  });
+}
+
+@Component({
+  selector: 'lib-test-mutation-expect-error',
+  template: `
+    <div *ngIf="increment.state$ | async as incrementState">
+      <button data-testid="incrementButton" (click)="increment.dispatch(1)"></button>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class NoObjectMutationComponent {
+  increment = mutationApi.endpoints.increment.useMutation({
+    // @ts-expect-error selectFromResult must always return an object
+    selectFromResult: () => 42,
+  });
+}

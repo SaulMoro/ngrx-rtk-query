@@ -1,3 +1,4 @@
+import { fetchBaseQuery } from '@rtk-incubator/rtk-query';
 import { createApi } from 'ngrx-rtk-query';
 import { waitMs } from '../helper';
 
@@ -57,4 +58,42 @@ export const defaultApi = createApi({
     }),
   }),
   refetchOnMountOrArgChange: true,
+});
+
+export const mutationApi = createApi({
+  reducerPath: 'mutationApi',
+  baseQuery: async (arg: any) => {
+    await waitMs();
+    if ('amount' in arg?.body) {
+      amount += 1;
+    }
+    return { data: arg?.body ? { ...arg.body, ...(amount ? { amount } : {}) } : undefined };
+  },
+  endpoints: (build) => ({
+    increment: build.mutation<{ amount: number }, number>({
+      query: (incrementAmount) => ({
+        url: '',
+        method: 'POST',
+        body: {
+          amount: incrementAmount,
+        },
+      }),
+    }),
+  }),
+});
+
+export const invalidationsApi = createApi({
+  reducerPath: 'invalidationsApi',
+  baseQuery: fetchBaseQuery({ baseUrl: 'https://example.com' }),
+  tagTypes: ['User'],
+  endpoints: (build) => ({
+    checkSession: build.query<any, void>({
+      query: () => '/me',
+      providesTags: ['User'],
+    }),
+    login: build.mutation<any, any>({
+      query: () => ({ url: '/login', method: 'POST' }),
+      invalidatesTags: ['User'],
+    }),
+  }),
 });

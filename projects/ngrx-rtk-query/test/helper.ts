@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ActionReducer, MetaReducer, StoreModule } from '@ngrx/store';
 import { AnyAction } from '@reduxjs/toolkit';
 import { StoreRtkQueryModule } from 'ngrx-rtk-query';
@@ -8,6 +9,32 @@ export async function waitMs(time = DEFAULT_DELAY_MS) {
   const now = Date.now();
   while (Date.now() < now + time) {
     await new Promise((res) => process.nextTick(res));
+  }
+}
+
+export const useRenderCounter = () => {
+  let count = 0;
+  const increment = () => (count = count + 1);
+  return { increment, getRenderCount: () => count };
+};
+
+export function matchSequence(_actions: AnyAction[], ...matchers: Array<(arg: any) => boolean>) {
+  const actions = _actions.concat();
+  actions.shift(); // remove INIT
+  expect(matchers.length).toBe(actions.length);
+  for (let i = 0; i < matchers.length; i++) {
+    expect(matchers[i](actions[i])).toBe(true);
+  }
+}
+
+export function notMatchSequence(_actions: AnyAction[], ...matchers: Array<Array<(arg: any) => boolean>>) {
+  const actions = _actions.concat();
+  actions.shift(); // remove INIT
+  expect(matchers.length).toBe(actions.length);
+  for (let i = 0; i < matchers.length; i++) {
+    for (const matcher of matchers[i]) {
+      expect(matcher(actions[i])).not.toBe(true);
+    }
   }
 }
 
@@ -53,8 +80,54 @@ export function setupApiStore<
   return refObj;
 }
 
-export const useRenderCounter = () => {
-  let count = 0;
-  const increment = () => (count = count + 1);
-  return { increment, getRenderCount: () => count };
-};
+// type test helpers
+
+export declare type IsAny<T, True, False = never> = true | false extends (T extends never ? true : false)
+  ? True
+  : False;
+
+export declare type IsUnknown<T, True, False = never> = unknown extends T ? IsAny<T, False, True> : False;
+
+export function expectType<T>(t: T): T {
+  return t;
+}
+
+type Equals<T, U> = IsAny<T, never, IsAny<U, never, [T] extends [U] ? ([U] extends [T] ? any : never) : never>>;
+export function expectExactType<T>(t: T) {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  return <U extends Equals<T, U>>(u: U) => {};
+}
+
+type EnsureUnknown<T extends any> = IsUnknown<T, any, never>;
+export function expectUnknown<T extends EnsureUnknown<T>>(t: T) {
+  return t;
+}
+
+type EnsureAny<T extends any> = IsAny<T, any, never>;
+export function expectExactAny<T extends EnsureAny<T>>(t: T) {
+  return t;
+}
+
+type IsNotAny<T> = IsAny<T, never, any>;
+export function expectNotAny<T extends IsNotAny<T>>(t: T): T {
+  return t;
+}
+
+expectType<string>('5' as string);
+expectType<string>('5' as const);
+expectType<string>('5' as any);
+expectExactType('5' as const)('5' as const);
+// @ts-expect-error
+expectExactType('5' as string)('5' as const);
+// @ts-expect-error
+expectExactType('5' as any)('5' as const);
+expectUnknown('5' as unknown);
+// @ts-expect-error
+expectUnknown('5' as const);
+// @ts-expect-error
+expectUnknown('5' as any);
+expectExactAny('5' as any);
+// @ts-expect-error
+expectExactAny('5' as const);
+// @ts-expect-error
+expectExactAny('5' as unknown);

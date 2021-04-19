@@ -24,14 +24,14 @@ const baseQueryWithRetry = retry(baseQuery, { maxRetries: 6 });
 export const postsApi = createApi({
   reducerPath: 'postsApi',
   baseQuery: baseQueryWithRetry,
-  entityTypes: ['Posts'],
+  tagTypes: ['Posts'],
   endpoints: (build) => ({
     getPosts: build.query<PostsResponse, void>({
       query: () => ({ url: 'posts' }),
-      provides: (result) => [
-        ...result.map(({ id }) => ({ type: 'Posts', id } as const)),
-        { type: 'Posts', id: 'LIST' },
-      ],
+      providesTags: (result) =>
+        result
+          ? [...result.map(({ id }) => ({ type: 'Posts', id } as const)), { type: 'Posts', id: 'LIST' }]
+          : [{ type: 'Posts', id: 'LIST' }],
     }),
     addPost: build.mutation<Post, Partial<Post>>({
       query: (body) => ({
@@ -39,11 +39,11 @@ export const postsApi = createApi({
         method: 'POST',
         body,
       }),
-      invalidates: [{ type: 'Posts', id: 'LIST' }],
+      invalidatesTags: [{ type: 'Posts', id: 'LIST' }],
     }),
     getPost: build.query<Post, number>({
       query: (id) => `posts/${id}`,
-      provides: (_, id) => [{ type: 'Posts', id }],
+      providesTags: (result, error, id) => [{ type: 'Posts', id }],
     }),
     updatePost: build.mutation<Post, Partial<Post>>({
       query: (data) => {
@@ -54,14 +54,14 @@ export const postsApi = createApi({
           body,
         };
       },
-      invalidates: (_, { id }) => [{ type: 'Posts', id }],
+      invalidatesTags: (result, error, { id }) => [{ type: 'Posts', id }],
     }),
     deletePost: build.mutation<{ success: boolean; id: number }, number>({
       query: (id) => ({
         url: `posts/${id}`,
         method: 'DELETE',
       }),
-      invalidates: (_, id) => [{ type: 'Posts', id }],
+      invalidatesTags: (result, error, id) => [{ type: 'Posts', id }],
     }),
   }),
 });
