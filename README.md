@@ -59,7 +59,7 @@ You can see the application of this repository for more examples.
 
 First, you need to install redux-toolkit and rtk-query:
 ```bash
-npm install @reduxjs/toolkit rtk-incubator/rtk-query#next
+npm install @reduxjs/toolkit rtk-incubator/rtk-query@0.3.0-alpha.0
 ```
 
 We'll create a service definition that queries the publicly available
@@ -295,10 +295,6 @@ addPost.state$
 <br />
 
 ## FAQ
-
-### **I can't install rtk-incubator/rtk-query#next**
-
-Until RTK Query releases the next version, you can install the same version as in the package.json of this repository
 
 <br/>
 
