@@ -5,6 +5,13 @@
 
 * **lib:** refactor thunk svr for better perf ([5cf206b](https://github.com/SaulMoro/ngrx-rtk-query/commit/5cf206b455aa15df8af6f804b3e2af6aa621ec53))
 
+## [1.6.2](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.6.1...v1.6.2) (2021-04-09)
+
+
+### Bug Fixes
+
+* **lib:** prevent that rerender on init ([1b13e9f](https://github.com/SaulMoro/ngrx-rtk-query/commit/1b13e9f419faaf9f4cebc0f5b7c52d04bb19f862))
+
 ## [1.6.2-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.6.1...v1.6.2-next.1) (2021-04-07)
 
 
