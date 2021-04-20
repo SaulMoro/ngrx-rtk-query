@@ -1,4 +1,11 @@
-import { Api, EndpointDefinitions, MutationDefinition, QueryDefinition, QueryStatus } from '@rtk-incubator/rtk-query';
+import {
+  Api,
+  EndpointDefinitions,
+  MutationDefinition,
+  QueryDefinition,
+  QueryStatus,
+  skipSelector,
+} from '@rtk-incubator/rtk-query';
 import { QueryKeys, RootState } from '@rtk-incubator/rtk-query/dist/esm/ts/core/apiState';
 import {
   MutationActionCreatorResult,
@@ -170,7 +177,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
             resultMemoize(projector, shallowEqual),
           )(
             [
-              select(skip || currentArg === UNINITIALIZED_VALUE ? 'skip selector' : currentArg),
+              select(skip || currentArg === UNINITIALIZED_VALUE ? skipSelector : currentArg),
               (_: any, lastResult: any) => lastResult,
             ],
             (subState: any, lastResult: any) => selectFromResult(subState, lastResult, defaultQueryStateSelector),
@@ -308,7 +315,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         distinctUntilChanged(shallowEqual),
         switchMap((requestId) => {
           const mutationSelector = createSelectorFactory((projector) => resultMemoize(projector, shallowEqual))(
-            select(requestId),
+            select(requestId || skipSelector),
             (subState: any) => selectFromResult(subState, defaultMutationStateSelector),
           );
           return useSelector((state: RootState<Definitions, any, any>) => mutationSelector(state));

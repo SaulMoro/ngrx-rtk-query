@@ -1,3 +1,17 @@
+## [1.7.1-next.2](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.7.1-next.1...v1.7.1-next.2) (2021-04-19)
+
+
+### Bug Fixes
+
+* **lib:** update min rtk-query version ([e3bd76a](https://github.com/SaulMoro/ngrx-rtk-query/commit/e3bd76af3915d23d62244499380bcf50601c16d2))
+
+## [1.7.1-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.7.0...v1.7.1-next.1) (2021-04-19)
+
+
+### Bug Fixes
+
+* **lib:** update to 0.3 beta and add skipSelector ([68692a1](https://github.com/SaulMoro/ngrx-rtk-query/commit/68692a1c0114b8348acd3a79fb8591aef4e342f6))
+
 # [1.7.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.6.2...v1.7.0) (2021-04-19)
 
 
