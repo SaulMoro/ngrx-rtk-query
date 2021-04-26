@@ -457,7 +457,6 @@ describe('hooks tests', () => {
       expect(screen.queryByText('Request was aborted')).not.toBeInTheDocument();
 
       fireEvent.click(screen.getByRole('button', { name: 'Update User and abort' }));
-
       await screen.findByText('An error has occurred updating user Banana');
       expect(screen.queryByText(/Successfully updated user/i)).not.toBeInTheDocument();
       screen.getByText('Request was aborted');
