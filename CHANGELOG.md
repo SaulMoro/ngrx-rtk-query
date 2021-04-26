@@ -1,3 +1,10 @@
+# [1.8.0-next.2](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.8.0-next.1...v1.8.0-next.2) (2021-04-26)
+
+
+### Features
+
+* **lib:** introduce breaking change ([d75c3a3](https://github.com/SaulMoro/ngrx-rtk-query/commit/d75c3a3c4aa987976132f532625d62f70279a26d)), closes [#25](https://github.com/SaulMoro/ngrx-rtk-query/issues/25)
+
 # [1.8.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.7.1...v1.8.0-next.1) (2021-04-26)
 
 
