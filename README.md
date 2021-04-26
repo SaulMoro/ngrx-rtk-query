@@ -65,7 +65,7 @@ npm install @reduxjs/toolkit@next
 We'll create a service definition that queries the publicly available
 
 ```ts
-import { fetchBaseQuery } from '@rtk-incubator/rtk-query';
+import { fetchBaseQuery } from '@reduxjs/toolkit/query';
 import { createApi } from 'ngrx-rtk-query';
 
 export interface CountResponse {

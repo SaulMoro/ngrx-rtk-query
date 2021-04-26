@@ -1,3 +1,3 @@
 module.exports = {
-  ignorableDeepImportMatchers: [/rtk\-query\//],
+  ignorableDeepImportMatchers: [/reduxjs\/toolkit\//],
 };

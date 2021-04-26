@@ -1,4 +1,4 @@
-import { fetchBaseQuery } from '@rtk-incubator/rtk-query';
+import { fetchBaseQuery } from '@reduxjs/toolkit/query';
 import { createApi } from 'ngrx-rtk-query';
 import { waitMs } from '../helper';
 

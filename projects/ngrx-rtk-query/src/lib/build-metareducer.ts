@@ -1,6 +1,6 @@
 import { ActionReducer, MetaReducer, Action } from '@ngrx/store';
-import { Api } from '@rtk-incubator/rtk-query';
-import { CoreModule } from '@rtk-incubator/rtk-query/dist/esm/ts/core/module';
+import { Api } from '@reduxjs/toolkit/query';
+import { CoreModule } from '@reduxjs/toolkit/dist/query/core/module';
 import { AngularHooksModule, AngularHooksModuleOptions } from './module';
 
 export function buildMetaReducer({

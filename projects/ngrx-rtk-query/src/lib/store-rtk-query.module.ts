@@ -1,5 +1,5 @@
 import { ModuleWithProviders, NgModule } from '@angular/core';
-import { setupListeners } from '@rtk-incubator/rtk-query';
+import { setupListeners } from '@reduxjs/toolkit/query';
 import { defaultConfig, StoreQueryConfig, STORE_RTK_QUERY_CONFIG } from './store-rtk-query.config';
 import { dispatch, ThunkService } from './thunk.service';
 

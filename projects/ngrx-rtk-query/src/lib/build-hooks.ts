@@ -5,18 +5,15 @@ import {
   QueryDefinition,
   QueryStatus,
   skipSelector,
-} from '@rtk-incubator/rtk-query';
-import { QueryKeys, RootState } from '@rtk-incubator/rtk-query/dist/esm/ts/core/apiState';
-import {
-  MutationActionCreatorResult,
-  QueryActionCreatorResult,
-} from '@rtk-incubator/rtk-query/dist/esm/ts/core/buildInitiate';
+} from '@reduxjs/toolkit/query';
+import { QueryKeys, RootState } from '@reduxjs/toolkit/dist/query/core/apiState';
+import { MutationActionCreatorResult, QueryActionCreatorResult } from '@reduxjs/toolkit/dist/query/core/buildInitiate';
 import {
   ApiEndpointMutation,
   ApiEndpointQuery,
   CoreModule,
   PrefetchOptions,
-} from '@rtk-incubator/rtk-query/dist/esm/ts/core/module';
+} from '@reduxjs/toolkit/dist/query/core/module';
 import { createSelectorFactory, MemoizedSelectorWithProps, resultMemoize } from '@ngrx/store';
 import { BehaviorSubject, of, isObservable, combineLatest } from 'rxjs';
 import { distinctUntilChanged, finalize, map, shareReplay, switchMap, tap } from 'rxjs/operators';

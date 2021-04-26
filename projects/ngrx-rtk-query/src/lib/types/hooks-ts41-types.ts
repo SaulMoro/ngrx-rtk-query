@@ -1,5 +1,5 @@
-import { EndpointDefinitions, MutationDefinition, QueryDefinition } from '@rtk-incubator/rtk-query';
-import { DefinitionType } from '@rtk-incubator/rtk-query/dist/esm/ts/endpointDefinitions';
+import { EndpointDefinitions, MutationDefinition, QueryDefinition } from '@reduxjs/toolkit/query';
+import { DefinitionType } from '@reduxjs/toolkit/dist/query/endpointDefinitions';
 import { UseLazyQuery, UseMutation, UseQuery } from './hooks-types';
 
 export type TS41Hooks<Definitions extends EndpointDefinitions> = keyof Definitions extends infer Keys

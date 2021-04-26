@@ -1,6 +1,6 @@
 import { fireEvent, render, waitFor, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
-import { QueryStatus } from '@rtk-incubator/rtk-query';
+import { QueryStatus } from '@reduxjs/toolkit/query';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { rest } from 'msw';

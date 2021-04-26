@@ -1,14 +1,14 @@
 import { AnyAction, ThunkAction } from '@reduxjs/toolkit';
-import { MutationDefinition, QueryDefinition, EndpointDefinition } from '@rtk-incubator/rtk-query';
-import { QueryStatus, QuerySubState, SubscriptionOptions } from '@rtk-incubator/rtk-query/dist/esm/ts/core/apiState';
-import { QueryActionCreatorResult } from '@rtk-incubator/rtk-query/dist/esm/ts/core/buildInitiate';
+import { MutationDefinition, QueryDefinition, EndpointDefinition } from '@reduxjs/toolkit/query';
+import { QueryStatus, QuerySubState, SubscriptionOptions } from '@reduxjs/toolkit/dist/query/core/apiState';
+import { QueryActionCreatorResult } from '@reduxjs/toolkit/dist/query/core/buildInitiate';
 import {
   MutationResultSelectorResult,
   QueryResultSelectorResult,
-} from '@rtk-incubator/rtk-query/dist/esm/ts/core/buildSelectors';
-import { PrefetchOptions } from '@rtk-incubator/rtk-query/dist/esm/ts/core/module';
-import { QueryArgFrom, ResultTypeFrom } from '@rtk-incubator/rtk-query/dist/esm/ts/endpointDefinitions';
-import { Id, NoInfer, Override } from '@rtk-incubator/rtk-query/dist/esm/ts/tsHelpers';
+} from '@reduxjs/toolkit/dist/query/core/buildSelectors';
+import { PrefetchOptions } from '@reduxjs/toolkit/dist/query/core/module';
+import { QueryArgFrom, ResultTypeFrom } from '@reduxjs/toolkit/dist/query/endpointDefinitions';
+import { Id, NoInfer, Override } from '@reduxjs/toolkit/dist/query/tsHelpers';
 import { Observable } from 'rxjs';
 import { UninitializedValue } from '../constants';
 
