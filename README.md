@@ -57,9 +57,9 @@ You can follow the official [RTK Query guide with hooks](https://rtk-query-docs.
 
 You can see the application of this repository for more examples.
 
-First, you need to install redux-toolkit and rtk-query:
+First, you need to install redux-toolkit:
 ```bash
-npm install @reduxjs/toolkit rtk-incubator/rtk-query
+npm install @reduxjs/toolkit@next
 ```
 
 We'll create a service definition that queries the publicly available
