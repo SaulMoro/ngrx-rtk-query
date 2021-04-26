@@ -184,7 +184,6 @@ export class MutationAbortComponent {
 
     // no-op simply for clearer type assertions
     res.then((result) => {
-      // currently passing with a false positive, because error is getting typed as `any`
       expectExactType<
         | {
             error: { status: number; data: unknown } | SerializedError;
