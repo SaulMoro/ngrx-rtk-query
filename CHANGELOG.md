@@ -1,3 +1,10 @@
+# [2.0.0-next.2](https://github.com/SaulMoro/ngrx-rtk-query/compare/v2.0.0-next.1...v2.0.0-next.2) (2021-04-26)
+
+
+### Bug Fixes
+
+* **lib:** remove ivy compilation ([73f9594](https://github.com/SaulMoro/ngrx-rtk-query/commit/73f9594ba4847090b6d325ae1f4d042247125e7c))
+
 # [2.0.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.8.0-next.2...v2.0.0-next.1) (2021-04-26)
 
 
