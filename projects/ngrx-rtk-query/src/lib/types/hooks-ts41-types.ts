@@ -2,7 +2,9 @@ import { EndpointDefinitions, MutationDefinition, QueryDefinition } from '@redux
 import { DefinitionType } from '@reduxjs/toolkit/dist/query/endpointDefinitions';
 import { UseLazyQuery, UseMutation, UseQuery } from './hooks-types';
 
-export type TS41Hooks<Definitions extends EndpointDefinitions> = keyof Definitions extends infer Keys
+// For TS 4.1 and later, we can use string literal types to define
+// the exact names of each endpoint's exported hooks
+export type HooksWithUniqueNames<Definitions extends EndpointDefinitions> = keyof Definitions extends infer Keys
   ? Keys extends string
     ? Definitions[Keys] extends { type: DefinitionType.query }
       ? {

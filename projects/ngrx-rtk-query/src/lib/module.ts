@@ -16,7 +16,7 @@ import { MetaReducer } from '@ngrx/store';
 import { buildHooks } from './build-hooks';
 import { buildMetaReducer } from './build-metareducer';
 import { dispatch, getState as getStateFromStore, select } from './thunk.service';
-import { QueryHooks, MutationHooks, isQueryDefinition, isMutationDefinition, TS41Hooks } from './types';
+import { QueryHooks, MutationHooks, isQueryDefinition, isMutationDefinition, HooksWithUniqueNames } from './types';
 import { capitalize, safeAssign } from './utils';
 
 export const angularHooksModuleName = Symbol();
@@ -52,7 +52,7 @@ declare module '@reduxjs/toolkit/query' {
         endpointName: EndpointName,
         options?: PrefetchOptions,
       ): (arg: QueryArgFrom<Definitions[EndpointName]>, options?: PrefetchOptions) => void;
-    } & TS41Hooks<Definitions> & { metareducer: MetaReducer<any> };
+    } & HooksWithUniqueNames<Definitions> & { metareducer: MetaReducer<any> };
   }
 }
 
