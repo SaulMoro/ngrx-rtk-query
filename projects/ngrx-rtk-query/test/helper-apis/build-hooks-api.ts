@@ -29,7 +29,7 @@ export const api = createApi({
         },
       }),
     }),
-    updateUser: build.mutation<any, { name: string }>({
+    updateUser: build.mutation<{ name: string }, { name: string }>({
       query: (update) => ({ body: update }),
     }),
     getError: build.query({
