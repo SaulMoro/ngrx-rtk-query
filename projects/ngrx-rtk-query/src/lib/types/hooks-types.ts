@@ -1,14 +1,14 @@
 import { AnyAction, ThunkAction } from '@reduxjs/toolkit';
-import { MutationDefinition, QueryDefinition, EndpointDefinition } from '@rtk-incubator/rtk-query';
-import { QueryStatus, QuerySubState, SubscriptionOptions } from '@rtk-incubator/rtk-query/dist/esm/ts/core/apiState';
-import { QueryActionCreatorResult } from '@rtk-incubator/rtk-query/dist/esm/ts/core/buildInitiate';
+import { MutationDefinition, QueryDefinition, EndpointDefinition } from '@reduxjs/toolkit/query';
+import { QueryStatus, QuerySubState, SubscriptionOptions } from '@reduxjs/toolkit/dist/query/core/apiState';
+import { MutationActionCreatorResult, QueryActionCreatorResult } from '@reduxjs/toolkit/dist/query/core/buildInitiate';
 import {
   MutationResultSelectorResult,
   QueryResultSelectorResult,
-} from '@rtk-incubator/rtk-query/dist/esm/ts/core/buildSelectors';
-import { PrefetchOptions } from '@rtk-incubator/rtk-query/dist/esm/ts/core/module';
-import { QueryArgFrom, ResultTypeFrom } from '@rtk-incubator/rtk-query/dist/esm/ts/endpointDefinitions';
-import { Id, NoInfer, Override } from '@rtk-incubator/rtk-query/dist/esm/ts/tsHelpers';
+} from '@reduxjs/toolkit/dist/query/core/buildSelectors';
+import { PrefetchOptions } from '@reduxjs/toolkit/dist/query/core/module';
+import { QueryArgFrom } from '@reduxjs/toolkit/dist/query/endpointDefinitions';
+import { Id, NoInfer, Override } from '@reduxjs/toolkit/dist/query/tsHelpers';
 import { Observable } from 'rxjs';
 import { UninitializedValue } from '../constants';
 
@@ -245,37 +245,7 @@ export type UseMutation<D extends MutationDefinition<any, any, any, any>> = <
 >(
   options?: UseMutationStateOptions<D, R>,
 ) => {
-  dispatch: (
-    arg: QueryArgFrom<D>,
-  ) => {
-    /**
-     * Unwraps a mutation call to provide the raw response/error.
-     *
-     * @remarks
-     * If you need to access the error or success payload immediately after a mutation, you can chain .unwrap().
-     *
-     * @example
-     * ```ts
-     * // codeblock-meta title="Using .unwrap"
-     * addPost({ id: 1, name: 'Example' })
-     *   .unwrap()
-     *   .then((payload) => console.log('fulfilled', payload))
-     *   .catch((error) => console.error('rejected', error));
-     * ```
-     *
-     * @example
-     * ```ts
-     * // codeblock-meta title="Using .unwrap with async await"
-     * try {
-     *   const payload = await addPost({ id: 1, name: 'Example' }).unwrap();
-     *   console.log('fulfilled', payload)
-     * } catch (error) {
-     *   console.error('rejected', error);
-     * }
-     * ```
-     */
-    unwrap: () => Promise<ResultTypeFrom<D>>;
-  };
+  dispatch: (arg: QueryArgFrom<D>) => MutationActionCreatorResult<D>;
   state$: Observable<UseMutationStateResult<D, R>>;
 };
 

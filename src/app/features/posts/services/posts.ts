@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { StoreModule } from '@ngrx/store';
-import { fetchBaseQuery, retry } from '@rtk-incubator/rtk-query';
+import { fetchBaseQuery, retry } from '@reduxjs/toolkit/query';
 import { createApi } from 'ngrx-rtk-query';
 import { Post } from '../models';
 

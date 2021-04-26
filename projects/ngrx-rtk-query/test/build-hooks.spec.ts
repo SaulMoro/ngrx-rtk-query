@@ -1,6 +1,6 @@
 import { fireEvent, render, waitFor, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
-import { QueryStatus } from '@rtk-incubator/rtk-query';
+import { QueryStatus } from '@reduxjs/toolkit/query';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { rest } from 'msw';
@@ -447,6 +447,19 @@ describe('hooks tests', () => {
 
       fireEvent.click(updateControl);
       await waitFor(() => expect(resultControl).toHaveTextContent(JSON.stringify(result)));
+    });
+
+    test('useMutation hook callback returns various properties to handle the result', async () => {
+      await render(HooksComponents.MutationAbortComponent, { imports: storeRef.imports });
+
+      expect(screen.queryByText(/An error has occurred/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Successfully updated user/i)).not.toBeInTheDocument();
+      expect(screen.queryByText('Request was aborted')).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Update User and abort' }));
+      await screen.findByText('An error has occurred updating user Banana');
+      expect(screen.queryByText(/Successfully updated user/i)).not.toBeInTheDocument();
+      screen.getByText('Request was aborted');
     });
   });
 

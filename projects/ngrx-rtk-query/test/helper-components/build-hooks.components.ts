@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, ChangeDetectionStrategy, NgModule } from '@angular/core';
+import { SerializedError } from '@reduxjs/toolkit';
 import { LazyQueryOptions } from 'ngrx-rtk-query';
 import { BehaviorSubject } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 
-import { useRenderCounter } from '../helper';
+import { expectExactType, expectType, useRenderCounter } from '../helper';
 import { api, defaultApi, invalidationsApi, libPostsApi, mutationApi, Post } from '../helper-apis';
 
 class BaseRenderCounterComponent {
@@ -157,6 +158,69 @@ export class MutationComponent {
   // no pipes here
   stringify(data: any): string {
     return JSON.stringify(data);
+  }
+}
+
+@Component({
+  selector: 'lib-test-mutation',
+  template: `
+    <div *ngIf="updateUserMutation.state$ | async as updateUser">
+      <button (click)="handleClick()">Update User and abort</button>
+      <div>{{ successMsg }}</div>
+      <div>{{ errMsg }}</div>
+      <div>{{ isAborted ? 'Request was aborted' : '' }}</div>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class MutationAbortComponent {
+  updateUserMutation = api.endpoints.updateUser.useMutation();
+  successMsg = '';
+  errMsg = '';
+  isAborted = false;
+
+  async handleClick(): Promise<void> {
+    const res = this.updateUserMutation.dispatch({ name: 'Banana' });
+
+    // no-op simply for clearer type assertions
+    res.then((result) => {
+      expectExactType<
+        | {
+            error: { status: number; data: unknown } | SerializedError;
+          }
+        | {
+            data: {
+              name: string;
+            };
+          }
+      >(result);
+    });
+
+    expectType<{
+      endpointName: string;
+      originalArgs: { name: string };
+      track?: boolean;
+      startedTimeStamp: number;
+    }>(res.arg);
+    expectType<string>(res.requestId);
+    expectType<() => void>(res.abort);
+    expectType<() => Promise<{ name: string }>>(res.unwrap);
+    expectType<() => void>(res.unsubscribe);
+
+    // abort the mutation immediately to force an error
+    res.abort();
+    res
+      .unwrap()
+      .then((result) => {
+        expectType<{ name: string }>(result);
+        this.successMsg = `Successfully updated user ${result.name}`;
+      })
+      .catch((err) => {
+        this.errMsg = `An error has occurred updating user ${res.arg.originalArgs.name}`;
+        if (err.name === 'AbortError') {
+          this.isAborted = true;
+        }
+      });
   }
 }
 

@@ -1,4 +1,4 @@
-import { fetchBaseQuery } from '@rtk-incubator/rtk-query';
+import { fetchBaseQuery } from '@reduxjs/toolkit/query';
 import { createApi } from 'ngrx-rtk-query';
 import { waitMs } from '../helper';
 
@@ -15,6 +15,16 @@ export const api = createApi({
     if (arg?.body && 'amount' in arg.body) {
       amount += 1;
     }
+
+    if (arg?.body && 'forceError' in arg.body) {
+      return {
+        error: {
+          status: 500,
+          data: null,
+        },
+      };
+    }
+
     return { data: arg?.body ? { ...arg.body, ...(amount ? { amount } : {}) } : undefined };
   },
   endpoints: (build) => ({
@@ -29,7 +39,7 @@ export const api = createApi({
         },
       }),
     }),
-    updateUser: build.mutation<any, { name: string }>({
+    updateUser: build.mutation<{ name: string }, { name: string }>({
       query: (update) => ({ body: update }),
     }),
     getError: build.query({
