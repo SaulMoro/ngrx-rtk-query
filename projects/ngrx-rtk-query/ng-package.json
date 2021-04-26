@@ -5,7 +5,8 @@
     "entryFile": "src/public-api.ts",
     "umdModuleIds": {
       "@ngrx/store": "ngrx.store",
-      "@reduxjs/toolkit": "reduxjs-toolkit"
+      "@reduxjs/toolkit": "reduxjs-toolkit",
+      "@reduxjs/toolkit/query": "reduxjs-toolkit-query"
     }
   },
   "assets": ["ngcc.config.js"]
