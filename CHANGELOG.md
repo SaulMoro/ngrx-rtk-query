@@ -1,3 +1,16 @@
+# [1.8.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.7.1...v1.8.0-next.1) (2021-04-26)
+
+
+### Bug Fixes
+
+* **lib:** new hooks types var name ([923824d](https://github.com/SaulMoro/ngrx-rtk-query/commit/923824d919d6bdcdd6c2cb3f3f40464aff6dbc04))
+
+
+### Features
+
+* **lib:** add full types to useMutation  callback ([c00ccf4](https://github.com/SaulMoro/ngrx-rtk-query/commit/c00ccf490a024e073ab4a68274c1f2ab6517a6cd))
+* **lib:** move from incubator ([1a39042](https://github.com/SaulMoro/ngrx-rtk-query/commit/1a39042c61a51fd9fee1c7fe69022c826f5ce402))
+
 ## [1.7.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.7.0...v1.7.1) (2021-04-20)
 
 
