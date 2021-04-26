@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, ChangeDetectionStrategy, NgModule } from '@angular/core';
+import { SerializedError } from '@reduxjs/toolkit';
 import { LazyQueryOptions } from 'ngrx-rtk-query';
 import { BehaviorSubject } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 
-import { expectType, useRenderCounter } from '../helper';
+import { expectExactType, expectType, useRenderCounter } from '../helper';
 import { api, defaultApi, invalidationsApi, libPostsApi, mutationApi, Post } from '../helper-apis';
 
 class BaseRenderCounterComponent {
@@ -178,8 +179,24 @@ export class MutationAbortComponent {
   errMsg = '';
   isAborted = false;
 
-  handleClick(): void {
+  async handleClick(): Promise<void> {
     const res = this.updateUserMutation.dispatch({ name: 'Banana' });
+
+    // no-op simply for clearer type assertions
+    res.then((result) => {
+      // currently passing with a false positive, because error is getting typed as `any`
+      expectExactType<
+        | {
+            error: { status: number; data: unknown } | SerializedError;
+          }
+        | {
+            data: {
+              name: string;
+            };
+          }
+      >(result);
+    });
+
     expectType<{
       endpointName: string;
       originalArgs: { name: string };

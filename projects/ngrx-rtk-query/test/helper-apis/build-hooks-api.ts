@@ -15,6 +15,16 @@ export const api = createApi({
     if (arg?.body && 'amount' in arg.body) {
       amount += 1;
     }
+
+    if (arg?.body && 'forceError' in arg.body) {
+      return {
+        error: {
+          status: 500,
+          data: null,
+        },
+      };
+    }
+
     return { data: arg?.body ? { ...arg.body, ...(amount ? { amount } : {}) } : undefined };
   },
   endpoints: (build) => ({
