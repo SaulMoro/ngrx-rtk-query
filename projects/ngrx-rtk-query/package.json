@@ -18,7 +18,9 @@
     "ngrx-rtk-query",
     "ngrx rtk query",
     "rtk-query",
-    "ngrx"
+    "ngrx",
+    "redux",
+    "redux-toolkit"
   ],
   "author": "Saul Moro",
   "license": "MIT",
