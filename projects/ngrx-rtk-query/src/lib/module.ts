@@ -31,7 +31,7 @@ declare module '@reduxjs/toolkit/query' {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     ReducerPath extends string,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    TagTypes extends string
+    TagTypes extends string,
   > {
     [angularHooksModuleName]: {
       /**
@@ -83,7 +83,7 @@ export const angularHooksModule = ({
 }: AngularHooksModuleOptions = {}): Module<AngularHooksModule> => ({
   name: angularHooksModuleName,
   init(api, options, context) {
-    const anyApi = (api as any) as Api<any, Record<string, any>, string, string, AngularHooksModule>;
+    const anyApi = api as any as Api<any, Record<string, any>, string, string, AngularHooksModule>;
     const { buildQueryHooks, buildMutationHook, usePrefetch } = buildHooks({
       api,
       moduleOptions: { useDispatch, useSelector, getState },
@@ -95,13 +95,8 @@ export const angularHooksModule = ({
     return {
       injectEndpoint(endpointName, definition) {
         if (isQueryDefinition(definition)) {
-          const {
-            useQuery,
-            useLazyQuery,
-            useLazyQuerySubscription,
-            useQueryState,
-            useQuerySubscription,
-          } = buildQueryHooks(endpointName);
+          const { useQuery, useLazyQuery, useLazyQuerySubscription, useQueryState, useQuerySubscription } =
+            buildQueryHooks(endpointName);
           safeAssign(anyApi.endpoints[endpointName], {
             useQuery,
             useLazyQuery,

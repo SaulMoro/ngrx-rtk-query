@@ -46,7 +46,7 @@ export const actionsReducer = {
 
 export function setupApiStore<
   A extends { reducerPath: any; reducer: ActionReducer<any, any>; metareducer: MetaReducer<any> },
-  R extends Record<string, ActionReducer<any, any>>
+  R extends Record<string, ActionReducer<any, any>>,
 >(api: A, extraReducers?: R, withoutListeners?: boolean) {
   const getStore = () =>
     StoreModule.forRoot(

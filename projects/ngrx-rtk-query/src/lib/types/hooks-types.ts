@@ -28,7 +28,7 @@ export interface MutationHooks<Definition extends MutationDefinition<any, any, a
  * test description here
  */
 export type UseQuery<D extends QueryDefinition<any, any, any, any>> = <
-  R extends Record<string, any> = UseQueryStateDefaultResult<D>
+  R extends Record<string, any> = UseQueryStateDefaultResult<D>,
 >(
   arg: QueryArgFrom<D> | Observable<QueryArgFrom<D> | UninitializedValue>,
   options?: UseQueryOptions<D, R> | Observable<UseQueryOptions<D, R>>,
@@ -72,14 +72,11 @@ export interface UseQuerySubscriptionOptions extends SubscriptionOptions {
   refetchOnMountOrArgChange?: boolean | number;
 }
 
-export type UseQueryOptions<
-  D extends QueryDefinition<any, any, any, any>,
-  R = UseQueryStateDefaultResult<D>
-> = UseQuerySubscriptionOptions & UseQueryStateOptions<D, R>;
+export type UseQueryOptions<D extends QueryDefinition<any, any, any, any>, R = UseQueryStateDefaultResult<D>> =
+  UseQuerySubscriptionOptions & UseQueryStateOptions<D, R>;
 
-export type QueryOptions<
-  SelectFromResultType = UseQueryStateDefaultResult<QueryDefinition<any, any, any, any>>
-> = UseQueryOptions<any, SelectFromResultType>;
+export type QueryOptions<SelectFromResultType = UseQueryStateDefaultResult<QueryDefinition<any, any, any, any>>> =
+  UseQueryOptions<any, SelectFromResultType>;
 
 export type UseQuerySubscription<D extends QueryDefinition<any, any, any, any>> = (
   arg: QueryArgFrom<D>,
@@ -105,14 +102,11 @@ export type UseLazyQuery<D extends QueryDefinition<any, any, any, any>> = <R = U
   lastArg$: Observable<QueryArgFrom<D> | UninitializedValue>;
 };
 
-export type UseLazyQueryOptions<
-  D extends QueryDefinition<any, any, any, any>,
-  R = UseQueryStateDefaultResult<D>
-> = SubscriptionOptions & Omit<UseQueryStateOptions<D, R>, 'skip'>;
+export type UseLazyQueryOptions<D extends QueryDefinition<any, any, any, any>, R = UseQueryStateDefaultResult<D>> =
+  SubscriptionOptions & Omit<UseQueryStateOptions<D, R>, 'skip'>;
 
-export type LazyQueryOptions<
-  SelectFromResultType = UseQueryStateDefaultResult<QueryDefinition<any, any, any, any>>
-> = UseLazyQueryOptions<any, SelectFromResultType>;
+export type LazyQueryOptions<SelectFromResultType = UseQueryStateDefaultResult<QueryDefinition<any, any, any, any>>> =
+  UseLazyQueryOptions<any, SelectFromResultType>;
 
 export type UseLazyQuerySubscription<D extends QueryDefinition<any, any, any, any>> = (
   options?: SubscriptionOptions,
@@ -241,7 +235,7 @@ export type UseMutationStateOptions<D extends MutationDefinition<any, any, any, 
 export type UseMutationStateResult<_ extends MutationDefinition<any, any, any, any>, R> = NoInfer<R>;
 
 export type UseMutation<D extends MutationDefinition<any, any, any, any>> = <
-  R extends Record<string, any> = MutationResultSelectorResult<D>
+  R extends Record<string, any> = MutationResultSelectorResult<D>,
 >(
   options?: UseMutationStateOptions<D, R>,
 ) => {

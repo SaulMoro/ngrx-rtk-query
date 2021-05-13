@@ -66,13 +66,8 @@ export const postsApi = createApi({
   }),
 });
 
-export const {
-  useAddPostMutation,
-  useDeletePostMutation,
-  useGetPostQuery,
-  useGetPostsQuery,
-  useUpdatePostMutation,
-} = postsApi;
+export const { useAddPostMutation, useDeletePostMutation, useGetPostQuery, useGetPostsQuery, useUpdatePostMutation } =
+  postsApi;
 
 @NgModule({
   imports: [StoreModule.forFeature(postsApi.reducerPath, postsApi.reducer, { metaReducers: [postsApi.metareducer] })],
