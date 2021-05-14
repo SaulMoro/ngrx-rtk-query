@@ -15,18 +15,18 @@ import { api, defaultApi, invalidationsApi, libPostsApi, mutationApi, resetAmoun
 describe('hooks tests', () => {
   const storeRef = setupApiStore(api, { ...actionsReducer });
 
+  let getRenderCount: () => number = () => 0;
+
   beforeEach(() => {
     resetAmount();
   });
 
   describe('useQuery', () => {
-    let getRenderCount: () => number = () => 0;
-
     test('useQuery hook basic render count assumptions', async () => {
       const { fixture } = await render(HooksComponents.FetchingBaseComponent, { imports: storeRef.imports });
-      getRenderCount = fixture.componentInstance.renderCounter.getRenderCount;
 
       const fetchControl = screen.getByTestId('isFetching');
+      getRenderCount = fixture.componentInstance.renderCounter.getRenderCount;
 
       // By the time this runs, the initial render will happen, and the query will start immediately running by the time
       expect(getRenderCount()).toBe(1);
@@ -36,10 +36,11 @@ describe('hooks tests', () => {
 
     test('useQuery hook sets isFetching=true whenever a request is in flight', async () => {
       const { fixture } = await render(HooksComponents.FetchingComponent, { imports: storeRef.imports });
-      getRenderCount = fixture.componentInstance.renderCounter.getRenderCount;
 
       const fetchControl = screen.getByTestId('isFetching');
       const incrementControl = screen.getByRole('button', { name: /Increment value/i });
+
+      getRenderCount = fixture.componentInstance.renderCounter.getRenderCount;
 
       expect(getRenderCount()).toBe(1);
 
@@ -306,7 +307,6 @@ describe('hooks tests', () => {
   });
 
   describe('useLazyQuery', () => {
-    let getRenderCount: () => number = () => 0;
     let data: any;
 
     afterEach(() => {
@@ -783,7 +783,29 @@ describe('selectFromResult (query) behaviors', () => {
     // Being that it didn't rerender, we can be assured that the behavior is correct
   });
 
-  // eslint-disable-next-line max-len
+  //eslint-disable-next-line
+  test('useQuery with selectFromResult with all flags destructured rerenders like the default useQuery behavior', async () => {
+    await render(HooksComponents.PostsHookContainerAllFlagsComponent, {
+      declarations: [HooksComponents.PostComponent, HooksComponents.SelectedPostAllFlagsHookComponent],
+      imports: postStoreRef.imports,
+    });
+
+    const renderCount = screen.getByTestId('renderCount');
+    const addPost = screen.getByTestId('addPost');
+
+    expect(renderCount).toHaveTextContent('1');
+
+    await waitFor(() => expect(renderCount).toHaveTextContent('2'));
+
+    fireEvent.click(addPost);
+    await waitFor(() => expect(renderCount).toHaveTextContent('4'));
+
+    fireEvent.click(addPost);
+    fireEvent.click(addPost);
+    await waitFor(() => expect(renderCount).toHaveTextContent('6'));
+  });
+
+  // eslint-disable-next-line
   test('useQuery with selectFromResult option serves a deeply memoized value and does not rerender unnecessarily', async () => {
     await render(HooksComponents.PostsHookContainerComponent, {
       declarations: [HooksComponents.PostComponent, HooksComponents.SelectedPostHookComponent],

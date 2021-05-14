@@ -527,6 +527,33 @@ export class SelectedPostHookComponent {
 }
 
 @Component({
+  selector: 'lib-test-selected-post-all-flags-hook',
+  template: `
+    <div *ngIf="postQuery$ | async as postQuery">
+      <div data-testid="postName">{{ postQuery.post?.name }}</div>
+      <div data-testid="renderCount">{{ '' + renderCount }}</div>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class SelectedPostAllFlagsHookComponent {
+  renderCount = 0;
+
+  postQuery$ = libPostsApi.endpoints.getPosts
+    .useQuery(undefined, {
+      selectFromResult: ({ data, isUninitialized, isLoading, isFetching, isSuccess, isError }) => ({
+        post: data?.find((post) => post.id === 1),
+        isUninitialized,
+        isLoading,
+        isFetching,
+        isSuccess,
+        isError,
+      }),
+    })
+    .pipe(tap(() => (this.renderCount = this.renderCount + 1)));
+}
+
+@Component({
   selector: 'lib-test-posts-container',
   template: `
     <div>
@@ -548,13 +575,27 @@ export class PostsContainerComponent {}
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PostsHookContainerComponent {}
+
+@Component({
+  selector: 'lib-test-posts-container-all-flags-hook',
+  template: `
+    <div>
+      <lib-test-post></lib-test-post>
+      <lib-test-selected-post-all-flags-hook></lib-test-selected-post-all-flags-hook>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class PostsHookContainerAllFlagsComponent {}
 @NgModule({
   declarations: [
     PostsContainerComponent,
     PostsHookContainerComponent,
+    PostsHookContainerAllFlagsComponent,
     PostComponent,
     SelectedPostComponent,
     SelectedPostHookComponent,
+    SelectedPostAllFlagsHookComponent,
   ],
   imports: [CommonModule],
 })

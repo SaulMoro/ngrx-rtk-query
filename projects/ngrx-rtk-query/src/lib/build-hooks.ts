@@ -14,14 +14,12 @@ import {
   CoreModule,
   PrefetchOptions,
 } from '@reduxjs/toolkit/dist/query/core/module';
-import { createSelectorFactory, MemoizedSelectorWithProps, resultMemoize } from '@ngrx/store';
+import { createSelectorFactory, resultMemoize } from '@ngrx/store';
 import { BehaviorSubject, of, isObservable, combineLatest } from 'rxjs';
 import { distinctUntilChanged, finalize, map, shareReplay, switchMap, tap } from 'rxjs/operators';
 
 import { AngularHooksModuleOptions } from './module';
 import {
-  DefaultMutationStateSelector,
-  DefaultQueryStateSelector,
   GenericPrefetchThunk,
   MutationStateSelector,
   QueryHooks,
@@ -38,8 +36,13 @@ import {
 } from './types';
 import { UNINITIALIZED_VALUE } from './constants';
 import { shallowEqual } from './utils';
+import { QueryResultSelectorResult } from '@reduxjs/toolkit/dist/query/core/buildSelectors';
+import { getState } from './thunk.service';
 
-const defaultQueryStateSelector: DefaultQueryStateSelector<any> = (currentState, lastResult) => {
+const queryStatePreSelector = (
+  currentState: QueryResultSelectorResult<any>,
+  lastResult: UseQueryStateDefaultResult<any>,
+): UseQueryStateDefaultResult<any> => {
   // data is the last known good request result we have tracked
   // or if none has been tracked yet the last good result for the current args
   const data = (currentState.isSuccess ? currentState.data : lastResult?.data) ?? currentState.data;
@@ -54,16 +57,15 @@ const defaultQueryStateSelector: DefaultQueryStateSelector<any> = (currentState,
   return { ...currentState, data, isFetching, isLoading, isSuccess } as UseQueryStateDefaultResult<any>;
 };
 
-const defaultMutationStateSelector: DefaultMutationStateSelector<any> = (currentState) => currentState;
-
+const defaultQueryStateSelector: QueryStateSelector<any, any> = (x) => x;
+const defaultMutationStateSelector: MutationStateSelector<any, any> = (x) => x;
 /**
  * Wrapper around `defaultQueryStateSelector` to be used in `useQuery`.
  * We want the initial render to already come back with
  * `{ isUninitialized: false, isFetching: true, isLoading: true }`
  * to prevent that the library user has to do an additional check for `isUninitialized`/
  */
-const noPendingQueryStateSelector: DefaultQueryStateSelector<any> = (currentState, lastResult) => {
-  const selected = defaultQueryStateSelector(currentState, lastResult);
+const noPendingQueryStateSelector: QueryStateSelector<any, any> = (selected) => {
   if (selected.isUninitialized) {
     return {
       ...selected,
@@ -71,7 +73,7 @@ const noPendingQueryStateSelector: DefaultQueryStateSelector<any> = (currentStat
       isFetching: true,
       isLoading: true,
       status: QueryStatus.pending,
-    };
+    } as any;
   }
   return selected;
 };
@@ -163,25 +165,25 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
 
     const useQueryState: UseQueryState<any> = (
       arg: any,
-      { skip = false, selectFromResult = defaultQueryStateSelector as QueryStateSelector<any, any> } = {},
+      { skip = false, selectFromResult = defaultQueryStateSelector } = {},
       lastValue = {},
     ) => {
       const arg$ = isObservable(arg) ? arg : of(arg);
       return arg$.pipe(
         distinctUntilChanged(shallowEqual),
         switchMap((currentArg) => {
-          const querySelector: MemoizedSelectorWithProps<any, any, any> = createSelectorFactory((projector) =>
-            resultMemoize(projector, shallowEqual),
-          )(
-            [
-              select(skip || currentArg === UNINITIALIZED_VALUE ? skipSelector : currentArg),
-              (_: any, lastResult: any) => lastResult,
-            ],
-            (subState: any, lastResult: any) => selectFromResult(subState, lastResult, defaultQueryStateSelector),
+          const selectDefaultResult = createSelectorFactory((projector) => resultMemoize(projector, shallowEqual))(
+            select(skip || currentArg === UNINITIALIZED_VALUE ? skipSelector : currentArg),
+            (subState: any) => queryStatePreSelector(subState, lastValue.current),
           );
 
-          return useSelector((state: RootState<Definitions, any, any>) => querySelector(state, lastValue.current)).pipe(
-            tap((value) => (lastValue.current = value)),
+          const querySelector = createSelectorFactory((projector) => resultMemoize(projector, shallowEqual))(
+            selectDefaultResult,
+            selectFromResult,
+          );
+
+          return useSelector((state: RootState<Definitions, any, any>) => querySelector(state)).pipe(
+            tap(() => (lastValue.current = selectDefaultResult(getState()))),
           );
         }),
         shareReplay({
@@ -208,9 +210,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
           const queryStateResults$ = useQueryState(
             currentArg,
             {
-              selectFromResult: currentOptions?.skip
-                ? undefined
-                : (noPendingQueryStateSelector as QueryStateSelector<any, any>),
+              selectFromResult: currentOptions?.skip ? undefined : noPendingQueryStateSelector,
               ...currentOptions,
             },
             lastValue,
@@ -289,7 +289,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       Definitions
     >;
 
-    return ({ selectFromResult = defaultMutationStateSelector as MutationStateSelector<any, any> } = {}) => {
+    return ({ selectFromResult = defaultMutationStateSelector } = {}) => {
       const promiseRef: { current?: MutationActionCreatorResult<any> } = {};
       const requestIdSubject = new BehaviorSubject<string>('');
       const requestId$ = requestIdSubject.asObservable();
@@ -313,7 +313,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         switchMap((requestId) => {
           const mutationSelector = createSelectorFactory((projector) => resultMemoize(projector, shallowEqual))(
             select(requestId || skipSelector),
-            (subState: any) => selectFromResult(subState, defaultMutationStateSelector),
+            (subState: any) => selectFromResult(subState),
           );
           return useSelector((state: RootState<Definitions, any, any>) => mutationSelector(state));
         }),

@@ -2,10 +2,7 @@ import { AnyAction, ThunkAction } from '@reduxjs/toolkit';
 import { MutationDefinition, QueryDefinition, EndpointDefinition } from '@reduxjs/toolkit/query';
 import { QueryStatus, QuerySubState, SubscriptionOptions } from '@reduxjs/toolkit/dist/query/core/apiState';
 import { MutationActionCreatorResult, QueryActionCreatorResult } from '@reduxjs/toolkit/dist/query/core/buildInitiate';
-import {
-  MutationResultSelectorResult,
-  QueryResultSelectorResult,
-} from '@reduxjs/toolkit/dist/query/core/buildSelectors';
+import { MutationResultSelectorResult } from '@reduxjs/toolkit/dist/query/core/buildSelectors';
 import { PrefetchOptions } from '@reduxjs/toolkit/dist/query/core/module';
 import { QueryArgFrom } from '@reduxjs/toolkit/dist/query/endpointDefinitions';
 import { Id, NoInfer, Override } from '@reduxjs/toolkit/dist/query/tsHelpers';
@@ -177,15 +174,8 @@ export type UseLazyQuerySubscription<D extends QueryDefinition<any, any, any, an
 ) => [UseLazyTrigger<D>, QueryArgFrom<D> | UninitializedValue];
 
 export type QueryStateSelector<R extends Record<string, any>, D extends QueryDefinition<any, any, any, any>> = (
-  state: QueryResultSelectorResult<D>,
-  lastResult: R | undefined,
-  defaultQueryStateSelector: DefaultQueryStateSelector<D>,
+  state: UseQueryStateDefaultResult<D>,
 ) => R;
-
-export type DefaultQueryStateSelector<D extends QueryDefinition<any, any, any, any>> = (
-  state: QueryResultSelectorResult<D>,
-  lastResult: Pick<UseQueryStateDefaultResult<D>, 'data'>,
-) => UseQueryStateDefaultResult<D>;
 
 /**
  * A React hook that reads the request status and cached data from the Redux store. The component will re-render
@@ -295,12 +285,7 @@ export type UseQueryStateDefaultResult<D extends QueryDefinition<any, any, any, 
 
 export type MutationStateSelector<R extends Record<string, any>, D extends MutationDefinition<any, any, any, any>> = (
   state: MutationResultSelectorResult<D>,
-  defaultMutationStateSelector: DefaultMutationStateSelector<D>,
 ) => R;
-
-export type DefaultMutationStateSelector<D extends MutationDefinition<any, any, any, any>> = (
-  state: MutationResultSelectorResult<D>,
-) => MutationResultSelectorResult<D>;
 
 export type UseMutationStateOptions<D extends MutationDefinition<any, any, any, any>, R extends Record<string, any>> = {
   selectFromResult?: MutationStateSelector<R, D>;
