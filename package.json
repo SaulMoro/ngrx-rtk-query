@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve -o",
-    "build": "ng build --configuration production",
+    "build": "ng build",
     "test": "jest",
     "test:watch": "npm run test -- --watch",
     "test:coverage": "npm run test -- --coverage",
@@ -17,7 +17,7 @@
     "commit": "git add . && cz",
     "deploy": "ng deploy --base-href=/ngrx-rtk-query/",
     "copy": "cpx README.md dist/ngrx-rtk-query",
-    "build:lib": "ng build ngrx-rtk-query --configuration production && npm run copy",
+    "build:lib": "ng build ngrx-rtk-query && npm run copy",
     "test:lib": "jest --config ./projects/ngrx-rtk-query/jest.config.js",
     "test:lib:watch": "npm run test:lib -- --watch",
     "test:lib:coverage": "npm run test:lib -- --coverage",
