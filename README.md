@@ -59,7 +59,7 @@ You can see the application of this repository for more examples.
 
 First, you need to install redux-toolkit:
 ```bash
-npm install @reduxjs/toolkit@next
+npm install @reduxjs/toolkit@1.6.0-beta.0
 ```
 
 We'll create a service definition that queries the publicly available
