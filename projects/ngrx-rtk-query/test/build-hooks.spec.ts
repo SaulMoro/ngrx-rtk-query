@@ -752,6 +752,8 @@ describe('hooks with createApi defaults set', () => {
 describe('selectFromResult (query) behaviors', () => {
   const postStoreRef = setupApiStore(libPostsApi);
 
+  let getRenderCount: () => number = () => 0;
+
   beforeEach(() => {
     resetPostsApi();
   });
@@ -761,96 +763,101 @@ describe('selectFromResult (query) behaviors', () => {
   expectExactType(libPostsApi.useAddPostMutation)(libPostsApi.endpoints.addPost.useMutation);
 
   test('useQueryState serves a deeply memoized value and does not rerender unnecessarily', async () => {
-    await render(HooksComponents.PostsContainerComponent, {
+    const { fixture } = await render(HooksComponents.PostsContainerComponent, {
       declarations: [HooksComponents.PostComponent, HooksComponents.SelectedPostComponent],
       imports: postStoreRef.imports,
     });
+    getRenderCount = fixture.componentInstance.selectedPost.renderCounter.getRenderCount;
 
-    const renderCount = screen.getByTestId('renderCount');
     const addPost = screen.getByTestId('addPost');
 
-    expect(renderCount).toHaveTextContent('1');
+    expect(getRenderCount()).toBe(1);
 
-    await waitFor(() => expect(renderCount).toHaveTextContent('2'));
+    await waitFor(() => expect(getRenderCount()).toBe(2));
 
     fireEvent.click(addPost);
-    await waitFor(() => expect(renderCount).toHaveTextContent('2'));
+    await waitFor(() => expect(getRenderCount()).toBe(2));
     // We fire off a few requests that would typically cause a rerender as JSON.parse()
     // on a request would always be a new object.
     fireEvent.click(addPost);
     fireEvent.click(addPost);
-    await waitFor(() => expect(renderCount).toHaveTextContent('2'));
+    await waitFor(() => expect(getRenderCount()).toBe(2));
     // Being that it didn't rerender, we can be assured that the behavior is correct
   });
 
+  /**
+   * This test shows that even though a user can select a specific post, the fetching/loading flags
+   * will still cause rerenders for the query. This should show that if you're using selectFromResult,
+   * the 'performance' value comes with selecting _only_ the data.
+   */
   //eslint-disable-next-line
   test('useQuery with selectFromResult with all flags destructured rerenders like the default useQuery behavior', async () => {
-    await render(HooksComponents.PostsHookContainerAllFlagsComponent, {
+    const { fixture } = await render(HooksComponents.PostsHookContainerAllFlagsComponent, {
       declarations: [HooksComponents.PostComponent, HooksComponents.SelectedPostAllFlagsHookComponent],
       imports: postStoreRef.imports,
     });
+    getRenderCount = fixture.componentInstance.selectedPost.renderCounter.getRenderCount;
 
-    const renderCount = screen.getByTestId('renderCount');
     const addPost = screen.getByTestId('addPost');
 
-    expect(renderCount).toHaveTextContent('1');
+    expect(getRenderCount()).toBe(1);
 
-    await waitFor(() => expect(renderCount).toHaveTextContent('2'));
-
-    fireEvent.click(addPost);
-    await waitFor(() => expect(renderCount).toHaveTextContent('4'));
+    await waitFor(() => expect(getRenderCount()).toBe(2));
 
     fireEvent.click(addPost);
+    await waitFor(() => expect(getRenderCount()).toBe(3));
+
     fireEvent.click(addPost);
-    await waitFor(() => expect(renderCount).toHaveTextContent('6'));
+    fireEvent.click(addPost);
+    await waitFor(() => expect(getRenderCount()).toBe(3));
   });
 
   // eslint-disable-next-line
   test('useQuery with selectFromResult option serves a deeply memoized value and does not rerender unnecessarily', async () => {
-    await render(HooksComponents.PostsHookContainerComponent, {
+    const { fixture } = await render(HooksComponents.PostsHookContainerComponent, {
       declarations: [HooksComponents.PostComponent, HooksComponents.SelectedPostHookComponent],
       imports: postStoreRef.imports,
     });
+    getRenderCount = fixture.componentInstance.selectedPost.renderCounter.getRenderCount;
 
-    const renderCount = screen.getByTestId('renderCount');
     const addPost = screen.getByTestId('addPost');
 
-    expect(renderCount).toHaveTextContent('1');
+    expect(getRenderCount()).toBe(1);
 
-    await waitFor(() => expect(renderCount).toHaveTextContent('2'));
+    await waitFor(() => expect(getRenderCount()).toBe(2));
 
     fireEvent.click(addPost);
-    await waitFor(() => expect(renderCount).toHaveTextContent('2'));
+    await waitFor(() => expect(getRenderCount()).toBe(2));
     fireEvent.click(addPost);
     fireEvent.click(addPost);
-    await waitFor(() => expect(renderCount).toHaveTextContent('2'));
+    await waitFor(() => expect(getRenderCount()).toBe(2));
   });
 
   // eslint-disable-next-line max-len
   test('useQuery with selectFromResult option serves a deeply memoized value, then ONLY updates when the underlying data changes', async () => {
-    await render(HooksComponents.PostsHookContainerComponent, {
+    const { fixture } = await render(HooksComponents.PostsHookContainerComponent, {
       declarations: [HooksComponents.PostComponent, HooksComponents.SelectedPostHookComponent],
       imports: postStoreRef.imports,
     });
+    getRenderCount = fixture.componentInstance.selectedPost.renderCounter.getRenderCount;
 
-    const renderCount = screen.getByTestId('renderCount');
     const addPost = screen.getByTestId('addPost');
     const updatePost = screen.getByTestId('updatePost');
 
-    expect(renderCount).toHaveTextContent('1');
+    expect(getRenderCount()).toBe(1);
 
     fireEvent.click(addPost);
-    await waitFor(() => expect(renderCount).toHaveTextContent('2'));
+    await waitFor(() => expect(getRenderCount()).toBe(2));
     fireEvent.click(addPost);
     fireEvent.click(addPost);
-    await waitFor(() => expect(renderCount).toHaveTextContent('2'));
+    await waitFor(() => expect(getRenderCount()).toBe(2));
 
     fireEvent.click(updatePost);
-    await waitFor(() => expect(renderCount).toHaveTextContent('3'));
+    await waitFor(() => expect(getRenderCount()).toBe(3));
     await screen.findByText(/supercoooll!/i);
 
     fireEvent.click(addPost);
-    await waitFor(() => expect(renderCount).toHaveTextContent('3'));
+    await waitFor(() => expect(getRenderCount()).toBe(3));
   });
 
   test('useQuery with selectFromResult option has a type error if the result is not an object', async () => {

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, ChangeDetectionStrategy, NgModule } from '@angular/core';
+import { Component, ChangeDetectionStrategy, NgModule, ViewChild } from '@angular/core';
 import { SerializedError } from '@reduxjs/toolkit';
 import { LazyQueryOptions } from 'ngrx-rtk-query';
 import { BehaviorSubject } from 'rxjs';
@@ -482,13 +482,14 @@ export class PostComponent {
 @Component({
   selector: 'lib-test-selected-post',
   template: `
+    {{ renderCounter.increment() }}
     <div *ngIf="postQuery$ | async as postQuery">
-      <div data-testid="renderCount">{{ '' + renderCount }}</div>
+      <div data-testid="postName">{{ postQuery.post?.name }}</div>
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SelectedPostComponent {
+export class SelectedPostComponent extends BaseRenderCounterComponent {
   /**
    * Notes on the renderCount behavior
    *
@@ -497,60 +498,49 @@ export class SelectedPostComponent {
    * any requests that don't directly change the value of the selected item will have no impact
    * on rendering.
    */
-  renderCount = 0;
 
-  postQuery$ = libPostsApi.endpoints.getPosts
-    .useQueryState(undefined, {
-      selectFromResult: ({ data }) => ({ post: data?.find((post) => post.id === 1) }),
-    })
-    .pipe(tap(() => (this.renderCount = this.renderCount + 1)));
+  postQuery$ = libPostsApi.endpoints.getPosts.useQueryState(undefined, {
+    selectFromResult: ({ data }) => ({ post: data?.find((post) => post.id === 1) }),
+  });
 }
 
 @Component({
   selector: 'lib-test-selected-post-hook',
   template: `
+    {{ renderCounter.increment() }}
     <div *ngIf="postQuery$ | async as postQuery">
       <div data-testid="postName">{{ postQuery.post?.name }}</div>
-      <div data-testid="renderCount">{{ '' + renderCount }}</div>
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SelectedPostHookComponent {
-  renderCount = 0;
-
-  postQuery$ = libPostsApi.endpoints.getPosts
-    .useQuery(undefined, {
-      selectFromResult: ({ data }) => ({ post: data?.find((post) => post.id === 1) }),
-    })
-    .pipe(tap(() => (this.renderCount = this.renderCount + 1)));
+export class SelectedPostHookComponent extends BaseRenderCounterComponent {
+  postQuery$ = libPostsApi.endpoints.getPosts.useQuery(undefined, {
+    selectFromResult: ({ data }) => ({ post: data?.find((post) => post.id === 1) }),
+  });
 }
 
 @Component({
   selector: 'lib-test-selected-post-all-flags-hook',
   template: `
+    {{ renderCounter.increment() }}
     <div *ngIf="postQuery$ | async as postQuery">
       <div data-testid="postName">{{ postQuery.post?.name }}</div>
-      <div data-testid="renderCount">{{ '' + renderCount }}</div>
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SelectedPostAllFlagsHookComponent {
-  renderCount = 0;
-
-  postQuery$ = libPostsApi.endpoints.getPosts
-    .useQuery(undefined, {
-      selectFromResult: ({ data, isUninitialized, isLoading, isFetching, isSuccess, isError }) => ({
-        post: data?.find((post) => post.id === 1),
-        isUninitialized,
-        isLoading,
-        isFetching,
-        isSuccess,
-        isError,
-      }),
-    })
-    .pipe(tap(() => (this.renderCount = this.renderCount + 1)));
+export class SelectedPostAllFlagsHookComponent extends BaseRenderCounterComponent {
+  postQuery$ = libPostsApi.endpoints.getPosts.useQuery(undefined, {
+    selectFromResult: ({ data, isUninitialized, isLoading, isFetching, isSuccess, isError }) => ({
+      post: data?.find((post) => post.id === 1),
+      isUninitialized,
+      isLoading,
+      isFetching,
+      isSuccess,
+      isError,
+    }),
+  });
 }
 
 @Component({
@@ -563,7 +553,10 @@ export class SelectedPostAllFlagsHookComponent {
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PostsContainerComponent {}
+export class PostsContainerComponent {
+  @ViewChild(SelectedPostComponent) selectedPost!: SelectedPostComponent;
+}
+
 @Component({
   selector: 'lib-test-posts-container-hook',
   template: `
@@ -574,7 +567,9 @@ export class PostsContainerComponent {}
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PostsHookContainerComponent {}
+export class PostsHookContainerComponent {
+  @ViewChild(SelectedPostHookComponent) selectedPost!: SelectedPostHookComponent;
+}
 
 @Component({
   selector: 'lib-test-posts-container-all-flags-hook',
@@ -586,7 +581,9 @@ export class PostsHookContainerComponent {}
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PostsHookContainerAllFlagsComponent {}
+export class PostsHookContainerAllFlagsComponent {
+  @ViewChild(SelectedPostAllFlagsHookComponent) selectedPost!: SelectedPostAllFlagsHookComponent;
+}
 @NgModule({
   declarations: [
     PostsContainerComponent,
