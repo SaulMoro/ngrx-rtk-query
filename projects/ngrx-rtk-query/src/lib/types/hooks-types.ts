@@ -1,8 +1,8 @@
 import { AnyAction, ThunkAction } from '@reduxjs/toolkit';
-import { MutationDefinition, QueryDefinition, EndpointDefinition } from '@reduxjs/toolkit/query';
+import { MutationDefinition, QueryDefinition, EndpointDefinition, SkipToken } from '@reduxjs/toolkit/query';
 import { QueryStatus, QuerySubState, SubscriptionOptions } from '@reduxjs/toolkit/dist/query/core/apiState';
 import { MutationActionCreatorResult, QueryActionCreatorResult } from '@reduxjs/toolkit/dist/query/core/buildInitiate';
-import { MutationResultSelectorResult, SkipToken } from '@reduxjs/toolkit/dist/query/core/buildSelectors';
+import { MutationResultSelectorResult } from '@reduxjs/toolkit/dist/query/core/buildSelectors';
 import { PrefetchOptions } from '@reduxjs/toolkit/dist/query/core/module';
 import { QueryArgFrom } from '@reduxjs/toolkit/dist/query/endpointDefinitions';
 import { Id, NoInfer, Override } from '@reduxjs/toolkit/dist/query/tsHelpers';
@@ -44,7 +44,7 @@ export interface MutationHooks<Definition extends MutationDefinition<any, any, a
 export type UseQuery<D extends QueryDefinition<any, any, any, any>> = <
   R extends Record<string, any> = UseQueryStateDefaultResult<D>,
 >(
-  arg: QueryArgFrom<D> | Observable<QueryArgFrom<D> | SkipToken | UninitializedValue>,
+  arg: QueryArgFrom<D> | Observable<QueryArgFrom<D> | UninitializedValue> | SkipToken,
   options?: UseQueryOptions<D, R> | Observable<UseQueryOptions<D, R>>,
 ) => Observable<UseQueryStateResult<D, R> & ReturnType<UseQuerySubscription<D>>>;
 
@@ -189,7 +189,7 @@ export type QueryStateSelector<R extends Record<string, any>, D extends QueryDef
  * - Re-renders as the request status changes and data becomes available
  */
 export type UseQueryState<D extends QueryDefinition<any, any, any, any>> = <R = UseQueryStateDefaultResult<D>>(
-  arg: QueryArgFrom<D> | Observable<QueryArgFrom<D> | SkipToken | UninitializedValue>,
+  arg: QueryArgFrom<D> | Observable<QueryArgFrom<D> | UninitializedValue> | SkipToken,
   options?: UseQueryStateOptions<D, R>,
   lastValue?: { current?: any },
 ) => Observable<UseQueryStateResult<D, R>>;
