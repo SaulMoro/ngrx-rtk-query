@@ -4,7 +4,7 @@ import {
   MutationDefinition,
   QueryDefinition,
   QueryStatus,
-  skipSelector,
+  skipToken,
 } from '@reduxjs/toolkit/query';
 import { QueryKeys, RootState } from '@reduxjs/toolkit/dist/query/core/apiState';
 import { MutationActionCreatorResult, QueryActionCreatorResult } from '@reduxjs/toolkit/dist/query/core/buildInitiate';
@@ -14,6 +14,7 @@ import {
   CoreModule,
   PrefetchOptions,
 } from '@reduxjs/toolkit/dist/query/core/module';
+import { QueryResultSelectorResult } from '@reduxjs/toolkit/dist/query/core/buildSelectors';
 import { createSelectorFactory, resultMemoize } from '@ngrx/store';
 import { BehaviorSubject, of, isObservable, combineLatest } from 'rxjs';
 import { distinctUntilChanged, finalize, map, shareReplay, switchMap, tap } from 'rxjs/operators';
@@ -36,7 +37,6 @@ import {
 } from './types';
 import { UNINITIALIZED_VALUE } from './constants';
 import { shallowEqual } from './utils';
-import { QueryResultSelectorResult } from '@reduxjs/toolkit/dist/query/core/buildSelectors';
 import { getState } from './thunk.service';
 
 const queryStatePreSelector = (
@@ -59,6 +59,7 @@ const queryStatePreSelector = (
 
 const defaultQueryStateSelector: QueryStateSelector<any, any> = (x) => x;
 const defaultMutationStateSelector: MutationStateSelector<any, any> = (x) => x;
+
 /**
  * Wrapper around `defaultQueryStateSelector` to be used in `useQuery`.
  * We want the initial render to already come back with
@@ -113,7 +114,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       { refetchOnReconnect, refetchOnFocus, refetchOnMountOrArgChange, skip = false, pollingInterval = 0 } = {},
       promiseRef = {},
     ) => {
-      if (!skip && arg !== UNINITIALIZED_VALUE) {
+      if (!skip && arg !== skipToken && arg !== UNINITIALIZED_VALUE) {
         const subscriptionOptions = { refetchOnReconnect, refetchOnFocus, pollingInterval };
         const lastPromise = promiseRef?.current;
         const lastSubscriptionOptions = promiseRef.current?.subscriptionOptions;
@@ -173,7 +174,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         distinctUntilChanged(shallowEqual),
         switchMap((currentArg) => {
           const selectDefaultResult = createSelectorFactory((projector) => resultMemoize(projector, shallowEqual))(
-            select(skip || currentArg === UNINITIALIZED_VALUE ? skipSelector : currentArg),
+            select(skip || currentArg === UNINITIALIZED_VALUE ? skipToken : currentArg),
             (subState: any) => queryStatePreSelector(subState, lastValue.current),
           );
 
@@ -210,7 +211,8 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
           const queryStateResults$ = useQueryState(
             currentArg,
             {
-              selectFromResult: currentOptions?.skip ? undefined : noPendingQueryStateSelector,
+              selectFromResult:
+                currentArg === skipToken || currentOptions?.skip ? undefined : noPendingQueryStateSelector,
               ...currentOptions,
             },
             lastValue,
@@ -312,7 +314,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         distinctUntilChanged(shallowEqual),
         switchMap((requestId) => {
           const mutationSelector = createSelectorFactory((projector) => resultMemoize(projector, shallowEqual))(
-            select(requestId || skipSelector),
+            select(requestId || skipToken),
             (subState: any) => selectFromResult(subState),
           );
           return useSelector((state: RootState<Definitions, any, any>) => mutationSelector(state));

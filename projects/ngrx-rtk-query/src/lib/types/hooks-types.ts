@@ -2,7 +2,7 @@ import { AnyAction, ThunkAction } from '@reduxjs/toolkit';
 import { MutationDefinition, QueryDefinition, EndpointDefinition } from '@reduxjs/toolkit/query';
 import { QueryStatus, QuerySubState, SubscriptionOptions } from '@reduxjs/toolkit/dist/query/core/apiState';
 import { MutationActionCreatorResult, QueryActionCreatorResult } from '@reduxjs/toolkit/dist/query/core/buildInitiate';
-import { MutationResultSelectorResult } from '@reduxjs/toolkit/dist/query/core/buildSelectors';
+import { MutationResultSelectorResult, SkipToken } from '@reduxjs/toolkit/dist/query/core/buildSelectors';
 import { PrefetchOptions } from '@reduxjs/toolkit/dist/query/core/module';
 import { QueryArgFrom } from '@reduxjs/toolkit/dist/query/endpointDefinitions';
 import { Id, NoInfer, Override } from '@reduxjs/toolkit/dist/query/tsHelpers';
@@ -22,9 +22,9 @@ export interface MutationHooks<Definition extends MutationDefinition<any, any, a
 }
 
 /**
- * A React hook that automatically triggers fetches of data from an endpoint, 'subscribes'
- * the component to the cached data, and reads the request status and cached data from the Redux store.
- * The component will re-render as the loading status changes and the data becomes available.
+ * A hook that automatically triggers fetches of data from an endpoint, 'subscribes' the component
+ * to the cached data, and reads the request status and cached data from the Redux store. The component
+ * will re-render as the loading status changes and the data becomes available.
  *
  * The query arg is used as a cache key. Changing the query arg will tell the hook to re-fetch the data if
  * it does not exist in the cache already, and the hook will return the data for that query arg once it's available.
@@ -34,8 +34,8 @@ export interface MutationHooks<Definition extends MutationDefinition<any, any, a
  *
  * #### Features
  *
- * - Automatically triggers requests to retrieve data based on the hook argument and whether cached data exists
- * by default
+ * - Automatically triggers requests to retrieve data based on the hook argument and whether cached data
+ * exists by default
  * - 'Subscribes' the component to keep cached data in the store, and 'unsubscribes' when the component unmounts
  * - Accepts polling/re-fetching options to trigger automatic re-fetches when the corresponding criteria is met
  * - Returns the latest request status and cached data from the Redux store
@@ -44,7 +44,7 @@ export interface MutationHooks<Definition extends MutationDefinition<any, any, a
 export type UseQuery<D extends QueryDefinition<any, any, any, any>> = <
   R extends Record<string, any> = UseQueryStateDefaultResult<D>,
 >(
-  arg: QueryArgFrom<D> | Observable<QueryArgFrom<D> | UninitializedValue>,
+  arg: QueryArgFrom<D> | Observable<QueryArgFrom<D> | SkipToken | UninitializedValue>,
   options?: UseQueryOptions<D, R> | Observable<UseQueryOptions<D, R>>,
 ) => Observable<UseQueryStateResult<D, R> & ReturnType<UseQuerySubscription<D>>>;
 
@@ -53,11 +53,11 @@ export interface UseQuerySubscriptionOptions extends SubscriptionOptions {
    * Prevents a query from automatically running.
    *
    * @remarks
-   * When skip is true:
+   * When `skip` is true (or `skipToken` is passed in as `arg`):
    *
    * - **If the query has cached data:**
-   *   * The cached data **will not be used** on the initial load, and will ignore updates from any identical
-   * query until the `skip` condition is removed
+   *   * The cached data **will not be used** on the initial load, and will ignore updates from
+   * any identical query until the `skip` condition is removed
    *   * The query will have a status of `uninitialized`
    *   * If `skip: false` is set after skipping the initial load, the cached result will be used
    * - **If the query does not have cached data:**
@@ -78,8 +78,7 @@ export interface UseQuerySubscriptionOptions extends SubscriptionOptions {
    * - `false` - Will not cause a query to be performed _unless_ it does not exist yet.
    * - `true` - Will always refetch when a new subscriber to a query is added. Behaves the same as calling the `refetch` callback or passing `forceRefetch: true` in the action creator.
    * - `number` - **Value is in seconds**. If a number is provided and there is an existing query in the cache, it will
-   * compare the current time vs the last fulfilled timestamp,
-   * and only refetch if enough time has elapsed.
+   * compare the current time vs the last fulfilled timestamp, and only refetch if enough time has elapsed.
    *
    * If you specify this option alongside `skip: true`, this **will not be evaluated** until `skip` is false.
    */
@@ -93,24 +92,24 @@ export type QueryOptions<SelectFromResultType = UseQueryStateDefaultResult<Query
   UseQueryOptions<any, SelectFromResultType>;
 
 /**
- * A React hook that automatically triggers fetches of data from an endpoint, and 'subscribes'
- * the component to the cached data.
+ * A hook that automatically triggers fetches of data from an endpoint, and 'subscribes' the
+ * component to the cached data.
  *
- * The query arg is used as a cache key. Changing the query arg will tell the hook to re-fetch the data if it does
- * not exist in the cache already.
+ * The query arg is used as a cache key. Changing the query arg will tell the hook to re-fetch the
+ * data if it does not exist in the cache already.
  *
- * Note that this hook does not return a request status or cached data. For that use-case, see [`useQuery`](#usequery)
- * or [`useQueryState`](#usequerystate).
+ * Note that this hook does not return a request status or cached data. For that use-case,
+ * see [`useQuery`](#usequery) or [`useQueryState`](#usequerystate).
  *
  * #### Features
  *
- * - Automatically triggers requests to retrieve data based on the hook argument and whether cached data exists
- * by default
+ * - Automatically triggers requests to retrieve data based on the hook argument and whether
+ * cached data exists by default
  * - 'Subscribes' the component to keep cached data in the store, and 'unsubscribes' when the component unmounts
  * - Accepts polling/re-fetching options to trigger automatic re-fetches when the corresponding criteria is met
  */
 export type UseQuerySubscription<D extends QueryDefinition<any, any, any, any>> = (
-  arg: QueryArgFrom<D>,
+  arg: QueryArgFrom<D> | SkipToken,
   options?: UseQuerySubscriptionOptions,
   promiseRef?: { current?: QueryActionCreatorResult<D> },
 ) => Pick<QueryActionCreatorResult<D>, 'refetch'>;
@@ -126,7 +125,7 @@ export type UseLazyQueryLastPromiseInfo<D extends QueryDefinition<any, any, any,
 };
 
 /**
- * A React hook similar to [`useQuery`](#usequery), but with manual control over when the data fetching occurs.
+ * A hook similar to [`useQuery`](#usequery), but with manual control over when the data fetching occurs.
  *
  * This hook includes the functionality of [`useLazyQuerySubscription`](#uselazyquerysubscription).
  *
@@ -155,8 +154,8 @@ export type LazyQueryOptions<SelectFromResultType = UseQueryStateDefaultResult<Q
   UseLazyQueryOptions<any, SelectFromResultType>;
 
 /**
- * A React hook similar to [`useQuerySubscription`](#usequerysubscription), but with manual control over when the
- * data fetching occurs.
+ * A hook similar to [`useQuerySubscription`](#usequerysubscription), but with manual control over when
+ * the data fetching occurs.
  *
  * Note that this hook does not return a request status or cached data. For that use-case,
  * see [`useLazyQuery`](#uselazyquery).
@@ -165,8 +164,8 @@ export type LazyQueryOptions<SelectFromResultType = UseQueryStateDefaultResult<Q
  *
  * - Manual control over firing a request to retrieve data
  * - 'Subscribes' the component to keep cached data in the store, and 'unsubscribes' when the component unmounts
- * - Accepts polling/re-fetching options to trigger automatic re-fetches when the corresponding
- * criteria is met and the fetch has been manually called at least once
+ * - Accepts polling/re-fetching options to trigger automatic re-fetches when the corresponding criteria is met
+ * and the fetch has been manually called at least once
  */
 export type UseLazyQuerySubscription<D extends QueryDefinition<any, any, any, any>> = (
   options?: SubscriptionOptions,
@@ -178,7 +177,7 @@ export type QueryStateSelector<R extends Record<string, any>, D extends QueryDef
 ) => R;
 
 /**
- * A React hook that reads the request status and cached data from the Redux store. The component will re-render
+ * A hook that reads the request status and cached data from the Redux store. The component will re-render
  * as the loading status changes and the data becomes available.
  *
  * Note that this hook does not trigger fetching new data. For that use-case,
@@ -190,7 +189,7 @@ export type QueryStateSelector<R extends Record<string, any>, D extends QueryDef
  * - Re-renders as the request status changes and data becomes available
  */
 export type UseQueryState<D extends QueryDefinition<any, any, any, any>> = <R = UseQueryStateDefaultResult<D>>(
-  arg: QueryArgFrom<D> | Observable<QueryArgFrom<D> | UninitializedValue>,
+  arg: QueryArgFrom<D> | Observable<QueryArgFrom<D> | SkipToken | UninitializedValue>,
   options?: UseQueryStateOptions<D, R>,
   lastValue?: { current?: any },
 ) => Observable<UseQueryStateResult<D, R>>;
@@ -295,7 +294,7 @@ export type UseMutationStateOptions<D extends MutationDefinition<any, any, any, 
 export type UseMutationStateResult<_ extends MutationDefinition<any, any, any, any>, R> = NoInfer<R>;
 
 /**
- * A React hook that lets you trigger an update request for a given endpoint, and subscribes the component
+ * A hook that lets you trigger an update request for a given endpoint, and subscribes the component
  *  to read the request status from the Redux store. The component will re-render as the loading status changes.
  *
  * #### Features
