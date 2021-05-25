@@ -1,8 +1,8 @@
 import { fireEvent, render, waitFor, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
-import { QueryStatus } from '@reduxjs/toolkit/query';
+import { QueryStatus, skipToken } from '@reduxjs/toolkit/query';
 import { BehaviorSubject } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { rest } from 'msw';
 
 import { getState } from '../src/lib/thunk.service';
@@ -952,5 +952,77 @@ describe('selectFromResult (mutation) behavior', () => {
     await render(HooksComponents.NoObjectMutationComponent, { imports: mutationStoreRef.imports });
 
     expect(screen.getByTestId('incrementButton')).toBeInTheDocument();
+  });
+});
+
+describe('skip behaviour', () => {
+  const storeRef = setupApiStore(api, { ...actionsReducer });
+
+  const uninitialized = {
+    status: QueryStatus.uninitialized,
+    refetch: expect.any(Function),
+    data: undefined,
+    isError: false,
+    isFetching: false,
+    isLoading: false,
+    isSuccess: false,
+    isUninitialized: true,
+  };
+
+  function subscriptionCount(key: string) {
+    return Object.keys(getState().api.subscriptions[key] || {}).length;
+  }
+
+  test('normal skip', async () => {
+    let current: any;
+    const { rerender } = await render(HooksComponents.SkipComponent, {
+      imports: storeRef.imports,
+      componentProperties: {
+        query$: api.endpoints.getUser.useQuery(1, { skip: true }).pipe(tap((value) => (current = value))),
+      },
+    });
+
+    expect(current).toEqual(uninitialized);
+    expect(subscriptionCount('getUser(1)')).toBe(0);
+
+    rerender({
+      query$: api.endpoints.getUser.useQuery(1).pipe(tap((value) => (current = value))),
+    });
+    expect(current).toMatchObject({ status: QueryStatus.pending });
+    expect(subscriptionCount('getUser(1)')).toBe(1);
+
+    rerender({
+      query$: api.endpoints.getUser.useQuery(1, { skip: true }).pipe(tap((value) => (current = value))),
+    });
+    expect(current).toEqual(uninitialized);
+    expect(subscriptionCount('getUser(1)')).toBe(0);
+  });
+
+  test('skipToken', async () => {
+    let current: any;
+    const { rerender } = await render(HooksComponents.SkipComponent, {
+      imports: storeRef.imports,
+      componentProperties: {
+        query$: api.endpoints.getUser.useQuery(skipToken).pipe(tap((value) => (current = value))),
+      },
+    });
+
+    expect(current).toEqual(uninitialized);
+    expect(subscriptionCount('getUser(1)')).toBe(0);
+    // also no subscription on `getUser(skipToken)` or similar:
+    expect(getState().api.subscriptions).toEqual({});
+
+    rerender({
+      query$: api.endpoints.getUser.useQuery(1).pipe(tap((value) => (current = value))),
+    });
+    expect(current).toMatchObject({ status: QueryStatus.pending });
+    expect(subscriptionCount('getUser(1)')).toBe(1);
+    expect(getState().api.subscriptions).not.toEqual({});
+
+    rerender({
+      query$: api.endpoints.getUser.useQuery(skipToken).pipe(tap((value) => (current = value))),
+    });
+    expect(current).toEqual(uninitialized);
+    expect(subscriptionCount('getUser(1)')).toBe(0);
   });
 });

@@ -634,3 +634,16 @@ export class NoObjectMutationComponent {
     selectFromResult: () => 42,
   });
 }
+
+/**
+ * Skip
+ */
+
+@Component({
+  selector: 'lib-test-skip',
+  template: ` <div *ngIf="query$ | async as query"></div> `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class SkipComponent {
+  query$ = api.endpoints.getUser.useQuery(1, { skip: true });
+}
