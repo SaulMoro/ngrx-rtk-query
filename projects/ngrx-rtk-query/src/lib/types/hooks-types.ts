@@ -109,7 +109,7 @@ export type QueryOptions<SelectFromResultType = UseQueryStateDefaultResult<Query
  * - Accepts polling/re-fetching options to trigger automatic re-fetches when the corresponding criteria is met
  */
 export type UseQuerySubscription<D extends QueryDefinition<any, any, any, any>> = (
-  arg: QueryArgFrom<D> | SkipToken,
+  arg: QueryArgFrom<D> | SkipToken | UninitializedValue,
   options?: UseQuerySubscriptionOptions,
   promiseRef?: { current?: QueryActionCreatorResult<D> },
 ) => Pick<QueryActionCreatorResult<D>, 'refetch'>;

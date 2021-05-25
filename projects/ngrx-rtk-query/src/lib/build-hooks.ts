@@ -212,7 +212,9 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
             currentArg,
             {
               selectFromResult:
-                currentArg === skipToken || currentOptions?.skip ? undefined : noPendingQueryStateSelector,
+                currentArg === skipToken || currentArg === UNINITIALIZED_VALUE || currentOptions?.skip
+                  ? undefined
+                  : noPendingQueryStateSelector,
               ...currentOptions,
             },
             lastValue,
