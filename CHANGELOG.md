@@ -1,3 +1,10 @@
+# [2.0.0-next.5](https://github.com/SaulMoro/ngrx-rtk-query/compare/v2.0.0-next.4...v2.0.0-next.5) (2021-05-25)
+
+
+### Features
+
+* **lib:** update peerDependencies ([8b86f46](https://github.com/SaulMoro/ngrx-rtk-query/commit/8b86f469ed1e1e9b843655e13bf784551966392a))
+
 # [2.0.0-next.4](https://github.com/SaulMoro/ngrx-rtk-query/compare/v2.0.0-next.3...v2.0.0-next.4) (2021-05-25)
 
 
