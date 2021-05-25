@@ -1,8 +1,8 @@
 import { fireEvent, render, waitFor, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
-import { QueryStatus } from '@reduxjs/toolkit/query';
+import { QueryStatus, skipToken } from '@reduxjs/toolkit/query';
 import { BehaviorSubject } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { rest } from 'msw';
 
 import { getState } from '../src/lib/thunk.service';
@@ -15,18 +15,18 @@ import { api, defaultApi, invalidationsApi, libPostsApi, mutationApi, resetAmoun
 describe('hooks tests', () => {
   const storeRef = setupApiStore(api, { ...actionsReducer });
 
+  let getRenderCount: () => number = () => 0;
+
   beforeEach(() => {
     resetAmount();
   });
 
   describe('useQuery', () => {
-    let getRenderCount: () => number = () => 0;
-
     test('useQuery hook basic render count assumptions', async () => {
       const { fixture } = await render(HooksComponents.FetchingBaseComponent, { imports: storeRef.imports });
-      getRenderCount = fixture.componentInstance.renderCounter.getRenderCount;
 
       const fetchControl = screen.getByTestId('isFetching');
+      getRenderCount = fixture.componentInstance.renderCounter.getRenderCount;
 
       // By the time this runs, the initial render will happen, and the query will start immediately running by the time
       expect(getRenderCount()).toBe(1);
@@ -36,10 +36,11 @@ describe('hooks tests', () => {
 
     test('useQuery hook sets isFetching=true whenever a request is in flight', async () => {
       const { fixture } = await render(HooksComponents.FetchingComponent, { imports: storeRef.imports });
-      getRenderCount = fixture.componentInstance.renderCounter.getRenderCount;
 
       const fetchControl = screen.getByTestId('isFetching');
       const incrementControl = screen.getByRole('button', { name: /Increment value/i });
+
+      getRenderCount = fixture.componentInstance.renderCounter.getRenderCount;
 
       expect(getRenderCount()).toBe(1);
 
@@ -306,7 +307,6 @@ describe('hooks tests', () => {
   });
 
   describe('useLazyQuery', () => {
-    let getRenderCount: () => number = () => 0;
     let data: any;
 
     afterEach(() => {
@@ -752,6 +752,8 @@ describe('hooks with createApi defaults set', () => {
 describe('selectFromResult (query) behaviors', () => {
   const postStoreRef = setupApiStore(libPostsApi);
 
+  let getRenderCount: () => number = () => 0;
+
   beforeEach(() => {
     resetPostsApi();
   });
@@ -761,74 +763,101 @@ describe('selectFromResult (query) behaviors', () => {
   expectExactType(libPostsApi.useAddPostMutation)(libPostsApi.endpoints.addPost.useMutation);
 
   test('useQueryState serves a deeply memoized value and does not rerender unnecessarily', async () => {
-    await render(HooksComponents.PostsContainerComponent, {
+    const { fixture } = await render(HooksComponents.PostsContainerComponent, {
       declarations: [HooksComponents.PostComponent, HooksComponents.SelectedPostComponent],
       imports: postStoreRef.imports,
     });
+    getRenderCount = fixture.componentInstance.selectedPost.renderCounter.getRenderCount;
 
-    const renderCount = screen.getByTestId('renderCount');
     const addPost = screen.getByTestId('addPost');
 
-    expect(renderCount).toHaveTextContent('1');
+    expect(getRenderCount()).toBe(1);
 
-    await waitFor(() => expect(renderCount).toHaveTextContent('2'));
+    await waitFor(() => expect(getRenderCount()).toBe(2));
 
     fireEvent.click(addPost);
-    await waitFor(() => expect(renderCount).toHaveTextContent('2'));
+    await waitFor(() => expect(getRenderCount()).toBe(2));
     // We fire off a few requests that would typically cause a rerender as JSON.parse()
     // on a request would always be a new object.
     fireEvent.click(addPost);
     fireEvent.click(addPost);
-    await waitFor(() => expect(renderCount).toHaveTextContent('2'));
+    await waitFor(() => expect(getRenderCount()).toBe(2));
     // Being that it didn't rerender, we can be assured that the behavior is correct
   });
 
-  // eslint-disable-next-line max-len
+  /**
+   * This test shows that even though a user can select a specific post, the fetching/loading flags
+   * will still cause rerenders for the query. This should show that if you're using selectFromResult,
+   * the 'performance' value comes with selecting _only_ the data.
+   */
+  //eslint-disable-next-line
+  test('useQuery with selectFromResult with all flags destructured rerenders like the default useQuery behavior', async () => {
+    const { fixture } = await render(HooksComponents.PostsHookContainerAllFlagsComponent, {
+      declarations: [HooksComponents.PostComponent, HooksComponents.SelectedPostAllFlagsHookComponent],
+      imports: postStoreRef.imports,
+    });
+    getRenderCount = fixture.componentInstance.selectedPost.renderCounter.getRenderCount;
+
+    const addPost = screen.getByTestId('addPost');
+
+    expect(getRenderCount()).toBe(1);
+
+    await waitFor(() => expect(getRenderCount()).toBe(2));
+
+    fireEvent.click(addPost);
+    await waitFor(() => expect(getRenderCount()).toBe(3));
+
+    fireEvent.click(addPost);
+    fireEvent.click(addPost);
+    await waitFor(() => expect(getRenderCount()).toBe(3));
+  });
+
+  // eslint-disable-next-line
   test('useQuery with selectFromResult option serves a deeply memoized value and does not rerender unnecessarily', async () => {
-    await render(HooksComponents.PostsHookContainerComponent, {
+    const { fixture } = await render(HooksComponents.PostsHookContainerComponent, {
       declarations: [HooksComponents.PostComponent, HooksComponents.SelectedPostHookComponent],
       imports: postStoreRef.imports,
     });
+    getRenderCount = fixture.componentInstance.selectedPost.renderCounter.getRenderCount;
 
-    const renderCount = screen.getByTestId('renderCount');
     const addPost = screen.getByTestId('addPost');
 
-    expect(renderCount).toHaveTextContent('1');
+    expect(getRenderCount()).toBe(1);
 
-    await waitFor(() => expect(renderCount).toHaveTextContent('2'));
+    await waitFor(() => expect(getRenderCount()).toBe(2));
 
     fireEvent.click(addPost);
-    await waitFor(() => expect(renderCount).toHaveTextContent('2'));
+    await waitFor(() => expect(getRenderCount()).toBe(2));
     fireEvent.click(addPost);
     fireEvent.click(addPost);
-    await waitFor(() => expect(renderCount).toHaveTextContent('2'));
+    await waitFor(() => expect(getRenderCount()).toBe(2));
   });
 
   // eslint-disable-next-line max-len
   test('useQuery with selectFromResult option serves a deeply memoized value, then ONLY updates when the underlying data changes', async () => {
-    await render(HooksComponents.PostsHookContainerComponent, {
+    const { fixture } = await render(HooksComponents.PostsHookContainerComponent, {
       declarations: [HooksComponents.PostComponent, HooksComponents.SelectedPostHookComponent],
       imports: postStoreRef.imports,
     });
+    getRenderCount = fixture.componentInstance.selectedPost.renderCounter.getRenderCount;
 
-    const renderCount = screen.getByTestId('renderCount');
     const addPost = screen.getByTestId('addPost');
     const updatePost = screen.getByTestId('updatePost');
 
-    expect(renderCount).toHaveTextContent('1');
+    expect(getRenderCount()).toBe(1);
 
     fireEvent.click(addPost);
-    await waitFor(() => expect(renderCount).toHaveTextContent('2'));
+    await waitFor(() => expect(getRenderCount()).toBe(2));
     fireEvent.click(addPost);
     fireEvent.click(addPost);
-    await waitFor(() => expect(renderCount).toHaveTextContent('2'));
+    await waitFor(() => expect(getRenderCount()).toBe(2));
 
     fireEvent.click(updatePost);
-    await waitFor(() => expect(renderCount).toHaveTextContent('3'));
+    await waitFor(() => expect(getRenderCount()).toBe(3));
     await screen.findByText(/supercoooll!/i);
 
     fireEvent.click(addPost);
-    await waitFor(() => expect(renderCount).toHaveTextContent('3'));
+    await waitFor(() => expect(getRenderCount()).toBe(3));
   });
 
   test('useQuery with selectFromResult option has a type error if the result is not an object', async () => {
@@ -923,5 +952,77 @@ describe('selectFromResult (mutation) behavior', () => {
     await render(HooksComponents.NoObjectMutationComponent, { imports: mutationStoreRef.imports });
 
     expect(screen.getByTestId('incrementButton')).toBeInTheDocument();
+  });
+});
+
+describe('skip behaviour', () => {
+  const storeRef = setupApiStore(api, { ...actionsReducer });
+
+  const uninitialized = {
+    status: QueryStatus.uninitialized,
+    refetch: expect.any(Function),
+    data: undefined,
+    isError: false,
+    isFetching: false,
+    isLoading: false,
+    isSuccess: false,
+    isUninitialized: true,
+  };
+
+  function subscriptionCount(key: string) {
+    return Object.keys(getState().api.subscriptions[key] || {}).length;
+  }
+
+  test('normal skip', async () => {
+    let current: any;
+    const { rerender } = await render(HooksComponents.SkipComponent, {
+      imports: storeRef.imports,
+      componentProperties: {
+        query$: api.endpoints.getUser.useQuery(1, { skip: true }).pipe(tap((value) => (current = value))),
+      },
+    });
+
+    expect(current).toEqual(uninitialized);
+    expect(subscriptionCount('getUser(1)')).toBe(0);
+
+    rerender({
+      query$: api.endpoints.getUser.useQuery(1).pipe(tap((value) => (current = value))),
+    });
+    expect(current).toMatchObject({ status: QueryStatus.pending });
+    expect(subscriptionCount('getUser(1)')).toBe(1);
+
+    rerender({
+      query$: api.endpoints.getUser.useQuery(1, { skip: true }).pipe(tap((value) => (current = value))),
+    });
+    expect(current).toEqual(uninitialized);
+    expect(subscriptionCount('getUser(1)')).toBe(0);
+  });
+
+  test('skipToken', async () => {
+    let current: any;
+    const { rerender } = await render(HooksComponents.SkipComponent, {
+      imports: storeRef.imports,
+      componentProperties: {
+        query$: api.endpoints.getUser.useQuery(skipToken).pipe(tap((value) => (current = value))),
+      },
+    });
+
+    expect(current).toEqual(uninitialized);
+    expect(subscriptionCount('getUser(1)')).toBe(0);
+    // also no subscription on `getUser(skipToken)` or similar:
+    expect(getState().api.subscriptions).toEqual({});
+
+    rerender({
+      query$: api.endpoints.getUser.useQuery(1).pipe(tap((value) => (current = value))),
+    });
+    expect(current).toMatchObject({ status: QueryStatus.pending });
+    expect(subscriptionCount('getUser(1)')).toBe(1);
+    expect(getState().api.subscriptions).not.toEqual({});
+
+    rerender({
+      query$: api.endpoints.getUser.useQuery(skipToken).pipe(tap((value) => (current = value))),
+    });
+    expect(current).toEqual(uninitialized);
+    expect(subscriptionCount('getUser(1)')).toBe(0);
   });
 });

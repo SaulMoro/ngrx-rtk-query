@@ -30,19 +30,15 @@ export const counterApi = createApi({
         method: 'PUT',
         body: { amount },
       }),
-      onStart: (amount, { dispatch, context }) => {
-        // When we start the request, just immediately update the cache
-        context.undoPost = dispatch(
-          counterApi.util.updateQueryResult('getCount', undefined, (draft) => {
+      invalidatesTags: ['Counter'],
+      onQueryStarted: (amount, { dispatch, queryFulfilled }) => {
+        const patchResult = dispatch(
+          counterApi.util.updateQueryData('getCount', undefined, (draft) => {
             Object.assign(draft, { count: draft.count - amount });
           }),
-        ).inversePatches;
+        );
+        queryFulfilled.catch(patchResult.undo);
       },
-      onError: (_, { dispatch, context }) => {
-        // If there is an error, roll it back
-        dispatch(counterApi.util.patchQueryResult('getCount', undefined, context.undoPost));
-      },
-      invalidatesTags: ['Counter'],
     }),
 
     getCountById: build.query<CountResponse, string>({
