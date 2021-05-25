@@ -1,3 +1,17 @@
+# [2.0.0-next.4](https://github.com/SaulMoro/ngrx-rtk-query/compare/v2.0.0-next.3...v2.0.0-next.4) (2021-05-25)
+
+
+### Bug Fixes
+
+* **lib:** skip select loading in unitialized value ([d8b2a8e](https://github.com/SaulMoro/ngrx-rtk-query/commit/d8b2a8e93adead54f196aa0fc09fa5f61b734eb5))
+* **lib:** skipToken arg type ([f44102e](https://github.com/SaulMoro/ngrx-rtk-query/commit/f44102e7b891fec48bb432c56404ac72a661f02d))
+
+
+### Features
+
+* **hooks:** rework-selectFromResult ([418c18a](https://github.com/SaulMoro/ngrx-rtk-query/commit/418c18a5370917827082d23a9b2b412131ec089f))
+* **lib:** add skipToken support ([1ecd007](https://github.com/SaulMoro/ngrx-rtk-query/commit/1ecd0071061deb2851635235c76911afebd2687d))
+
 # [2.0.0-next.3](https://github.com/SaulMoro/ngrx-rtk-query/compare/v2.0.0-next.2...v2.0.0-next.3) (2021-05-13)
 
 
