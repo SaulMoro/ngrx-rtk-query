@@ -5,34 +5,24 @@ import { AngularHooksModule, AngularHooksModuleOptions } from './module';
 
 export function buildMetaReducer({
   api,
-  moduleOptions: { useDispatch: dispatch, getState },
+  moduleOptions: { useDispatch: dispatch },
 }: {
   api: any;
-  moduleOptions: Required<Pick<AngularHooksModuleOptions, 'useDispatch' | 'getState'>>;
+  moduleOptions: Required<Pick<AngularHooksModuleOptions, 'useDispatch'>>;
 }): MetaReducer<any> {
   const anyApi = api as Api<any, Record<string, any>, string, string, AngularHooksModule | CoreModule>;
-  const { unsubscribeQueryResult } = anyApi.internalActions;
+
+  let nextState: any;
+  const getState = () =>
+    // Query inside forFeature (Code splitting)
+    !nextState || nextState[anyApi.reducerPath] ? nextState : { [anyApi.reducerPath]: nextState };
+
+  const middleware = anyApi.middleware({ dispatch, getState })(getState);
 
   return function (reducer: ActionReducer<any>): ActionReducer<any> {
     return function (state: any, action: Action) {
-      const nextState = reducer(state, action);
-      let getNextState = () => nextState;
-
-      // Query inside forFeature (Code splitting)
-      if (!nextState[anyApi.reducerPath]) {
-        getNextState = () => ({ [anyApi.reducerPath]: nextState });
-      }
-
-      anyApi.middleware({
-        dispatch,
-        /**
-         * The unsuscriptQueryResult Action to remove unsubscriptions (handleUnsubscribe)
-         * dispatch a function with setTimeout. This function needs the state of the store after the
-         * tiemout so we have to pass the reference of the state with getState.
-         */
-        getState: unsubscribeQueryResult.match(action) ? getState : getNextState,
-      })(getNextState)(action);
-
+      nextState = reducer(state, action);
+      middleware(action);
       return nextState;
     };
   };

@@ -53,7 +53,7 @@ import { useDeletePostMutation, useGetPostQuery, useUpdatePostMutation } from '.
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PostDetailComponent {
-  postQuery$ = useGetPostQuery(+this.route.snapshot.params.id).pipe(
+  postQuery$ = useGetPostQuery(+this.route.snapshot.params.id, { pollingInterval: 5000 }).pipe(
     tap((result) => this.postFormControl.setValue(result.data?.name ?? '')),
   );
   updatePostMutation = useUpdatePostMutation();

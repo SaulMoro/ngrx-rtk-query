@@ -88,7 +88,7 @@ export const angularHooksModule = ({
       api,
       moduleOptions: { useDispatch, useSelector, getState },
     });
-    const metareducer: MetaReducer<any> = buildMetaReducer({ api, moduleOptions: { useDispatch, getState } });
+    const metareducer: MetaReducer<any> = buildMetaReducer({ api, moduleOptions: { useDispatch } });
     safeAssign(anyApi, { usePrefetch });
     safeAssign(anyApi, { metareducer });
 
