@@ -1,3 +1,10 @@
+# [2.0.0-next.6](https://github.com/SaulMoro/ngrx-rtk-query/compare/v2.0.0-next.5...v2.0.0-next.6) (2021-05-26)
+
+
+### Bug Fixes
+
+* **lib:** fixed polling middleware ([4b49a90](https://github.com/SaulMoro/ngrx-rtk-query/commit/4b49a90359b534719e88a8333e7f3a032996c8f8))
+
 # [2.0.0-next.5](https://github.com/SaulMoro/ngrx-rtk-query/compare/v2.0.0-next.4...v2.0.0-next.5) (2021-05-25)
 
 
