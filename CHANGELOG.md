@@ -1,3 +1,10 @@
+# [2.0.0-next.7](https://github.com/SaulMoro/ngrx-rtk-query/compare/v2.0.0-next.6...v2.0.0-next.7) (2021-05-31)
+
+
+### Bug Fixes
+
+* **lib:** type imports where applicable ([ed4651b](https://github.com/SaulMoro/ngrx-rtk-query/commit/ed4651b7551f0233498ff51d2b400dc28c6caa29))
+
 # [2.0.0-next.6](https://github.com/SaulMoro/ngrx-rtk-query/compare/v2.0.0-next.5...v2.0.0-next.6) (2021-05-26)
 
 
