@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ActionReducer, MetaReducer, StoreModule } from '@ngrx/store';
-import { AnyAction } from '@reduxjs/toolkit';
+import type { AnyAction } from '@reduxjs/toolkit';
 import { dispatch, StoreRtkQueryModule } from 'ngrx-rtk-query';
 
 export const DEFAULT_DELAY_MS = 150;

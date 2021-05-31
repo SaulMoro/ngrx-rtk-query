@@ -1,7 +1,7 @@
-import { ActionReducer, MetaReducer, Action } from '@ngrx/store';
-import { Api } from '@reduxjs/toolkit/query';
-import { CoreModule } from '@reduxjs/toolkit/dist/query/core/module';
-import { AngularHooksModule, AngularHooksModuleOptions } from './module';
+import type { ActionReducer, MetaReducer, Action } from '@ngrx/store';
+import type { Api } from '@reduxjs/toolkit/query';
+import type { CoreModule } from '@reduxjs/toolkit/dist/query/core/module';
+import type { AngularHooksModule, AngularHooksModuleOptions } from './module';
 
 export function buildMetaReducer({
   api,

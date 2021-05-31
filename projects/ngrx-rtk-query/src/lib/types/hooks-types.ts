@@ -1,13 +1,16 @@
-import { AnyAction, ThunkAction } from '@reduxjs/toolkit';
-import { MutationDefinition, QueryDefinition, EndpointDefinition, SkipToken } from '@reduxjs/toolkit/query';
-import { QueryStatus, QuerySubState, SubscriptionOptions } from '@reduxjs/toolkit/dist/query/core/apiState';
-import { MutationActionCreatorResult, QueryActionCreatorResult } from '@reduxjs/toolkit/dist/query/core/buildInitiate';
-import { MutationResultSelectorResult } from '@reduxjs/toolkit/dist/query/core/buildSelectors';
-import { PrefetchOptions } from '@reduxjs/toolkit/dist/query/core/module';
-import { QueryArgFrom } from '@reduxjs/toolkit/dist/query/endpointDefinitions';
-import { Id, NoInfer, Override } from '@reduxjs/toolkit/dist/query/tsHelpers';
+import type { AnyAction, ThunkAction } from '@reduxjs/toolkit';
+import type { MutationDefinition, QueryDefinition, EndpointDefinition, SkipToken } from '@reduxjs/toolkit/query';
+import type { QueryStatus, QuerySubState, SubscriptionOptions } from '@reduxjs/toolkit/dist/query/core/apiState';
+import type {
+  MutationActionCreatorResult,
+  QueryActionCreatorResult,
+} from '@reduxjs/toolkit/dist/query/core/buildInitiate';
+import type { MutationResultSelectorResult } from '@reduxjs/toolkit/dist/query/core/buildSelectors';
+import type { PrefetchOptions } from '@reduxjs/toolkit/dist/query/core/module';
+import type { QueryArgFrom } from '@reduxjs/toolkit/dist/query/endpointDefinitions';
+import type { Id, NoInfer, Override } from '@reduxjs/toolkit/dist/query/tsHelpers';
 import { Observable } from 'rxjs';
-import { UninitializedValue } from '../constants';
+import type { UninitializedValue } from '../constants';
 
 export interface QueryHooks<Definition extends QueryDefinition<any, any, any, any, any>> {
   useQuery: UseQuery<Definition>;

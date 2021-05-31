@@ -1,6 +1,6 @@
-import { EndpointDefinitions, MutationDefinition, QueryDefinition } from '@reduxjs/toolkit/query';
-import { DefinitionType } from '@reduxjs/toolkit/dist/query/endpointDefinitions';
-import { UseLazyQuery, UseMutation, UseQuery } from './hooks-types';
+import type { EndpointDefinitions, MutationDefinition, QueryDefinition } from '@reduxjs/toolkit/query';
+import type { DefinitionType } from '@reduxjs/toolkit/dist/query/endpointDefinitions';
+import type { UseLazyQuery, UseMutation, UseQuery } from './hooks-types';
 
 // For TS 4.1 and later, we can use string literal types to define
 // the exact names of each endpoint's exported hooks

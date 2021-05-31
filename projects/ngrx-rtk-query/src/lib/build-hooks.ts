@@ -1,26 +1,23 @@
-import {
-  Api,
-  EndpointDefinitions,
-  MutationDefinition,
-  QueryDefinition,
-  QueryStatus,
-  skipToken,
-} from '@reduxjs/toolkit/query';
-import { QueryKeys, RootState } from '@reduxjs/toolkit/dist/query/core/apiState';
-import { MutationActionCreatorResult, QueryActionCreatorResult } from '@reduxjs/toolkit/dist/query/core/buildInitiate';
-import {
+import type { Api, EndpointDefinitions, MutationDefinition, QueryDefinition } from '@reduxjs/toolkit/query';
+import { skipToken, QueryStatus } from '@reduxjs/toolkit/query';
+import type { QueryKeys, RootState } from '@reduxjs/toolkit/dist/query/core/apiState';
+import type {
+  MutationActionCreatorResult,
+  QueryActionCreatorResult,
+} from '@reduxjs/toolkit/dist/query/core/buildInitiate';
+import type {
   ApiEndpointMutation,
   ApiEndpointQuery,
   CoreModule,
   PrefetchOptions,
 } from '@reduxjs/toolkit/dist/query/core/module';
-import { QueryResultSelectorResult } from '@reduxjs/toolkit/dist/query/core/buildSelectors';
+import type { QueryResultSelectorResult } from '@reduxjs/toolkit/dist/query/core/buildSelectors';
 import { createSelectorFactory, resultMemoize } from '@ngrx/store';
 import { BehaviorSubject, of, isObservable, combineLatest } from 'rxjs';
 import { distinctUntilChanged, finalize, map, shareReplay, switchMap, tap } from 'rxjs/operators';
 
-import { AngularHooksModuleOptions } from './module';
-import {
+import type { AngularHooksModuleOptions } from './module';
+import type {
   GenericPrefetchThunk,
   MutationStateSelector,
   QueryHooks,

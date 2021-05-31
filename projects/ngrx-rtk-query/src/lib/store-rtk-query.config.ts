@@ -1,5 +1,5 @@
 import { InjectionToken } from '@angular/core';
-import { ThunkDispatch } from '@reduxjs/toolkit';
+import type { ThunkDispatch } from '@reduxjs/toolkit';
 import { onFocus, onFocusLost, onOnline, onOffline } from '@reduxjs/toolkit/dist/query/core/setupListeners';
 
 export interface StoreQueryConfig {

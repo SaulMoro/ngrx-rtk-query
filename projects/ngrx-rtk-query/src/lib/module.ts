@@ -1,22 +1,22 @@
-import {
+import { buildCreateApi, coreModule } from '@reduxjs/toolkit/query';
+import type {
   BaseQueryFn,
   EndpointDefinitions,
   QueryDefinition,
   MutationDefinition,
   Api,
-  buildCreateApi,
-  coreModule,
   Module,
 } from '@reduxjs/toolkit/query';
-import { QueryKeys } from '@reduxjs/toolkit/dist/query/core/apiState';
-import { PrefetchOptions } from '@reduxjs/toolkit/dist/query/core/module';
-import { QueryArgFrom } from '@reduxjs/toolkit/dist/query/endpointDefinitions';
-import { MetaReducer } from '@ngrx/store';
+import type { QueryKeys } from '@reduxjs/toolkit/dist/query/core/apiState';
+import type { PrefetchOptions } from '@reduxjs/toolkit/dist/query/core/module';
+import type { QueryArgFrom } from '@reduxjs/toolkit/dist/query/endpointDefinitions';
+import type { MetaReducer } from '@ngrx/store';
 
 import { buildHooks } from './build-hooks';
 import { buildMetaReducer } from './build-metareducer';
 import { dispatch, getState as getStateFromStore, select } from './thunk.service';
-import { QueryHooks, MutationHooks, isQueryDefinition, isMutationDefinition, HooksWithUniqueNames } from './types';
+import { isQueryDefinition, isMutationDefinition } from './types';
+import type { QueryHooks, MutationHooks, HooksWithUniqueNames } from './types';
 import { capitalize, safeAssign } from './utils';
 
 export const angularHooksModuleName = Symbol();
