@@ -1,6 +1,6 @@
 import { InjectionToken } from '@angular/core';
-import { ThunkDispatch } from '@reduxjs/toolkit';
-import { onFocus, onFocusLost, onOnline, onOffline } from '@rtk-incubator/rtk-query/dist/esm/ts/core/setupListeners';
+import type { ThunkDispatch } from '@reduxjs/toolkit';
+import { onFocus, onFocusLost, onOnline, onOffline } from '@reduxjs/toolkit/dist/query/core/setupListeners';
 
 export interface StoreQueryConfig {
   setupListeners: boolean;

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ActionReducer, MetaReducer, StoreModule } from '@ngrx/store';
-import { AnyAction } from '@reduxjs/toolkit';
-import { StoreRtkQueryModule } from 'ngrx-rtk-query';
+import type { AnyAction } from '@reduxjs/toolkit';
+import { dispatch, StoreRtkQueryModule } from 'ngrx-rtk-query';
 
 export const DEFAULT_DELAY_MS = 150;
 
@@ -45,8 +45,13 @@ export const actionsReducer = {
 };
 
 export function setupApiStore<
-  A extends { reducerPath: any; reducer: ActionReducer<any, any>; metareducer: MetaReducer<any> },
-  R extends Record<string, ActionReducer<any, any>>
+  A extends {
+    reducerPath: any;
+    reducer: ActionReducer<any, any>;
+    metareducer: MetaReducer<any>;
+    util: { resetApiState(): any };
+  },
+  R extends Record<string, ActionReducer<any, any>>,
 >(api: A, extraReducers?: R, withoutListeners?: boolean) {
   const getStore = () =>
     StoreModule.forRoot(
@@ -75,6 +80,10 @@ export function setupApiStore<
     refObj.store = store;
     refObj.rtkQueryStore = rtkQueryStore;
     refObj.imports = [store, rtkQueryStore];
+  });
+
+  afterEach(() => {
+    dispatch(api.util.resetApiState());
   });
 
   return refObj;

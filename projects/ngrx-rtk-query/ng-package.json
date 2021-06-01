@@ -5,7 +5,8 @@
     "entryFile": "src/public-api.ts",
     "umdModuleIds": {
       "@ngrx/store": "ngrx.store",
-      "@rtk-incubator/rtk-query": "rtkQuery"
+      "@reduxjs/toolkit": "RTK",
+      "@reduxjs/toolkit/query": "RTK"
     }
   },
   "assets": ["ngcc.config.js"]

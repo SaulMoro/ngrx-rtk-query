@@ -1,29 +1,29 @@
-import {
+import { buildCreateApi, coreModule } from '@reduxjs/toolkit/query';
+import type {
   BaseQueryFn,
   EndpointDefinitions,
-  Api,
-  Module,
   QueryDefinition,
   MutationDefinition,
-  buildCreateApi,
-  coreModule,
-} from '@rtk-incubator/rtk-query';
-import { MetaReducer } from '@ngrx/store';
-import { QueryKeys } from '@rtk-incubator/rtk-query/dist/esm/ts/core/apiState';
-import { PrefetchOptions } from '@rtk-incubator/rtk-query/dist/esm/ts/core/module';
-import { QueryArgFrom } from '@rtk-incubator/rtk-query/dist/esm/ts/endpointDefinitions';
+  Api,
+  Module,
+} from '@reduxjs/toolkit/query';
+import type { QueryKeys } from '@reduxjs/toolkit/dist/query/core/apiState';
+import type { PrefetchOptions } from '@reduxjs/toolkit/dist/query/core/module';
+import type { QueryArgFrom } from '@reduxjs/toolkit/dist/query/endpointDefinitions';
+import type { MetaReducer } from '@ngrx/store';
 
 import { buildHooks } from './build-hooks';
 import { buildMetaReducer } from './build-metareducer';
 import { dispatch, getState as getStateFromStore, select } from './thunk.service';
-import { QueryHooks, MutationHooks, isQueryDefinition, isMutationDefinition, TS41Hooks } from './types';
+import { isQueryDefinition, isMutationDefinition } from './types';
+import type { QueryHooks, MutationHooks, HooksWithUniqueNames } from './types';
 import { capitalize, safeAssign } from './utils';
 
 export const angularHooksModuleName = Symbol();
 export type AngularHooksModule = typeof angularHooksModuleName;
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
-declare module '@rtk-incubator/rtk-query' {
+declare module '@reduxjs/toolkit/query' {
   export interface ApiModules<
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     BaseQuery extends BaseQueryFn,
@@ -31,7 +31,7 @@ declare module '@rtk-incubator/rtk-query' {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     ReducerPath extends string,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    TagTypes extends string
+    TagTypes extends string,
   > {
     [angularHooksModuleName]: {
       /**
@@ -52,7 +52,7 @@ declare module '@rtk-incubator/rtk-query' {
         endpointName: EndpointName,
         options?: PrefetchOptions,
       ): (arg: QueryArgFrom<Definitions[EndpointName]>, options?: PrefetchOptions) => void;
-    } & TS41Hooks<Definitions> & { metareducer: MetaReducer<any> };
+    } & HooksWithUniqueNames<Definitions> & { metareducer: MetaReducer<any> };
   }
 }
 
@@ -83,22 +83,24 @@ export const angularHooksModule = ({
 }: AngularHooksModuleOptions = {}): Module<AngularHooksModule> => ({
   name: angularHooksModuleName,
   init(api, options, context) {
-    const anyApi = (api as any) as Api<any, Record<string, any>, string, string, AngularHooksModule>;
+    const anyApi = api as any as Api<any, Record<string, any>, string, string, AngularHooksModule>;
     const { buildQueryHooks, buildMutationHook, usePrefetch } = buildHooks({
       api,
       moduleOptions: { useDispatch, useSelector, getState },
     });
-    const metareducer: MetaReducer<any> = buildMetaReducer({ api, moduleOptions: { useDispatch, getState } });
+    const metareducer: MetaReducer<any> = buildMetaReducer({ api, moduleOptions: { useDispatch } });
     safeAssign(anyApi, { usePrefetch });
     safeAssign(anyApi, { metareducer });
 
     return {
       injectEndpoint(endpointName, definition) {
         if (isQueryDefinition(definition)) {
-          const { useQuery, useLazyQuery, useQueryState, useQuerySubscription } = buildQueryHooks(endpointName);
+          const { useQuery, useLazyQuery, useLazyQuerySubscription, useQueryState, useQuerySubscription } =
+            buildQueryHooks(endpointName);
           safeAssign(anyApi.endpoints[endpointName], {
             useQuery,
             useLazyQuery,
+            useLazyQuerySubscription,
             useQueryState,
             useQuerySubscription,
           });

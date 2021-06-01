@@ -1,3 +1,84 @@
+# [2.0.0-next.7](https://github.com/SaulMoro/ngrx-rtk-query/compare/v2.0.0-next.6...v2.0.0-next.7) (2021-05-31)
+
+
+### Bug Fixes
+
+* **lib:** type imports where applicable ([ed4651b](https://github.com/SaulMoro/ngrx-rtk-query/commit/ed4651b7551f0233498ff51d2b400dc28c6caa29))
+
+# [2.0.0-next.6](https://github.com/SaulMoro/ngrx-rtk-query/compare/v2.0.0-next.5...v2.0.0-next.6) (2021-05-26)
+
+
+### Bug Fixes
+
+* **lib:** fixed polling middleware ([4b49a90](https://github.com/SaulMoro/ngrx-rtk-query/commit/4b49a90359b534719e88a8333e7f3a032996c8f8))
+
+# [2.0.0-next.5](https://github.com/SaulMoro/ngrx-rtk-query/compare/v2.0.0-next.4...v2.0.0-next.5) (2021-05-25)
+
+
+### Features
+
+* **lib:** update peerDependencies ([8b86f46](https://github.com/SaulMoro/ngrx-rtk-query/commit/8b86f469ed1e1e9b843655e13bf784551966392a))
+
+# [2.0.0-next.4](https://github.com/SaulMoro/ngrx-rtk-query/compare/v2.0.0-next.3...v2.0.0-next.4) (2021-05-25)
+
+
+### Bug Fixes
+
+* **lib:** skip select loading in unitialized value ([d8b2a8e](https://github.com/SaulMoro/ngrx-rtk-query/commit/d8b2a8e93adead54f196aa0fc09fa5f61b734eb5))
+* **lib:** skipToken arg type ([f44102e](https://github.com/SaulMoro/ngrx-rtk-query/commit/f44102e7b891fec48bb432c56404ac72a661f02d))
+
+
+### Features
+
+* **hooks:** rework-selectFromResult ([418c18a](https://github.com/SaulMoro/ngrx-rtk-query/commit/418c18a5370917827082d23a9b2b412131ec089f))
+* **lib:** add skipToken support ([1ecd007](https://github.com/SaulMoro/ngrx-rtk-query/commit/1ecd0071061deb2851635235c76911afebd2687d))
+
+# [2.0.0-next.3](https://github.com/SaulMoro/ngrx-rtk-query/compare/v2.0.0-next.2...v2.0.0-next.3) (2021-05-13)
+
+
+### Bug Fixes
+
+* **lib:** add new peerDependencies ([07021e6](https://github.com/SaulMoro/ngrx-rtk-query/commit/07021e67d85aa57d90e0b28e84c3530ab2d92b53))
+
+# [2.0.0-next.2](https://github.com/SaulMoro/ngrx-rtk-query/compare/v2.0.0-next.1...v2.0.0-next.2) (2021-04-26)
+
+
+### Bug Fixes
+
+* **lib:** remove ivy compilation ([73f9594](https://github.com/SaulMoro/ngrx-rtk-query/commit/73f9594ba4847090b6d325ae1f4d042247125e7c))
+
+# [2.0.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.8.0-next.2...v2.0.0-next.1) (2021-04-26)
+
+
+### Features
+
+* **lib:** enable ivy partial compilation ([cf177b6](https://github.com/SaulMoro/ngrx-rtk-query/commit/cf177b6f1dbd829c46a6c11b93b0528413a74433)), closes [#25](https://github.com/SaulMoro/ngrx-rtk-query/issues/25)
+
+
+### BREAKING CHANGES
+
+* **lib:** Move from Incubator to reduxjs-toolkit and enable ivy partial compilation
+
+# [1.8.0-next.2](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.8.0-next.1...v1.8.0-next.2) (2021-04-26)
+
+
+### Features
+
+* **lib:** introduce breaking change ([d75c3a3](https://github.com/SaulMoro/ngrx-rtk-query/commit/d75c3a3c4aa987976132f532625d62f70279a26d)), closes [#25](https://github.com/SaulMoro/ngrx-rtk-query/issues/25)
+
+# [1.8.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.7.1...v1.8.0-next.1) (2021-04-26)
+
+
+### Bug Fixes
+
+* **lib:** new hooks types var name ([923824d](https://github.com/SaulMoro/ngrx-rtk-query/commit/923824d919d6bdcdd6c2cb3f3f40464aff6dbc04))
+
+
+### Features
+
+* **lib:** add full types to useMutation  callback ([c00ccf4](https://github.com/SaulMoro/ngrx-rtk-query/commit/c00ccf490a024e073ab4a68274c1f2ab6517a6cd))
+* **lib:** move from incubator ([1a39042](https://github.com/SaulMoro/ngrx-rtk-query/commit/1a39042c61a51fd9fee1c7fe69022c826f5ce402))
+
 ## [1.7.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.7.0...v1.7.1) (2021-04-20)
 
 

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Action, Store } from '@ngrx/store';
-import { AnyAction, ThunkAction } from '@reduxjs/toolkit';
+import type { AnyAction, ThunkAction } from '@reduxjs/toolkit';
 import { Observable } from 'rxjs';
 import { take } from 'rxjs/operators';
 

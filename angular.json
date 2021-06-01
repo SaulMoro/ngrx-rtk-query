@@ -28,10 +28,15 @@
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.app.json",
-            "aot": true,
             "assets": ["src/favicon.ico", "src/assets", "src/mockServiceWorker.js"],
             "styles": ["src/styles.scss"],
-            "scripts": []
+            "scripts": [],
+            "vendorChunk": true,
+            "extractLicenses": false,
+            "buildOptimizer": false,
+            "sourceMap": true,
+            "optimization": false,
+            "namedChunks": true
           },
           "configurations": {
             "production": {
@@ -60,19 +65,23 @@
                   "maximumError": "4kb"
                 }
               ]
-            }
-          }
+            },
+            "development": {}
+          },
+          "defaultConfiguration": "production"
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
-          "options": {
-            "browserTarget": "ngrx-rtk-query-app:build"
-          },
+          "options": {},
           "configurations": {
             "production": {
               "browserTarget": "ngrx-rtk-query-app:build:production"
+            },
+            "development": {
+              "browserTarget": "ngrx-rtk-query-app:build:development"
             }
-          }
+          },
+          "defaultConfiguration": "development"
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
@@ -99,14 +108,17 @@
         "e2e": {
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
-            "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "ngrx-rtk-query-app:serve"
+            "protractorConfig": "e2e/protractor.conf.js"
           },
           "configurations": {
             "production": {
               "devServerTarget": "ngrx-rtk-query-app:serve:production"
+            },
+            "development": {
+              "devServerTarget": "ngrx-rtk-query-app:serve:development"
             }
-          }
+          },
+          "defaultConfiguration": "development"
         },
         "deploy": {
           "builder": "angular-cli-ghpages:deploy",
@@ -129,8 +141,10 @@
           "configurations": {
             "production": {
               "tsConfig": "projects/ngrx-rtk-query/tsconfig.lib.prod.json"
-            }
-          }
+            },
+            "development": {}
+          },
+          "defaultConfiguration": "production"
         },
         "test": {
           "builder": "@angular-builders/jest:run",
