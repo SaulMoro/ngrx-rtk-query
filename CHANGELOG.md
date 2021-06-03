@@ -1,3 +1,32 @@
+# [2.0.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.7.1...v2.0.0) (2021-06-01)
+
+
+### Bug Fixes
+
+* **lib:** add new peerDependencies ([07021e6](https://github.com/SaulMoro/ngrx-rtk-query/commit/07021e67d85aa57d90e0b28e84c3530ab2d92b53))
+* **lib:** fixed polling middleware ([4b49a90](https://github.com/SaulMoro/ngrx-rtk-query/commit/4b49a90359b534719e88a8333e7f3a032996c8f8))
+* **lib:** new hooks types var name ([923824d](https://github.com/SaulMoro/ngrx-rtk-query/commit/923824d919d6bdcdd6c2cb3f3f40464aff6dbc04))
+* **lib:** remove ivy compilation ([73f9594](https://github.com/SaulMoro/ngrx-rtk-query/commit/73f9594ba4847090b6d325ae1f4d042247125e7c))
+* **lib:** skip select loading in unitialized value ([d8b2a8e](https://github.com/SaulMoro/ngrx-rtk-query/commit/d8b2a8e93adead54f196aa0fc09fa5f61b734eb5))
+* **lib:** skipToken arg type ([f44102e](https://github.com/SaulMoro/ngrx-rtk-query/commit/f44102e7b891fec48bb432c56404ac72a661f02d))
+* **lib:** type imports where applicable ([ed4651b](https://github.com/SaulMoro/ngrx-rtk-query/commit/ed4651b7551f0233498ff51d2b400dc28c6caa29))
+
+
+### Features
+
+* **hooks:** rework-selectFromResult ([418c18a](https://github.com/SaulMoro/ngrx-rtk-query/commit/418c18a5370917827082d23a9b2b412131ec089f))
+* **lib:** add full types to useMutation  callback ([c00ccf4](https://github.com/SaulMoro/ngrx-rtk-query/commit/c00ccf490a024e073ab4a68274c1f2ab6517a6cd))
+* **lib:** add skipToken support ([1ecd007](https://github.com/SaulMoro/ngrx-rtk-query/commit/1ecd0071061deb2851635235c76911afebd2687d))
+* **lib:** enable ivy partial compilation ([cf177b6](https://github.com/SaulMoro/ngrx-rtk-query/commit/cf177b6f1dbd829c46a6c11b93b0528413a74433)), closes [#25](https://github.com/SaulMoro/ngrx-rtk-query/issues/25)
+* **lib:** introduce breaking change ([d75c3a3](https://github.com/SaulMoro/ngrx-rtk-query/commit/d75c3a3c4aa987976132f532625d62f70279a26d)), closes [#25](https://github.com/SaulMoro/ngrx-rtk-query/issues/25)
+* **lib:** move from incubator ([1a39042](https://github.com/SaulMoro/ngrx-rtk-query/commit/1a39042c61a51fd9fee1c7fe69022c826f5ce402))
+* **lib:** update peerDependencies ([8b86f46](https://github.com/SaulMoro/ngrx-rtk-query/commit/8b86f469ed1e1e9b843655e13bf784551966392a))
+
+
+### BREAKING CHANGES
+
+* **lib:** Move from Incubator to reduxjs-toolkit and enable ivy partial compilation
+
 # [2.0.0-next.7](https://github.com/SaulMoro/ngrx-rtk-query/compare/v2.0.0-next.6...v2.0.0-next.7) (2021-05-31)
 
 
