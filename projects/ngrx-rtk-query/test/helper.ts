@@ -18,25 +18,35 @@ export const useRenderCounter = () => {
   return { increment, getRenderCount: () => count };
 };
 
-export function matchSequence(_actions: AnyAction[], ...matchers: Array<(arg: any) => boolean>) {
-  const actions = _actions.concat();
-  actions.shift(); // remove INIT
-  expect(matchers.length).toBe(actions.length);
-  for (let i = 0; i < matchers.length; i++) {
-    expect(matchers[i](actions[i])).toBe(true);
-  }
-}
-
-export function notMatchSequence(_actions: AnyAction[], ...matchers: Array<Array<(arg: any) => boolean>>) {
-  const actions = _actions.concat();
-  actions.shift(); // remove INIT
-  expect(matchers.length).toBe(actions.length);
-  for (let i = 0; i < matchers.length; i++) {
-    for (const matcher of matchers[i]) {
-      expect(matcher(actions[i])).not.toBe(true);
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace jest {
+    interface Matchers<R> {
+      toMatchSequence(...matchers: Array<(arg: any) => boolean>): R;
     }
   }
 }
+
+expect.extend({
+  toMatchSequence(_actions: AnyAction[], ...matchers: Array<(arg: any) => boolean>) {
+    const actions = _actions.concat();
+    actions.shift(); // remove INIT
+
+    for (let i = 0; i < matchers.length; i++) {
+      if (!matchers[i](actions[i])) {
+        return {
+          message: () => `Action ${actions[i].type} does not match sequence at position ${i}.`,
+          pass: false,
+        };
+      }
+    }
+
+    return {
+      message: () => `All actions match the sequence.`,
+      pass: true,
+    };
+  },
+});
 
 export const actionsReducer = {
   actions: (state: AnyAction[] = [], action: AnyAction) => {

@@ -9,7 +9,7 @@ import { getState } from '../src/lib/thunk.service';
 import { resetPostsApi } from './mocks/lib-posts.handlers';
 import { server } from './mocks/server';
 import * as HooksComponents from './helper-components';
-import { actionsReducer, expectExactType, matchSequence, setupApiStore, waitMs } from './helper';
+import { actionsReducer, expectExactType, setupApiStore, waitMs } from './helper';
 import { api, defaultApi, invalidationsApi, libPostsApi, mutationApi, resetAmount } from './helper-apis';
 
 describe('hooks tests', () => {
@@ -679,16 +679,15 @@ describe('useQuery and useMutation invalidation behavior', () => {
     await waitFor(() => expect(user).toHaveTextContent(JSON.stringify(checkSessionData)));
 
     const { checkSession, login } = invalidationsApi.endpoints;
-    const completeSequence = [
+    expect(getState().actions).toMatchSequence(
+      // api.internalActions.middlewareRegistered.match,
       checkSession.matchPending,
       checkSession.matchRejected,
       login.matchPending,
       login.matchFulfilled,
       checkSession.matchPending,
       checkSession.matchFulfilled,
-    ];
-
-    matchSequence(getState().actions, ...completeSequence);
+    );
   });
 });
 
@@ -894,15 +893,14 @@ describe('selectFromResult (mutation) behavior', () => {
 
     const { increment } = mutationApi.endpoints;
 
-    const completeSequence = [
+    expect(getState().actions).toMatchSequence(
+      // api.internalActions.middlewareRegistered.match,
       increment.matchPending,
       increment.matchFulfilled,
       mutationApi.internalActions.unsubscribeMutationResult.match,
       increment.matchPending,
       increment.matchFulfilled,
-    ];
-
-    matchSequence(getState().actions, ...completeSequence);
+    );
   });
 
   test('causes rerenders when only selected data changes', async () => {
