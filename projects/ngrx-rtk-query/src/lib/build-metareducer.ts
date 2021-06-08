@@ -14,8 +14,10 @@ export function buildMetaReducer({
 
   let nextState: any;
   const getState = () =>
-    // Query inside forFeature (Code splitting)
-    !nextState || nextState[anyApi.reducerPath] ? nextState : { [anyApi.reducerPath]: nextState };
+    nextState[anyApi.reducerPath]
+      ? nextState
+      : // Query inside forFeature (Code splitting)
+        { [anyApi.reducerPath]: nextState };
 
   const middleware = anyApi.middleware({ dispatch, getState })(getState);
 

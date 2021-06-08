@@ -88,8 +88,10 @@ export interface UseQuerySubscriptionOptions extends SubscriptionOptions {
   refetchOnMountOrArgChange?: boolean | number;
 }
 
-export type UseQueryOptions<D extends QueryDefinition<any, any, any, any>, R = UseQueryStateDefaultResult<D>> =
-  UseQuerySubscriptionOptions & UseQueryStateOptions<D, R>;
+export type UseQueryOptions<
+  D extends QueryDefinition<any, any, any, any>,
+  R = UseQueryStateDefaultResult<D>,
+> = UseQuerySubscriptionOptions & UseQueryStateOptions<D, R>;
 
 export type QueryOptions<SelectFromResultType = UseQueryStateDefaultResult<QueryDefinition<any, any, any, any>>> =
   UseQueryOptions<any, SelectFromResultType>;
@@ -150,8 +152,10 @@ export type UseLazyQuery<D extends QueryDefinition<any, any, any, any>> = <R = U
   lastArg$: Observable<QueryArgFrom<D> | UninitializedValue>;
 };
 
-export type UseLazyQueryOptions<D extends QueryDefinition<any, any, any, any>, R = UseQueryStateDefaultResult<D>> =
-  SubscriptionOptions & Omit<UseQueryStateOptions<D, R>, 'skip'>;
+export type UseLazyQueryOptions<
+  D extends QueryDefinition<any, any, any, any>,
+  R = UseQueryStateDefaultResult<D>,
+> = SubscriptionOptions & Omit<UseQueryStateOptions<D, R>, 'skip'>;
 
 export type LazyQueryOptions<SelectFromResultType = UseQueryStateDefaultResult<QueryDefinition<any, any, any, any>>> =
   UseLazyQueryOptions<any, SelectFromResultType>;

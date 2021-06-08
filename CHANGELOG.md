@@ -1,3 +1,22 @@
+# [2.1.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v2.0.1-next.1...v2.1.0-next.1) (2021-06-08)
+
+
+### Bug Fixes
+
+* **lib:** fixed middleware warnings ([b0164f1](https://github.com/SaulMoro/ngrx-rtk-query/commit/b0164f144360d6b539d2fad9da465d85781cd7e0))
+
+
+### Features
+
+* **lib:** add support to redux toolkit 1.6 ([df4a17f](https://github.com/SaulMoro/ngrx-rtk-query/commit/df4a17fe3d0873331cf21ce779007ea6960ddb40))
+
+## [2.0.1-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v2.0.0...v2.0.1-next.1) (2021-06-03)
+
+
+### Bug Fixes
+
+* **lib:** update to rc lib ([420b04c](https://github.com/SaulMoro/ngrx-rtk-query/commit/420b04ccde256b3da605ad3a1813b5d7c208ee0e))
+
 # [2.0.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v1.7.1...v2.0.0) (2021-06-01)
 
 
