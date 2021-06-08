@@ -22,9 +22,9 @@ export const reducers: ActionReducerMap<RootState> = {
 @NgModule({
   imports: [
     StoreModule.forRoot(reducers, { metaReducers: [counterApi.metareducer] }),
-    StoreRtkQueryModule.forRoot({ setupListeners: true }),
     StoreRouterConnectingModule.forRoot({ routerState: RouterState.Minimal }),
     !environment.production ? StoreDevtoolsModule.instrument() : [],
+    StoreRtkQueryModule.forRoot({ setupListeners: true }),
   ],
 })
 export class CoreStoreModule {}

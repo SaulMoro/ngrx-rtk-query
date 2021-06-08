@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { take } from 'rxjs/operators';
 
 let service: ThunkService;
+let delayedActions: Action[] = [];
 
 export function dispatch(action: Action): Action;
 export function dispatch<R>(action: ThunkAction<R, any, any, AnyAction>): R;
@@ -12,7 +13,16 @@ export function dispatch<R>(action: Action | ThunkAction<R, any, any, AnyAction>
   if (typeof action === 'function') {
     return action(dispatch, getState, {});
   }
-  service?.dispatch(action);
+
+  // Middleware dispatch actions before Store starts
+  if (service) {
+    delayedActions.map((delayedAction) => service.dispatch(delayedAction));
+    delayedActions = [];
+    service.dispatch(action);
+  } else {
+    delayedActions.push(action);
+  }
+
   return action;
 }
 
