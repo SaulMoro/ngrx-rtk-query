@@ -12,7 +12,7 @@
 [![ngneat-lib](https://img.shields.io/badge/made%20with-%40ngneat%2Flib-ad1fe3?logo=angular)](https://github.com/ngneat/lib)
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 
-**ngrx-rtk-query** is a plugin to make RTK Query (**including auto-generated hooks**) works in Angular applications with NgRx!! Mix the power of RTK Query + NgRx + RxJS to achieve the same functionality as in the RTK Query guide with Hooks.
+**ngrx-rtk-query** is a plugin to make RTK Query (**including auto-generated hooks**) works in Angular applications with NgRx!! Mix the power of RTK Query + NgRx + RxJS to achieve the same functionality as in the [RTK Query guide with hooks](https://redux-toolkit.js.org/rtk-query/overview).
 
 ## Table of Contents
 
@@ -53,13 +53,13 @@ class AppModule {}
 
 ## Basic Usage
 
-You can follow the official [RTK Query guide with hooks](https://rtk-query-docs.netlify.app/introduction/getting-started), with slight variations.
+You can follow the official [RTK Query guide with hooks](https://redux-toolkit.js.org/rtk-query/overview), with slight variations.
 
 You can see the application of this repository for more examples.
 
 First, you need to install redux-toolkit:
 ```bash
-npm install @reduxjs/toolkit@1.6.0-beta.0
+npm install @reduxjs/toolkit
 ```
 
 We'll create a service definition that queries the publicly available
@@ -191,7 +191,7 @@ export class PostsQueryModule {}
 
 ### **Queries**
 
-The use of queries is a bit different compared to the original [Queries - RTK Query guide](https://rtk-query-docs.netlify.app/concepts/queries). You can look at the examples from this repository.
+The use of queries is a bit different compared to the original [Queries - RTK Query guide](https://redux-toolkit.js.org/rtk-query/usage/queries). You can look at the examples from this repository.
 
 The parameters and options of the Query can be static or Observables.
 
@@ -275,7 +275,7 @@ Perfect for ngOnInit cases. You can look at pagination feature example from this
 
 ### **Mutations**
 
-The use of mutations is a bit different compared to the original [Mutations - RTK Query guide](https://rtk-query-docs.netlify.app/concepts/mutations). You can look at the examples from this repository.
+The use of mutations is a bit different compared to the original [Mutations - RTK Query guide](https://redux-toolkit.js.org/rtk-query/usage/mutations). You can look at the examples from this repository.
 
 Like in the original library, a mutation is a object (not array) of 2 items, but the structure and naming of the items is different.
 
