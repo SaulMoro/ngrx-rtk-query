@@ -1,3 +1,10 @@
+## [2.1.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v2.1.0...v2.1.1) (2021-06-08)
+
+
+### Bug Fixes
+
+* **lib:** update readme links ([a058ce1](https://github.com/SaulMoro/ngrx-rtk-query/commit/a058ce1d262084b9489fd58df25d46cb885b9d2f))
+
 ## [2.1.1-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v2.1.0...v2.1.1-next.1) (2021-06-08)
 
 
