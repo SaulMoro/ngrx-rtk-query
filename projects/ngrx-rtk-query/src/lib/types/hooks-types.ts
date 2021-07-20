@@ -275,9 +275,11 @@ export type UseQueryStateDefaultResult<D extends QueryDefinition<any, any, any, 
   | Override<
       UseQueryStateBaseResult<D>,
       | { isLoading: true; isFetching: boolean; data: undefined }
-      | ({ isSuccess: true; isFetching: boolean; error: undefined } & Required<
-          Pick<UseQueryStateBaseResult<D>, 'data' | 'fulfilledTimeStamp'>
-        >)
+      | ({
+          isSuccess: true;
+          isFetching: boolean;
+          error: undefined;
+        } & Required<Pick<UseQueryStateBaseResult<D>, 'data' | 'fulfilledTimeStamp'>>)
       | ({ isError: true } & Required<Pick<UseQueryStateBaseResult<D>, 'error'>>)
     >
 > & {
@@ -297,8 +299,9 @@ export type UseMutationStateOptions<D extends MutationDefinition<any, any, any, 
   selectFromResult?: MutationStateSelector<R, D>;
 };
 
-// eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-unused-vars
-export type UseMutationStateResult<_ extends MutationDefinition<any, any, any, any>, R> = NoInfer<R>;
+export type UseMutationStateResult<D extends MutationDefinition<any, any, any, any>, R> = NoInfer<R> & {
+  originalArgs?: QueryArgFrom<D>;
+};
 
 /**
  * A hook that lets you trigger an update request for a given endpoint, and subscribes the component

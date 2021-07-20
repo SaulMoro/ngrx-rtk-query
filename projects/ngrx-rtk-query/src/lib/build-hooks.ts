@@ -316,7 +316,9 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
             select(requestId || skipToken),
             (subState: any) => selectFromResult(subState),
           );
-          return useSelector((state: RootState<Definitions, any, any>) => mutationSelector(state));
+          const currentState = useSelector((state: RootState<Definitions, any, any>) => mutationSelector(state));
+          const originalArgs = promiseRef.current?.arg.originalArgs;
+          return currentState.pipe(map((mutationState) => ({ ...mutationState, originalArgs })));
         }),
         shareReplay({
           bufferSize: 1,

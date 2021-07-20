@@ -4,7 +4,7 @@ import '@testing-library/jest-dom';
 import { configure } from '@testing-library/angular';
 import { ReactiveFormsModule } from '@angular/forms';
 import { default as nodeFetch, Request } from 'node-fetch';
-import { server } from 'src/mocks/server';
+import { server } from './src/mocks/server';
 
 //@ts-ignore
 global.fetch = nodeFetch;

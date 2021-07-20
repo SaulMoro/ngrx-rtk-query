@@ -454,6 +454,25 @@ export class MutationSelectDefaultComponent extends BaseRenderCounterComponent {
 }
 
 @Component({
+  selector: 'lib-test-mutation-originalargs',
+  template: `
+    <div *ngIf="increment.state$ | async as incrementState">
+      <button data-testid="incrementButton" (click)="increment.dispatch(5)"></button>
+      <div data-testid="originalArgs">{{ stringify(incrementState.originalArgs) }}</div>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class MutationOriginalArgsComponent {
+  increment = mutationApi.endpoints.increment.useMutation();
+
+  // no pipes here
+  stringify(data: any): string {
+    return JSON.stringify(data);
+  }
+}
+
+@Component({
   selector: 'lib-test-post',
   template: `
     <div *ngIf="postsQuery$ | async as postsQuery">
