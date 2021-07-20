@@ -1,3 +1,10 @@
+# [2.2.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v2.1.1...v2.2.0) (2021-07-20)
+
+
+### Features
+
+* **lib:** update to toolkit 1.6.1 ([cd8cafa](https://github.com/SaulMoro/ngrx-rtk-query/commit/cd8cafadcbc248e74c2f66c9ececb53d017cc219))
+
 # [2.2.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v2.1.1...v2.2.0-next.1) (2021-07-20)
 
 
