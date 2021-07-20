@@ -946,6 +946,20 @@ describe('selectFromResult (mutation) behavior', () => {
     expect(getRenderCount()).toBe(5);
   });
 
+  test('useMutation return value contains originalArgs', async () => {
+    await render(HooksComponents.MutationOriginalArgsComponent, {
+      imports: mutationStoreRef.imports,
+    });
+
+    const incrementButton = screen.getByTestId('incrementButton');
+    const originalArgs = screen.getByTestId('originalArgs');
+
+    expect(originalArgs).toHaveTextContent('');
+
+    fireEvent.click(incrementButton);
+    expect(originalArgs).toHaveTextContent('5');
+  });
+
   test('useMutation with selectFromResult option has a type error if the result is not an object', async () => {
     await render(HooksComponents.NoObjectMutationComponent, { imports: mutationStoreRef.imports });
 
