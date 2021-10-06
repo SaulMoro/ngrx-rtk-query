@@ -42,6 +42,7 @@ export class ThunkService {
 
   getState(): object {
     let state: object = {};
+    // eslint-disable-next-line ngrx/no-store-subscription
     this.store.pipe(take(1)).subscribe((res) => (state = res));
     return state;
   }
