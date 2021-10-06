@@ -7,6 +7,5 @@
     "css": "\\B@apply\\s+([_a-zA-Z0-9\\s\\-\\:\\/]+);",
     "scss": "\\B@apply\\s+([_a-zA-Z0-9\\s\\-\\:\\/]+);",
     "typescript": "(?:\\b(?:class|className)\\s*=\\s*[\\\"\\']([_a-zA-Z0-9\\s\\-\\:\\/]+)[\\\"\\'])|(?:\\bngClass\\]\\s*=\\s*[\\\"\\']\\s*[{]\\s*[']([_a-zA-Z0-9\\s\\-\\:\\/]+)[\\\"\\'])"
-  },
-  "jest.jestCommandLine": "jest"
+  }
 }

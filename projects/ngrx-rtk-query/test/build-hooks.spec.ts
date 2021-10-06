@@ -61,6 +61,7 @@ describe('hooks tests', () => {
       await render(HooksComponents.LoadingComponent, { imports: storeRef.imports });
 
       const loadingControl = screen.getByTestId('isLoading');
+      const fetchControl = screen.getByTestId('isFetching');
       const incrementControl = screen.getByRole('button', { name: /Increment value/i });
       const refetchControl = screen.getByRole('button', { name: /Refetch/i });
 
@@ -74,9 +75,9 @@ describe('hooks tests', () => {
       fireEvent.click(incrementControl);
       // Being that we already have data, isLoading should be false
       await waitFor(() => expect(loadingControl).toHaveTextContent('false'));
-      // We call a refetch, should set to true
+      // We call a refetch, should still be `false`
       fireEvent.click(refetchControl);
-      await waitFor(() => expect(loadingControl).toHaveTextContent('true'));
+      await waitFor(() => expect(fetchControl).toHaveTextContent('true'));
       await waitFor(() => expect(loadingControl).toHaveTextContent('false'));
     });
 
@@ -117,10 +118,10 @@ describe('hooks tests', () => {
       });
       expect(getRenderCount()).toBe(4);
 
-      // We call a refetch, should set both to true, then false when complete/errored
+      // We call a refetch, should set `isFetching` to true, then false when complete/errored
       fireEvent.click(refetchControl);
       await waitFor(() => {
-        expect(loadingControl).toHaveTextContent('true');
+        expect(loadingControl).toHaveTextContent('false');
         expect(fetchControl).toHaveTextContent('true');
       });
       await waitFor(() => {
@@ -128,6 +129,24 @@ describe('hooks tests', () => {
         expect(fetchControl).toHaveTextContent('false');
       });
       expect(getRenderCount()).toBe(6);
+    });
+
+    test('`isLoading` does not jump back to true, while `isFetching` does', async () => {
+      const { fixture } = await render(HooksComponents.FetchingLoadingAltComponent, {
+        imports: storeRef.imports,
+      });
+
+      const statusControl = screen.getByTestId('status');
+      const incrementControl = screen.getByRole('button', { name: /Increment value/i });
+
+      await waitFor(() => expect(statusControl).toHaveTextContent('101'));
+
+      // Increment user id
+      fireEvent.click(incrementControl);
+      await waitFor(() => expect(statusControl).toHaveTextContent('102'));
+
+      expect(fixture.componentInstance.loadingHist).toEqual([true, false]);
+      expect(fixture.componentInstance.fetchingHist).toEqual([true, false, true, false]);
     });
 
     test('useQuery hook respects refetchOnMountOrArgChange: true', async () => {
@@ -475,7 +494,7 @@ describe('hooks tests', () => {
 
       userEvent.hover(prefetchControl);
       expect(api.endpoints.getUser.select(HooksComponents.HIGH_PRIORITY_USER_ID)(getState())).toEqual({
-        data: undefined,
+        data: {},
         endpointName: 'getUser',
         error: undefined,
         fulfilledTimeStamp: expect.any(Number),
@@ -492,7 +511,7 @@ describe('hooks tests', () => {
       await waitFor(() => expect(fetchControl).toHaveTextContent('false'));
 
       expect(api.endpoints.getUser.select(HooksComponents.HIGH_PRIORITY_USER_ID)(getState())).toEqual({
-        data: undefined,
+        data: {},
         endpointName: 'getUser',
         fulfilledTimeStamp: expect.any(Number),
         isError: false,
@@ -518,7 +537,7 @@ describe('hooks tests', () => {
       // Try to prefetch what we just loaded
       userEvent.hover(prefetchControl);
       expect(api.endpoints.getUser.select(HooksComponents.LOW_PRIORITY_USER_ID)(getState())).toEqual({
-        data: undefined,
+        data: {},
         endpointName: 'getUser',
         fulfilledTimeStamp: expect.any(Number),
         isError: false,
@@ -534,7 +553,7 @@ describe('hooks tests', () => {
       await waitMs();
 
       expect(api.endpoints.getUser.select(HooksComponents.LOW_PRIORITY_USER_ID)(getState())).toEqual({
-        data: undefined,
+        data: {},
         endpointName: 'getUser',
         fulfilledTimeStamp: expect.any(Number),
         isError: false,
@@ -568,7 +587,7 @@ describe('hooks tests', () => {
       // This should run the query being that we're past the threshold
       userEvent.hover(prefetchControl);
       expect(api.endpoints.getUser.select(HooksComponents.LOW_PRIORITY_USER_ID)(getState())).toEqual({
-        data: undefined,
+        data: {},
         endpointName: 'getUser',
         fulfilledTimeStamp: expect.any(Number),
         isError: false,
@@ -584,7 +603,7 @@ describe('hooks tests', () => {
       await waitFor(() => expect(fetchControl).toHaveTextContent('false'));
 
       expect(api.endpoints.getUser.select(HooksComponents.LOW_PRIORITY_USER_ID)(getState())).toEqual({
-        data: undefined,
+        data: {},
         endpointName: 'getUser',
         fulfilledTimeStamp: expect.any(Number),
         isError: false,

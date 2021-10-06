@@ -11,12 +11,11 @@ export type HooksWithUniqueNames<Definitions extends EndpointDefinitions> = keyo
           [K in Keys as `use${Capitalize<K>}Query`]: UseQuery<
             Extract<Definitions[K], QueryDefinition<any, any, any, any>>
           >;
-        } &
-          {
-            [K in Keys as `useLazy${Capitalize<K>}Query`]: UseLazyQuery<
-              Extract<Definitions[K], QueryDefinition<any, any, any, any>>
-            >;
-          }
+        } & {
+          [K in Keys as `useLazy${Capitalize<K>}Query`]: UseLazyQuery<
+            Extract<Definitions[K], QueryDefinition<any, any, any, any>>
+          >;
+        }
       : Definitions[Keys] extends { type: DefinitionType.mutation }
       ? {
           [K in Keys as `use${Capitalize<K>}Mutation`]: UseMutation<

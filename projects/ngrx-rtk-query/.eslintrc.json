@@ -13,6 +13,7 @@
         "@typescript-eslint/explicit-function-return-type": "off",
         "@typescript-eslint/ban-types": "off",
         "prefer-arrow/prefer-arrow-functions": "off",
+        "ngrx/prefix-selectors-with-select": "off",
         "@angular-eslint/directive-selector": [
           "error",
           {

@@ -54,6 +54,7 @@ export class FetchingComponent extends BaseRenderCounterComponent {
   template: `
     <div *ngIf="query$ | async as query">
       <div data-testid="isLoading">{{ '' + query.isLoading }}</div>
+      <div data-testid="isFetching">{{ '' + query.isFetching }}</div>
       <button type="button" (click)="increment()">Increment value</button>
       <button type="button" (click)="query.refetch()">Refetch</button>
     </div>
@@ -94,6 +95,40 @@ export class FetchingLoadingComponent extends BaseRenderCounterComponent {
   increment(): void {
     // eslint-disable-next-line rxjs/no-subject-value
     this.value.next(this.value.getValue() + 1);
+  }
+}
+
+@Component({
+  selector: 'lib-test-fetching-query',
+  template: `
+    <div *ngIf="query$ | async as query">
+      <div data-testid="status">{{ '' + query.status === 'fulfilled' && query.originalArgs }}</div>
+      <button type="button" (click)="increment()">Increment value</button>
+      {{ update(query.isLoading, query.isFetching) }}
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class FetchingLoadingAltComponent {
+  loadingHist: boolean[] = [];
+  fetchingHist: boolean[] = [];
+
+  value = new BehaviorSubject<number>(101);
+  value$ = this.value.asObservable();
+  query$ = api.endpoints.getUser.useQuery(this.value$);
+
+  increment(): void {
+    // eslint-disable-next-line rxjs/no-subject-value
+    this.value.next(this.value.getValue() + 1);
+  }
+
+  update(isLoading: boolean, isFetching: boolean): void {
+    if (this.loadingHist[this.loadingHist.length - 1] !== isLoading) {
+      this.loadingHist.push(isLoading);
+    }
+    if (this.fetchingHist[this.fetchingHist.length - 1] !== isFetching) {
+      this.fetchingHist.push(isFetching);
+    }
   }
 }
 
