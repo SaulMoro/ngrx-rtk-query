@@ -143,10 +143,21 @@ export type UseLazyQueryLastPromiseInfo<D extends QueryDefinition<any, any, any,
  * - Accepts polling/re-fetching options to trigger automatic re-fetches when the corresponding criteria is
  * met and the fetch has been manually called at least once
  *
+ * #### Note
+ *
+ * When the trigger function returned from a LazyQuery, it always initiates a new request to the server even if there
+ * is cached data. Set `preferCacheValue`(the second argument to the function) as true if you want it to use cache.
  */
 export type UseLazyQuery<D extends QueryDefinition<any, any, any, any>> = <R = UseQueryStateDefaultResult<D>>(
   options?: UseLazyQueryOptions<D, R> | Observable<UseLazyQueryOptions<D, R>>,
 ) => {
+  /**
+   * Triggers a lazy query.
+   *
+   * By default, this will start a new request even if there is already a value in the cache.
+   * If you want to use the cache value and only start a request if there is no cache value,
+   * set the second argument to `true`.
+   */
   fetch: UseLazyTrigger<D>;
   state$: Observable<UseQueryStateResult<D, R>>;
   lastArg$: Observable<QueryArgFrom<D> | UninitializedValue>;

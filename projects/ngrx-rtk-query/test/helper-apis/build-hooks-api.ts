@@ -25,7 +25,7 @@ export const api = createApi({
       };
     }
 
-    return { data: arg?.body ? { ...arg.body, ...(amount ? { amount } : {}) } : undefined };
+    return { data: arg?.body ? { ...arg.body, ...(amount ? { amount } : {}) } : {} };
   },
   endpoints: (build) => ({
     getUser: build.query<any, number>({
