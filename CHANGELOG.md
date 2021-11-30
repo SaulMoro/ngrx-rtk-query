@@ -1,3 +1,10 @@
+# [2.4.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v2.3.0...v2.4.0) (2021-11-30)
+
+
+### Features
+
+* **lib:** add support to Angular 13 ([f925089](https://github.com/SaulMoro/ngrx-rtk-query/commit/f92508979453cc00b37ca9d073a7f5d698d4d400))
+
 # [2.4.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v2.3.0...v2.4.0-next.1) (2021-11-30)
 
 
