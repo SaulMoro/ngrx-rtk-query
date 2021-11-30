@@ -1,3 +1,15 @@
+# [2.3.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v2.2.0...v2.3.0) (2021-10-06)
+
+
+### Bug Fixes
+
+* **lib:** format issues ([80c930a](https://github.com/SaulMoro/ngrx-rtk-query/commit/80c930a3d544b7c27099b0a158c7ee5695406966))
+
+
+### Features
+
+* **lib:** update to rtk 1.6.2 - PR [#1564](https://github.com/SaulMoro/ngrx-rtk-query/issues/1564) (Oct 5, 2021) ([d7e714b](https://github.com/SaulMoro/ngrx-rtk-query/commit/d7e714be71d981ac165f34886608a156e48877d1))
+
 # [2.3.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v2.2.0...v2.3.0-next.1) (2021-10-06)
 
 
