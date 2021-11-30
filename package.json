@@ -10,7 +10,7 @@
     "test:coverage": "npm run test -- --coverage",
     "test:ci": "npm run test -- --ci --runInBand",
     "e2e": "ng e2e",
-    "lint": "ng lint && stylelint '*/**/*.scss' --syntax scss",
+    "lint": "ng lint && stylelint '*/**/*.scss'",
     "format": "prettier --check --ignore-unknown .",
     "contributors:add": "all-contributors add",
     "hooks:pre-commit": "node .husky/hooks/pre-commit.js",
@@ -122,7 +122,7 @@
       "prettier --write --ignore-unknown"
     ],
     "*.{scss,css}": [
-      "stylelint --syntax scss --fix"
+      "stylelint --fix"
     ]
   }
 }

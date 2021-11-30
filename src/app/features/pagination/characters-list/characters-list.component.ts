@@ -24,10 +24,10 @@ import { useGetCharactersQuery } from '../services';
         </div>
         <button
           class="btn-outline btn-primary"
+          queryParamsHandling="merge"
           [disabled]="charactersQuery.isLoading"
           [routerLink]="['./']"
           [queryParams]="{ page: 999 }"
-          queryParamsHandling="merge"
         >
           Nav to bad page
         </button>

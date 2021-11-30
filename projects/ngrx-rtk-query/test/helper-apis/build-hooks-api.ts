@@ -52,7 +52,7 @@ export const defaultApi = createApi({
   reducerPath: 'defaultApi',
   baseQuery: async (arg: any) => {
     await waitMs();
-    if ('amount' in arg?.body) {
+    if (arg?.body && 'amount' in arg.body) {
       amount += 1;
     }
     return { data: arg?.body ? { ...arg.body, ...(amount ? { amount } : {}) } : undefined };
@@ -74,7 +74,7 @@ export const mutationApi = createApi({
   reducerPath: 'mutationApi',
   baseQuery: async (arg: any) => {
     await waitMs();
-    if ('amount' in arg?.body) {
+    if (arg?.body && 'amount' in arg.body) {
       amount += 1;
     }
     return { data: arg?.body ? { ...arg.body, ...(amount ? { amount } : {}) } : undefined };
