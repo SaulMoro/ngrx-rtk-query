@@ -84,7 +84,7 @@ const injectImports =
       }
 
       const modulePath = getAppModulePath(host, project.architect.build.options.main);
-      const moduleSource = getSourceFile(host, modulePath);
+      const moduleSource = getSourceFile(host, modulePath) as any;
 
       importModuleSet.forEach((item) => {
         if (isImported(moduleSource, item.moduleName, item.importPath)) {
