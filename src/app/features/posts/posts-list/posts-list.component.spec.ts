@@ -9,6 +9,7 @@ describe('PostsListComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [PostsListComponent],
+      teardown: { destroyAfterEach: false },
     }).compileComponents();
   });
 

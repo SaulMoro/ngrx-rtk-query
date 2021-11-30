@@ -9,6 +9,7 @@ describe('CharactersListComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [CharactersListComponent],
+      teardown: { destroyAfterEach: false },
     }).compileComponents();
   });
 

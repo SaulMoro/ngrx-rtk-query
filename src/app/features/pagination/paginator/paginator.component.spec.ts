@@ -9,6 +9,7 @@ describe('PaginatorComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [PaginatorComponent],
+      teardown: { destroyAfterEach: false },
     }).compileComponents();
   });
 
