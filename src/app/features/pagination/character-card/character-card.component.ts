@@ -11,7 +11,7 @@ import { Character, CharacterStatus } from '../models';
       <div
         class="inline-flex w-40 h-40 overflow-hidden border border-gray-200 rounded-full shadow-lg dark:border-gray-800"
       >
-        <img [src]="character.image" [alt]="character.name" class="w-full h-full" />
+        <img class="w-full h-full" [src]="character.image" [alt]="character.name" />
       </div>
 
       <h2 class="mt-4 text-xl font-bold">{{ character.name }}</h2>

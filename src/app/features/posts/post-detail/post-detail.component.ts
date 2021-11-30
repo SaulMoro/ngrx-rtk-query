@@ -8,14 +8,14 @@ import { useDeletePostMutation, useGetPostQuery, useUpdatePostMutation } from '.
 @Component({
   selector: 'app-post-detail',
   template: `
-    <section class="space-y-4" *ngIf="postQuery$ | async as postQuery">
+    <section *ngIf="postQuery$ | async as postQuery" class="space-y-4">
       <div>
         <h1 class="text-xl font-semibold">{{ postQuery?.data?.name }}</h1>
         <small *ngIf="postQuery.isFetching">Loading...</small>
       </div>
 
       <ng-container *ngIf="!isEditing; else editionSection">
-        <div class="flex items-center space-x-4" *ngIf="deletePostMutation.state$ | async as deletePostState">
+        <div *ngIf="deletePostMutation.state$ | async as deletePostState" class="flex items-center space-x-4">
           <button
             *ngIf="updatePostMutation.state$ | async as updatePostState"
             class="btn-outline btn-primary"
@@ -37,7 +37,7 @@ import { useDeletePostMutation, useGetPostQuery, useUpdatePostMutation } from '.
         </div>
       </ng-container>
       <ng-template #editionSection>
-        <div class="space-x-4" *ngIf="updatePostMutation.state$ | async as updatePostState">
+        <div *ngIf="updatePostMutation.state$ | async as updatePostState" class="space-x-4">
           <input type="text" [formControl]="postFormControl" />
           <button class="btn btn-primary" [disabled]="updatePostState.isLoading" (click)="updatePost()">
             {{ updatePostState?.isLoading ? 'Updating...' : 'Update' }}

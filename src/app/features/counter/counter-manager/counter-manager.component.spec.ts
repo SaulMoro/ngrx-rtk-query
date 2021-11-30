@@ -9,6 +9,7 @@ describe('CounterManagerComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [CounterManagerComponent],
+      teardown: { destroyAfterEach: false },
     }).compileComponents();
   });
 

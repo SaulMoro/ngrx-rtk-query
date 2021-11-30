@@ -9,6 +9,7 @@ describe('PostsManagerComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [PostsManagerComponent],
+      teardown: { destroyAfterEach: false },
     }).compileComponents();
   });
 

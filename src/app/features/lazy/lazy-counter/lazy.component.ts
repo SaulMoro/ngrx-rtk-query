@@ -13,10 +13,10 @@ const { getCountById } = counterApiEndpoints;
         <h1 class="text-xl font-semibold">Start Lazy Counter</h1>
         <div>
           <input type="text" placeholder="Type counter id" formControlName="id" />
-          <button type="submit" class="m-4 btn btn-primary" [disabled]="form.invalid || countQuery.isLoading">
+          <button class="m-4 btn btn-primary" type="submit" [disabled]="form.invalid || countQuery.isLoading">
             {{ countQuery.isLoading ? 'Starting...' : 'Start Counter' }}
           </button>
-          <label for="preferCacheValue" class="space-x-2 text-sm">
+          <label class="space-x-2 text-sm" for="preferCacheValue">
             <input id="preferCacheValue" type="checkbox" formControlName="preferCacheValue" />
             <span>Prefer Cache (No fetch if counter exists with same id in cache)</span>
           </label>

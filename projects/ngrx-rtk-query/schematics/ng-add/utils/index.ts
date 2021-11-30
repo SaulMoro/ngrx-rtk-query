@@ -75,7 +75,7 @@ export const addModuleImportToRootModule = (
 };
 
 export const addModuleImportToModule = (host: Tree, modulePath: string, moduleName: string, src: string): void => {
-  const moduleSource = getSourceFile(host, modulePath);
+  const moduleSource = getSourceFile(host, modulePath) as any;
 
   if (!moduleSource) {
     throw new SchematicsException(`Module not found: ${modulePath}`);

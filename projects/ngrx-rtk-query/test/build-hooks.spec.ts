@@ -97,37 +97,27 @@ describe('hooks tests', () => {
 
       fireEvent.click(incrementControl); // renders: set state = 1, perform request = 2
       // Condition is met, should load
-      await waitFor(() => {
-        expect(loadingControl).toHaveTextContent('true');
-        expect(fetchControl).toHaveTextContent('true');
-      });
+      await waitFor(() => expect(loadingControl).toHaveTextContent('true'));
+      await waitFor(() => expect(fetchControl).toHaveTextContent('true'));
 
       // Make sure the request is done for sure.
-      await waitFor(() => {
-        expect(loadingControl).toHaveTextContent('false');
-        expect(fetchControl).toHaveTextContent('false');
-      });
+      await waitFor(() => expect(loadingControl).toHaveTextContent('false'));
+      await waitFor(() => expect(fetchControl).toHaveTextContent('false'));
       expect(getRenderCount()).toBe(3);
 
       fireEvent.click(incrementControl);
       // Being that we already have data and changing the value doesn't trigger a new request,
       // only the button click should impact the render
-      await waitFor(() => {
-        expect(loadingControl).toHaveTextContent('false');
-        expect(fetchControl).toHaveTextContent('false');
-      });
+      await waitFor(() => expect(loadingControl).toHaveTextContent('false'));
+      await waitFor(() => expect(fetchControl).toHaveTextContent('false'));
       expect(getRenderCount()).toBe(4);
 
       // We call a refetch, should set `isFetching` to true, then false when complete/errored
       fireEvent.click(refetchControl);
-      await waitFor(() => {
-        expect(loadingControl).toHaveTextContent('false');
-        expect(fetchControl).toHaveTextContent('true');
-      });
-      await waitFor(() => {
-        expect(loadingControl).toHaveTextContent('false');
-        expect(fetchControl).toHaveTextContent('false');
-      });
+      await waitFor(() => expect(loadingControl).toHaveTextContent('false'));
+      await waitFor(() => expect(fetchControl).toHaveTextContent('true'));
+      await waitFor(() => expect(loadingControl).toHaveTextContent('false'));
+      await waitFor(() => expect(fetchControl).toHaveTextContent('false'));
       expect(getRenderCount()).toBe(6);
     });
 

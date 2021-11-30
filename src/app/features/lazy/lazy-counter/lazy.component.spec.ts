@@ -9,6 +9,7 @@ describe('LazyComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [LazyComponent],
+      teardown: { destroyAfterEach: false },
     }).compileComponents();
   });
 

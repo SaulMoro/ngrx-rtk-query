@@ -9,6 +9,7 @@ describe('CounterRowComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [CounterRowComponent],
+      teardown: { destroyAfterEach: false },
     }).compileComponents();
   });
 

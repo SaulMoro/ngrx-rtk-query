@@ -4,8 +4,8 @@
   "description": "Make RTK Query works in Angular Applications",
   "peerDependencies": {
     "typescript": "^4.1.0",
-    "@angular/core": ">= 11.0.0 < 13",
-    "@ngrx/store": ">= 11.0.0 < 13",
+    "@angular/core": ">= 11.0.0 < 14",
+    "@ngrx/store": ">= 11.0.0 < 14",
     "rxjs": ">= 6.5.3 < 8",
     "@reduxjs/toolkit": "~1.6.2"
   },

@@ -9,6 +9,7 @@ describe('EmptyComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [EmptyComponent],
+      teardown: { destroyAfterEach: false },
     }).compileComponents();
   });
 
