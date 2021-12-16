@@ -1,3 +1,15 @@
+# [3.0.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v2.4.0...v3.0.0-next.1) (2021-12-16)
+
+
+### Features
+
+* **lib:** add support to RTK 1.7.1 ([be59dd3](https://github.com/SaulMoro/ngrx-rtk-query/commit/be59dd3a119688d08c46d24276ca7cb2ad38d002))
+
+
+### BREAKING CHANGES
+
+* **lib:** add support to RTK 1.7.1
+
 # [2.4.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v2.3.0...v2.4.0) (2021-11-30)
 
 
