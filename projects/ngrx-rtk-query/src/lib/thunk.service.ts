@@ -15,7 +15,7 @@ export function dispatch<R>(action: Action | ThunkAction<R, any, any, AnyAction>
   }
 
   // Middleware dispatch actions before Store starts
-  if (service) {
+  if (service && Object.keys(getState())?.length) {
     delayedActions.map((delayedAction) => service.dispatch(delayedAction));
     delayedActions = [];
     service.dispatch(action);

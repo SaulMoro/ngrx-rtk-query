@@ -12,9 +12,11 @@ import type {
   PrefetchOptions,
 } from '@reduxjs/toolkit/dist/query/core/module';
 import type { QueryResultSelectorResult } from '@reduxjs/toolkit/dist/query/core/buildSelectors';
+import { SerializeQueryArgs } from '@reduxjs/toolkit/dist/query/defaultSerializeQueryArgs';
+import { ApiContext } from '@reduxjs/toolkit/dist/query/apiTypes';
 import { createSelectorFactory, resultMemoize } from '@ngrx/store';
 import { BehaviorSubject, of, isObservable, combineLatest } from 'rxjs';
-import { distinctUntilChanged, finalize, map, shareReplay, switchMap, tap } from 'rxjs/operators';
+import { distinctUntilChanged, finalize, map, shareReplay, switchMap, take, tap } from 'rxjs/operators';
 
 import type { AngularHooksModuleOptions } from './module';
 import type {
@@ -35,27 +37,7 @@ import type {
 import { UNINITIALIZED_VALUE } from './constants';
 import { shallowEqual } from './utils';
 import { getState } from './thunk.service';
-
-const queryStatePreSelector = (
-  currentState: QueryResultSelectorResult<any>,
-  lastResult: UseQueryStateDefaultResult<any>,
-): UseQueryStateDefaultResult<any> => {
-  // data is the last known good request result we have tracked
-  // or if none has been tracked yet the last good result for the current args
-  let data = currentState.isSuccess ? currentState.data : lastResult?.data;
-  if (data === undefined) data = currentState.data;
-
-  const hasData = data !== undefined;
-
-  // isFetching = true any time a request is in flight
-  const isFetching = currentState.isLoading;
-  // isLoading = true only when loading while no data is present yet (initial load with no data in the cache)
-  const isLoading = !hasData && isFetching;
-  // isSuccess = true when data is present
-  const isSuccess = currentState.isSuccess || (isFetching && hasData);
-
-  return { ...currentState, data, isFetching, isLoading, isSuccess } as UseQueryStateDefaultResult<any>;
-};
+import { useStableQueryArgs } from './useSerializedStableValue';
 
 const defaultQueryStateSelector: QueryStateSelector<any, any> = (x) => x;
 const defaultMutationStateSelector: MutationStateSelector<any, any> = (x) => x;
@@ -89,11 +71,65 @@ const noPendingQueryStateSelector: QueryStateSelector<any, any> = (selected) => 
 export function buildHooks<Definitions extends EndpointDefinitions>({
   api,
   moduleOptions: { useDispatch: dispatch, useSelector },
+  serializeQueryArgs,
+  context,
 }: {
   api: Api<any, Definitions, any, any, CoreModule>;
   moduleOptions: Required<AngularHooksModuleOptions>;
+  serializeQueryArgs: SerializeQueryArgs<any>;
+  context: ApiContext<Definitions>;
 }) {
   return { buildQueryHooks, buildMutationHook, usePrefetch };
+
+  function queryStatePreSelector(
+    currentState: QueryResultSelectorResult<any>,
+    lastResult: UseQueryStateDefaultResult<any> | undefined,
+    queryArgs: any,
+  ): UseQueryStateDefaultResult<any> {
+    // if we had a last result and the current result is uninitialized,
+    // we might have called `api.util.resetApiState`
+    // in this case, reset the hook
+    if (lastResult?.endpointName && currentState.isUninitialized) {
+      const { endpointName } = lastResult;
+      const endpointDefinition = context.endpointDefinitions[endpointName];
+      if (
+        serializeQueryArgs({
+          queryArgs: lastResult.originalArgs,
+          endpointDefinition,
+          endpointName,
+        }) ===
+        serializeQueryArgs({
+          queryArgs,
+          endpointDefinition,
+          endpointName,
+        })
+      )
+        lastResult = undefined;
+    }
+
+    // data is the last known good request result we have tracked
+    // or if none has been tracked yet the last good result for the current args
+    let data = currentState.isSuccess ? currentState.data : lastResult?.data;
+    if (data === undefined) data = currentState.data;
+
+    const hasData = data !== undefined;
+
+    // isFetching = true any time a request is in flight
+    const isFetching = currentState.isLoading;
+    // isLoading = true only when loading while no data is present yet (initial load with no data in the cache)
+    const isLoading = !hasData && isFetching;
+    // isSuccess = true when data is present
+    const isSuccess = currentState.isSuccess || (isFetching && hasData);
+
+    return {
+      ...currentState,
+      data,
+      currentData: currentState.data,
+      isFetching,
+      isLoading,
+      isSuccess,
+    } as UseQueryStateDefaultResult<any>;
+  }
 
   function usePrefetch<EndpointName extends QueryKeys<Definitions>>(
     endpointName: EndpointName,
@@ -113,16 +149,38 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       arg: any,
       { refetchOnReconnect, refetchOnFocus, refetchOnMountOrArgChange, skip = false, pollingInterval = 0 } = {},
       promiseRef = {},
+      argCacheRef = {},
     ) => {
-      if (!skip && arg !== skipToken && arg !== UNINITIALIZED_VALUE) {
-        const subscriptionOptions = { refetchOnReconnect, refetchOnFocus, pollingInterval };
+      const stableArg = useStableQueryArgs(
+        skip ? skipToken : arg,
+        serializeQueryArgs,
+        context.endpointDefinitions[name],
+        name,
+        argCacheRef,
+      );
+      const subscriptionOptions = { refetchOnReconnect, refetchOnFocus, pollingInterval };
+
+      const { queryCacheKey, requestId } = promiseRef.current || {};
+      useSelector(
+        (state: RootState<Definitions, string, string>) =>
+          !!queryCacheKey && !!requestId && !state[api.reducerPath].subscriptions[queryCacheKey]?.[requestId],
+      )
+        .pipe(take(1))
+        .subscribe((subscriptionRemoved) => {
+          if (subscriptionRemoved) {
+            promiseRef.current?.unsubscribe();
+            promiseRef.current = undefined;
+          }
+        });
+
+      if (stableArg !== skipToken && stableArg !== UNINITIALIZED_VALUE) {
         const lastPromise = promiseRef?.current;
         const lastSubscriptionOptions = promiseRef.current?.subscriptionOptions;
 
-        if (!lastPromise || !shallowEqual(lastPromise.arg, arg)) {
+        if (!lastPromise || !shallowEqual(lastPromise.arg, stableArg)) {
           lastPromise?.unsubscribe();
           promiseRef.current = dispatch(
-            initiate(arg, { subscriptionOptions, forceRefetch: refetchOnMountOrArgChange }),
+            initiate(stableArg, { subscriptionOptions, forceRefetch: refetchOnMountOrArgChange }),
           );
         } else if (!shallowEqual(subscriptionOptions, lastSubscriptionOptions)) {
           lastPromise.updateSubscriptionOptions(subscriptionOptions);
@@ -161,21 +219,31 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         trigger(argState, { preferCacheValue: true });
       }
 
-      return [trigger, argState];
+      return [trigger, argState] as const;
     };
 
     const useQueryState: UseQueryState<any> = (
       arg: any,
       { skip = false, selectFromResult = defaultQueryStateSelector } = {},
       lastValue = {},
+      argCacheRef = {},
     ) => {
       const arg$ = isObservable(arg) ? arg : of(arg);
       return arg$.pipe(
+        map((currentArg) =>
+          useStableQueryArgs(
+            skip || currentArg === UNINITIALIZED_VALUE ? skipToken : currentArg,
+            serializeQueryArgs,
+            context.endpointDefinitions[name],
+            name,
+            argCacheRef,
+          ),
+        ),
         distinctUntilChanged(shallowEqual),
-        switchMap((currentArg) => {
+        switchMap((stableArg) => {
           const selectDefaultResult = createSelectorFactory((projector) => resultMemoize(projector, shallowEqual))(
-            select(skip || currentArg === UNINITIALIZED_VALUE ? skipToken : currentArg),
-            (subState: any) => queryStatePreSelector(subState, lastValue.current),
+            select(stableArg),
+            (subState: any) => queryStatePreSelector(subState, lastValue.current, stableArg),
           );
 
           const querySelector = createSelectorFactory((projector) => resultMemoize(projector, shallowEqual))(
@@ -198,6 +266,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       // Refs
       const promiseRef: { current?: QueryActionCreatorResult<any> } = {};
       const lastValue: { current?: any } = {};
+      const argRef: { current?: any } = {};
 
       const arg$ = isObservable(arg) ? arg : of(arg);
       const options$ = isObservable(options) ? options : of(options);
@@ -207,7 +276,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         options$.pipe(distinctUntilChanged((prev, curr) => shallowEqual(prev, curr))),
       ]).pipe(
         switchMap(([currentArg, currentOptions]) => {
-          const querySubscriptionResults = useQuerySubscription(currentArg, currentOptions, promiseRef);
+          const querySubscriptionResults = useQuerySubscription(currentArg, currentOptions, promiseRef, argRef);
           const queryStateResults$ = useQueryState(
             currentArg,
             {
@@ -218,6 +287,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
               ...currentOptions,
             },
             lastValue,
+            argRef,
           );
           return queryStateResults$.pipe(map((queryState) => ({ ...queryState, ...querySubscriptionResults })));
         }),
@@ -237,6 +307,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       const promiseRef: { current?: QueryActionCreatorResult<any> } = {};
       const lastValue: { current?: any } = {};
       const triggerRef: { current?: UseLazyTrigger<any> } = {};
+      const argRef: { current?: any } = {};
 
       const infoSubject = new BehaviorSubject<UseLazyQueryLastPromiseInfo<any>>({ lastArg: UNINITIALIZED_VALUE });
       const info$ = infoSubject.asObservable();
@@ -260,7 +331,17 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
           distinctUntilChanged(shallowEqual),
         ),
       ]).pipe(
-        switchMap(([currentOptions, currentArg]) => useQueryState(currentArg, currentOptions, lastValue)),
+        switchMap(([currentOptions, currentArg]) =>
+          useQueryState(
+            currentArg,
+            {
+              ...currentOptions,
+              skip: currentArg === UNINITIALIZED_VALUE,
+            },
+            lastValue,
+            argRef,
+          ),
+        ),
         shareReplay({
           bufferSize: 1,
           refCount: true,
@@ -293,35 +374,51 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       Definitions
     >;
 
-    return ({ selectFromResult = defaultMutationStateSelector } = {}) => {
+    return ({ selectFromResult = defaultMutationStateSelector, fixedCacheKey } = {}) => {
       const promiseRef: { current?: MutationActionCreatorResult<any> } = {};
       const requestIdSubject = new BehaviorSubject<string>('');
       const requestId$ = requestIdSubject.asObservable();
 
       const triggerMutation = (arg: any) => {
-        promiseRef.current?.unsubscribe();
+        if (!promiseRef.current?.arg.fixedCacheKey) {
+          promiseRef.current?.reset();
+        }
 
-        const promise = dispatch(initiate(arg));
+        const promise = dispatch(initiate(arg, { fixedCacheKey }));
         promiseRef.current = promise;
         requestIdSubject.next(promise.requestId);
 
         return promise;
       };
 
+      const reset = () => {
+        if (promiseRef.current) {
+          promiseRef.current = undefined;
+        }
+        if (fixedCacheKey) {
+          dispatch(
+            api.internalActions.removeMutationResult({
+              requestId: requestIdSubject.value,
+              fixedCacheKey,
+            }),
+          );
+        }
+      };
+
       const state$ = requestId$.pipe(
         finalize(() => {
-          promiseRef.current?.unsubscribe();
+          promiseRef.current?.reset();
           promiseRef.current = undefined;
         }),
         distinctUntilChanged(shallowEqual),
         switchMap((requestId) => {
           const mutationSelector = createSelectorFactory((projector) => resultMemoize(projector, shallowEqual))(
-            select(requestId || skipToken),
+            select(requestId ? { fixedCacheKey, requestId } : skipToken),
             (subState: any) => selectFromResult(subState),
           );
           const currentState = useSelector((state: RootState<Definitions, any, any>) => mutationSelector(state));
-          const originalArgs = promiseRef.current?.arg.originalArgs;
-          return currentState.pipe(map((mutationState) => ({ ...mutationState, originalArgs })));
+          const originalArgs = fixedCacheKey == null ? promiseRef.current?.arg.originalArgs : undefined;
+          return currentState.pipe(map((mutationState) => ({ ...mutationState, originalArgs, reset })));
         }),
         shareReplay({
           bufferSize: 1,
@@ -329,7 +426,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         }),
       );
 
-      return { dispatch: triggerMutation, state$ };
+      return { dispatch: triggerMutation, state$ } as const;
     };
   }
 }

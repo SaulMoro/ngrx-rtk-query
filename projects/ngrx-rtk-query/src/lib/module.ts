@@ -9,20 +9,18 @@ import type {
 } from '@reduxjs/toolkit/query';
 import type { QueryKeys } from '@reduxjs/toolkit/dist/query/core/apiState';
 import type { PrefetchOptions } from '@reduxjs/toolkit/dist/query/core/module';
-import type { QueryArgFrom } from '@reduxjs/toolkit/dist/query/endpointDefinitions';
+import { QueryArgFrom } from '@reduxjs/toolkit/dist/query/endpointDefinitions';
 import type { MetaReducer } from '@ngrx/store';
 
 import { buildHooks } from './build-hooks';
 import { buildMetaReducer } from './build-metareducer';
 import { dispatch, getState as getStateFromStore, select } from './thunk.service';
-import { isQueryDefinition, isMutationDefinition } from './types';
-import type { QueryHooks, MutationHooks, HooksWithUniqueNames } from './types';
+import { QueryHooks, MutationHooks, HooksWithUniqueNames, isQueryDefinition, isMutationDefinition } from './types';
 import { capitalize, safeAssign } from './utils';
 
-export const angularHooksModuleName = Symbol();
+export const angularHooksModuleName = /* @__PURE__ */ Symbol();
 export type AngularHooksModule = typeof angularHooksModuleName;
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
 declare module '@reduxjs/toolkit/query' {
   export interface ApiModules<
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -82,11 +80,13 @@ export const angularHooksModule = ({
   getState = getStateFromStore,
 }: AngularHooksModuleOptions = {}): Module<AngularHooksModule> => ({
   name: angularHooksModuleName,
-  init(api, options, context) {
+  init(api, { serializeQueryArgs }, context) {
     const anyApi = api as any as Api<any, Record<string, any>, string, string, AngularHooksModule>;
     const { buildQueryHooks, buildMutationHook, usePrefetch } = buildHooks({
       api,
       moduleOptions: { useDispatch, useSelector, getState },
+      serializeQueryArgs,
+      context,
     });
     const metareducer: MetaReducer<any> = buildMetaReducer({ api, moduleOptions: { useDispatch } });
     safeAssign(anyApi, { usePrefetch });
@@ -116,4 +116,4 @@ export const angularHooksModule = ({
   },
 });
 
-export const createApi = buildCreateApi(coreModule(), angularHooksModule());
+export const createApi = /* @__PURE__ */ buildCreateApi(coreModule(), angularHooksModule());

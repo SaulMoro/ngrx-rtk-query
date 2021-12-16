@@ -141,7 +141,6 @@ export class FetchingLoadingAltComponent {
       <div data-testid="amount">{{ '' + query.data?.amount }}</div>
     </div>
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RefetchOnMountComponent {
   query$ = api.endpoints.getIncrementedAmount.useQuery(undefined, {

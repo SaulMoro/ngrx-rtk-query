@@ -1,2 +1,3 @@
-export * from './ts-helpers';
+export * from './capitalize';
 export * from './shallow-equal';
+export * from './tsHelpers';

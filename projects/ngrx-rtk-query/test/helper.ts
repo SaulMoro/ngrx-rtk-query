@@ -29,8 +29,7 @@ declare global {
 
 expect.extend({
   toMatchSequence(_actions: AnyAction[], ...matchers: Array<(arg: any) => boolean>) {
-    const actions = _actions.concat();
-    actions.shift(); // remove INIT
+    const actions = _actions.concat().slice(-matchers.length);
 
     for (let i = 0; i < matchers.length; i++) {
       if (!matchers[i](actions[i])) {
