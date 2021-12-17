@@ -1,3 +1,10 @@
+# [3.0.0-next.3](https://github.com/SaulMoro/ngrx-rtk-query/compare/v3.0.0-next.2...v3.0.0-next.3) (2021-12-17)
+
+
+### Bug Fixes
+
+* **lib:** fix mutation reset and add test cases ([d7fb35b](https://github.com/SaulMoro/ngrx-rtk-query/commit/d7fb35b627564cbd6f45e23b8b1bf4eb3c577e3d))
+
 # [3.0.0-next.2](https://github.com/SaulMoro/ngrx-rtk-query/compare/v3.0.0-next.1...v3.0.0-next.2) (2021-12-17)
 
 
