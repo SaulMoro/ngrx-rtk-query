@@ -386,15 +386,15 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
 
     return ({ selectFromResult = defaultMutationStateSelector, fixedCacheKey } = {}) => {
       const promiseRef: { current?: MutationActionCreatorResult<any> } = {};
-      const requestIdSubject = new BehaviorSubject<string>('');
+      const requestIdSubject = new BehaviorSubject<string | undefined>(undefined);
       const requestId$ = requestIdSubject.asObservable();
 
       const triggerMutation = (arg: any) => {
+        const promise = dispatch(initiate(arg, { fixedCacheKey }));
         if (!promiseRef.current?.arg.fixedCacheKey) {
-          promiseRef.current?.reset();
+          removePrevMutation();
         }
 
-        const promise = dispatch(initiate(arg, { fixedCacheKey }));
         promiseRef.current = promise;
         requestIdSubject.next(promise.requestId);
 
@@ -402,16 +402,16 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       };
 
       const reset = () => {
+        removePrevMutation();
+        requestIdSubject.next(undefined);
+      };
+
+      const removePrevMutation = () => {
         if (promiseRef.current) {
-          promiseRef.current = undefined;
-        }
-        if (fixedCacheKey) {
           dispatch(
-            api.internalActions.removeMutationResult({
-              requestId: requestIdSubject.value,
-              fixedCacheKey,
-            }),
+            api.internalActions.removeMutationResult({ requestId: promiseRef.current.requestId, fixedCacheKey }),
           );
+          promiseRef.current = undefined;
         }
       };
 

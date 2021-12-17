@@ -472,6 +472,47 @@ describe('hooks tests', () => {
       expect(screen.queryByText(/Successfully updated user/i)).not.toBeInTheDocument();
       screen.getByText('Request was aborted');
     });
+
+    test('useMutation return value contains originalArgs', async () => {
+      await render(HooksComponents.MutationOriginalArgsComponent, {
+        imports: storeRef.imports,
+      });
+
+      const arg = { name: 'Foo' };
+
+      const updateButton = screen.getByTestId('updateButton');
+      const originalArgs = screen.getByTestId('originalArgs');
+
+      expect(originalArgs).toHaveTextContent('');
+
+      fireEvent.click(updateButton);
+      expect(originalArgs).toHaveTextContent(JSON.stringify(arg));
+    });
+
+    test('`reset` sets state back to original state', async () => {
+      await render(HooksComponents.MutationResetComponent, {
+        imports: storeRef.imports,
+      });
+
+      await screen.findByText(/isUninitialized/i);
+      expect(screen.queryByText('Yay')).not.toBeInTheDocument();
+
+      expect(Object.keys(getState().api.mutations)).toHaveLength(0);
+
+      userEvent.click(screen.getByRole('button', { name: 'trigger' }));
+
+      await screen.findByText(/isSuccess/i);
+      expect(screen.getByText('Yay')).toBeInTheDocument();
+
+      expect(Object.keys(getState().api.mutations)).toHaveLength(1);
+
+      userEvent.click(screen.getByRole('button', { name: 'reset' }));
+
+      await screen.findByText(/isUninitialized/i);
+      expect(screen.queryByText('Yay')).not.toBeInTheDocument();
+
+      expect(Object.keys(getState().api.mutations)).toHaveLength(0);
+    });
   });
 
   describe('usePrefetch', () => {
@@ -886,7 +927,7 @@ describe('selectFromResult (mutation) behavior', () => {
     resetAmount();
   });
 
-  test('causes no more than one change when using selectFromResult with an empty object', async () => {
+  test('causes no more than one rerender when using selectFromResult with an empty object', async () => {
     const { fixture } = await render(HooksComponents.MutationSelectComponent, { imports: mutationStoreRef.imports });
     getRenderCount = fixture.componentInstance.renderCounter.getRenderCount;
 
@@ -908,13 +949,13 @@ describe('selectFromResult (mutation) behavior', () => {
       mutationApi.internalActions.middlewareRegistered.match,
       increment.matchPending,
       increment.matchFulfilled,
-      mutationApi.internalActions.removeMutationResult.match,
       increment.matchPending,
+      mutationApi.internalActions.removeMutationResult.match,
       increment.matchFulfilled,
     );
   });
 
-  test('causes changes when only selected data changes', async () => {
+  test('causes rerenders when only selected data changes', async () => {
     const { fixture } = await render(HooksComponents.MutationSelectDataComponent, {
       imports: mutationStoreRef.imports,
     });
@@ -934,7 +975,7 @@ describe('selectFromResult (mutation) behavior', () => {
     expect(getRenderCount()).toBe(5);
   });
 
-  test('causes the expected # of changes when NOT using selectFromResult', async () => {
+  test('causes the expected # of rerenders when NOT using selectFromResult', async () => {
     const { fixture } = await render(HooksComponents.MutationSelectDefaultComponent, {
       imports: mutationStoreRef.imports,
     });
@@ -955,20 +996,6 @@ describe('selectFromResult (mutation) behavior', () => {
     await waitFor(() => expect(status).toHaveTextContent('pending'));
     await waitFor(() => expect(status).toHaveTextContent('fulfilled'));
     expect(getRenderCount()).toBe(5);
-  });
-
-  test('useMutation return value contains originalArgs', async () => {
-    await render(HooksComponents.MutationOriginalArgsComponent, {
-      imports: mutationStoreRef.imports,
-    });
-
-    const incrementButton = screen.getByTestId('incrementButton');
-    const originalArgs = screen.getByTestId('originalArgs');
-
-    expect(originalArgs).toHaveTextContent('');
-
-    fireEvent.click(incrementButton);
-    expect(originalArgs).toHaveTextContent('5');
   });
 
   test('useMutation with selectFromResult option has a type error if the result is not an object', async () => {

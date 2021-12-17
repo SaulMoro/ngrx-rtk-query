@@ -490,15 +490,38 @@ export class MutationSelectDefaultComponent extends BaseRenderCounterComponent {
 @Component({
   selector: 'lib-test-mutation-originalargs',
   template: `
-    <div *ngIf="increment.state$ | async as incrementState">
-      <button data-testid="incrementButton" (click)="increment.dispatch(5)"></button>
-      <div data-testid="originalArgs">{{ stringify(incrementState.originalArgs) }}</div>
+    <div *ngIf="update.state$ | async as updateState">
+      <button data-testid="updateButton" (click)="update.dispatch({ name: 'Foo' })"></button>
+      <div data-testid="originalArgs">{{ stringify(updateState.originalArgs) }}</div>
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MutationOriginalArgsComponent {
-  increment = mutationApi.endpoints.increment.useMutation();
+  update = api.endpoints.updateUser.useMutation();
+
+  // no pipes here
+  stringify(data: any): string {
+    return JSON.stringify(data);
+  }
+}
+
+@Component({
+  selector: 'lib-test-mutation-reset',
+  template: `
+    <div *ngIf="update.state$ | async as updateState">
+      <span>
+        {{ updateState.isUninitialized ? 'isUninitialized' : updateState.isSuccess ? 'isSuccess' : 'other' }}
+      </span>
+      <span>{{ updateState.originalArgs?.name }}</span>
+      <button (click)="update.dispatch({ name: 'Yay' })">trigger</button>
+      <button (click)="updateState.reset()">reset</button>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class MutationResetComponent {
+  update = api.endpoints.updateUser.useMutation();
 
   // no pipes here
   stringify(data: any): string {
