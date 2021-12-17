@@ -262,12 +262,14 @@ describe('hooks tests', () => {
       const amount = screen.getByTestId('amount');
       const skipControl = screen.getByRole('button', { name: /change skip/i });
 
+      expect(fetchControl).toHaveTextContent('false');
+
       // skipped queries do nothing by default, so we need to toggle that to get a cached result
       fireEvent.click(skipControl);
 
       await waitFor(() => expect(fetchControl).toHaveTextContent('true'));
-      await waitFor(() => expect(fetchControl).toHaveTextContent('false'));
       await waitFor(() => expect(amount).toHaveTextContent('1'));
+      expect(fetchControl).toHaveTextContent('false');
 
       // This will pull from the cache as the time criteria is not met.
       await waitMs(100);
