@@ -266,24 +266,34 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       // Refs
       const promiseRef: { current?: QueryActionCreatorResult<any> } = {};
       const lastValue: { current?: any } = {};
+      const argQueryRef: { current?: any } = {};
       const argRef: { current?: any } = {};
 
       const arg$ = isObservable(arg) ? arg : of(arg);
       const options$ = isObservable(options) ? options : of(options);
 
       return combineLatest([
-        arg$.pipe(distinctUntilChanged(shallowEqual)),
+        arg$.pipe(
+          map((currentArg) =>
+            useStableQueryArgs(
+              currentArg === UNINITIALIZED_VALUE ? skipToken : currentArg,
+              serializeQueryArgs,
+              context.endpointDefinitions[name],
+              name,
+              argQueryRef,
+            ),
+          ),
+          distinctUntilChanged(shallowEqual),
+        ),
         options$.pipe(distinctUntilChanged((prev, curr) => shallowEqual(prev, curr))),
       ]).pipe(
-        switchMap(([currentArg, currentOptions]) => {
-          const querySubscriptionResults = useQuerySubscription(currentArg, currentOptions, promiseRef, argRef);
+        switchMap(([stableArg, currentOptions]) => {
+          const querySubscriptionResults = useQuerySubscription(stableArg, currentOptions, promiseRef, argRef);
           const queryStateResults$ = useQueryState(
-            currentArg,
+            stableArg,
             {
               selectFromResult:
-                currentArg === skipToken || currentArg === UNINITIALIZED_VALUE || currentOptions?.skip
-                  ? undefined
-                  : noPendingQueryStateSelector,
+                stableArg === skipToken || currentOptions?.skip ? undefined : noPendingQueryStateSelector,
               ...currentOptions,
             },
             lastValue,
