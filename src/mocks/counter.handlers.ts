@@ -25,9 +25,9 @@ export const counterHandlers = [
   rest.get('/count/:id', (req, res, ctx) => {
     const { id } = req.params;
 
-    let count = counters[id];
+    let count = counters[id as string];
     if (!count) {
-      count = counters[id] = 0;
+      count = counters[id as string] = 0;
     }
 
     return res(ctx.delay(), ctx.json({ count }));
@@ -36,11 +36,11 @@ export const counterHandlers = [
     const { amount } = req.body;
     const { id } = req.params;
 
-    if (typeof counters[id] === 'undefined') {
+    if (typeof counters[id as string] === 'undefined') {
       return res(ctx.delay(), ctx.json({ message: 'Counter not found' }), ctx.status(402));
     }
 
-    const count = (counters[id] = counters[id] + amount);
+    const count = (counters[id as string] = counters[id as string] + amount);
 
     return res(ctx.delay(), ctx.json({ count }));
   }),
@@ -48,11 +48,11 @@ export const counterHandlers = [
     const { amount } = req.body;
     const { id } = req.params;
 
-    if (typeof counters[id] === 'undefined') {
+    if (typeof counters[id as string] === 'undefined') {
       return res(ctx.delay(), ctx.json({ message: 'Counter not found' }), ctx.status(402));
     }
 
-    const count = (counters[id] = counters[id] - amount);
+    const count = (counters[id as string] = counters[id as string] - amount);
 
     return res(ctx.delay(), ctx.json({ count }));
   }),

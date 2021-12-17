@@ -140,7 +140,7 @@ describe('hooks tests', () => {
     });
 
     test('useQuery hook respects refetchOnMountOrArgChange: true', async () => {
-      const { rerender } = await render(HooksComponents.RefetchOnMountComponent, { imports: storeRef.imports });
+      const { change } = await render(HooksComponents.RefetchOnMountComponent, { imports: storeRef.imports });
 
       const fetchControl = screen.getByTestId('isFetching');
       const loadingControl = screen.getByTestId('isLoading');
@@ -151,7 +151,7 @@ describe('hooks tests', () => {
 
       await waitFor(() => expect(amount).toHaveTextContent('1'));
 
-      rerender({
+      change({
         query$: api.endpoints.getIncrementedAmount.useQuery(undefined, {
           refetchOnMountOrArgChange: true,
         }),
@@ -166,7 +166,7 @@ describe('hooks tests', () => {
     });
 
     test('useQuery does not refetch when refetchOnMountOrArgChange: NUMBER condition is not met', async () => {
-      const { rerender } = await render(HooksComponents.RefetchOnMountComponent, {
+      const { change } = await render(HooksComponents.RefetchOnMountComponent, {
         imports: storeRef.imports,
         componentProperties: {
           query$: api.endpoints.getIncrementedAmount.useQuery(undefined, {
@@ -184,7 +184,7 @@ describe('hooks tests', () => {
 
       await waitFor(() => expect(amount).toHaveTextContent('1'));
 
-      rerender({
+      change({
         query$: api.endpoints.getIncrementedAmount.useQuery(undefined, {
           refetchOnMountOrArgChange: 10,
         }),
@@ -197,7 +197,7 @@ describe('hooks tests', () => {
     });
 
     test('useQuery refetches when refetchOnMountOrArgChange: NUMBER condition is met', async () => {
-      const { rerender } = await render(HooksComponents.RefetchOnMountComponent, {
+      const { change } = await render(HooksComponents.RefetchOnMountComponent, {
         imports: storeRef.imports,
         componentProperties: {
           query$: api.endpoints.getIncrementedAmount.useQuery(undefined, {
@@ -218,7 +218,7 @@ describe('hooks tests', () => {
       // Wait to make sure we've passed the `refetchOnMountOrArgChange` value
       await waitMs(510);
 
-      rerender({
+      change({
         query$: api.endpoints.getIncrementedAmount.useQuery(undefined, {
           refetchOnMountOrArgChange: 0.5,
         }),
@@ -256,25 +256,27 @@ describe('hooks tests', () => {
       // 2. we need to mount a skipped component after that, then toggle skip as well. should pull from the cache.
       // 3. we need to mount another skipped component, then toggle skip after the specified
       //    duration and expect the time condition to be satisfied
-      const { rerender } = await render(HooksComponents.RefetchOnMountSkipComponent, { imports: storeRef.imports });
+      const { change } = await render(HooksComponents.RefetchOnMountSkipComponent, { imports: storeRef.imports });
 
       const fetchControl = screen.getByTestId('isFetching');
       const amount = screen.getByTestId('amount');
       const skipControl = screen.getByRole('button', { name: /change skip/i });
 
+      expect(fetchControl).toHaveTextContent('false');
+
       // skipped queries do nothing by default, so we need to toggle that to get a cached result
       fireEvent.click(skipControl);
 
       await waitFor(() => expect(fetchControl).toHaveTextContent('true'));
-      await waitFor(() => expect(fetchControl).toHaveTextContent('false'));
       await waitFor(() => expect(amount).toHaveTextContent('1'));
+      expect(fetchControl).toHaveTextContent('false');
 
       // This will pull from the cache as the time criteria is not met.
       await waitMs(100);
       let skip = new BehaviorSubject<boolean>(true);
       let skip$ = skip.asObservable();
 
-      rerender({
+      change({
         skip,
         skip$,
         query$: api.endpoints.getIncrementedAmount.useQuery(
@@ -296,7 +298,7 @@ describe('hooks tests', () => {
       skip = new BehaviorSubject<boolean>(true);
       skip$ = skip.asObservable();
 
-      rerender({
+      change({
         skip,
         skip$,
         query$: api.endpoints.getIncrementedAmount.useQuery(
@@ -469,6 +471,47 @@ describe('hooks tests', () => {
       await screen.findByText('An error has occurred updating user Banana');
       expect(screen.queryByText(/Successfully updated user/i)).not.toBeInTheDocument();
       screen.getByText('Request was aborted');
+    });
+
+    test('useMutation return value contains originalArgs', async () => {
+      await render(HooksComponents.MutationOriginalArgsComponent, {
+        imports: storeRef.imports,
+      });
+
+      const arg = { name: 'Foo' };
+
+      const updateButton = screen.getByTestId('updateButton');
+      const originalArgs = screen.getByTestId('originalArgs');
+
+      expect(originalArgs).toHaveTextContent('');
+
+      fireEvent.click(updateButton);
+      expect(originalArgs).toHaveTextContent(JSON.stringify(arg));
+    });
+
+    test('`reset` sets state back to original state', async () => {
+      await render(HooksComponents.MutationResetComponent, {
+        imports: storeRef.imports,
+      });
+
+      await screen.findByText(/isUninitialized/i);
+      expect(screen.queryByText('Yay')).not.toBeInTheDocument();
+
+      expect(Object.keys(getState().api.mutations)).toHaveLength(0);
+
+      userEvent.click(screen.getByRole('button', { name: 'trigger' }));
+
+      await screen.findByText(/isSuccess/i);
+      expect(screen.getByText('Yay')).toBeInTheDocument();
+
+      expect(Object.keys(getState().api.mutations)).toHaveLength(1);
+
+      userEvent.click(screen.getByRole('button', { name: 'reset' }));
+
+      await screen.findByText(/isUninitialized/i);
+      expect(screen.queryByText('Yay')).not.toBeInTheDocument();
+
+      expect(Object.keys(getState().api.mutations)).toHaveLength(0);
     });
   });
 
@@ -689,7 +732,7 @@ describe('useQuery and useMutation invalidation behavior', () => {
 
     const { checkSession, login } = invalidationsApi.endpoints;
     expect(getState().actions).toMatchSequence(
-      // api.internalActions.middlewareRegistered.match,
+      invalidationsApi.internalActions.middlewareRegistered.match,
       checkSession.matchPending,
       checkSession.matchRejected,
       login.matchPending,
@@ -708,7 +751,7 @@ describe('hooks with createApi defaults set', () => {
   });
 
   test('useQuery hook respects refetchOnMountOrArgChange: true when set in createApi options', async () => {
-    const { rerender } = await render(HooksComponents.RefetchOnMountDefaultsComponent, {
+    const { change } = await render(HooksComponents.RefetchOnMountDefaultsComponent, {
       imports: defaultStoreRef.imports,
     });
 
@@ -721,7 +764,7 @@ describe('hooks with createApi defaults set', () => {
 
     await waitFor(() => expect(amount).toHaveTextContent('1'));
 
-    rerender({
+    change({
       query$: defaultApi.endpoints.getIncrementedAmount.useQuery(),
     });
 
@@ -733,7 +776,7 @@ describe('hooks with createApi defaults set', () => {
   });
 
   test('useQuery hook overrides default refetchOnMountOrArgChange: false that was set by createApi', async () => {
-    const { rerender } = await render(HooksComponents.RefetchOnMountDefaultsComponent, {
+    const { change } = await render(HooksComponents.RefetchOnMountDefaultsComponent, {
       imports: defaultStoreRef.imports,
     });
 
@@ -746,7 +789,7 @@ describe('hooks with createApi defaults set', () => {
 
     await waitFor(() => expect(amount).toHaveTextContent('1'));
 
-    rerender({
+    change({
       query$: defaultApi.endpoints.getIncrementedAmount.useQuery(undefined, {
         refetchOnMountOrArgChange: false,
       }),
@@ -770,7 +813,7 @@ describe('selectFromResult (query) behaviors', () => {
   expectExactType(libPostsApi.useUpdatePostMutation)(libPostsApi.endpoints.updatePost.useMutation);
   expectExactType(libPostsApi.useAddPostMutation)(libPostsApi.endpoints.addPost.useMutation);
 
-  test('useQueryState serves a deeply memoized value and does not rerender unnecessarily', async () => {
+  test('useQueryState serves a deeply memoized value and does not change unnecessarily', async () => {
     const { fixture } = await render(HooksComponents.PostsContainerComponent, {
       declarations: [HooksComponents.PostComponent, HooksComponents.SelectedPostComponent],
       imports: postStoreRef.imports,
@@ -785,21 +828,21 @@ describe('selectFromResult (query) behaviors', () => {
 
     fireEvent.click(addPost);
     await waitFor(() => expect(getRenderCount()).toBe(2));
-    // We fire off a few requests that would typically cause a rerender as JSON.parse()
+    // We fire off a few requests that would typically cause a change as JSON.parse()
     // on a request would always be a new object.
     fireEvent.click(addPost);
     fireEvent.click(addPost);
     await waitFor(() => expect(getRenderCount()).toBe(2));
-    // Being that it didn't rerender, we can be assured that the behavior is correct
+    // Being that it didn't change, we can be assured that the behavior is correct
   });
 
   /**
    * This test shows that even though a user can select a specific post, the fetching/loading flags
-   * will still cause rerenders for the query. This should show that if you're using selectFromResult,
+   * will still cause changes for the query. This should show that if you're using selectFromResult,
    * the 'performance' value comes with selecting _only_ the data.
    */
   //eslint-disable-next-line
-  test('useQuery with selectFromResult with all flags destructured rerenders like the default useQuery behavior', async () => {
+  test('useQuery with selectFromResult with all flags destructured changes like the default useQuery behavior', async () => {
     const { fixture } = await render(HooksComponents.PostsHookContainerAllFlagsComponent, {
       declarations: [HooksComponents.PostComponent, HooksComponents.SelectedPostAllFlagsHookComponent],
       imports: postStoreRef.imports,
@@ -821,7 +864,7 @@ describe('selectFromResult (query) behaviors', () => {
   });
 
   // eslint-disable-next-line
-  test('useQuery with selectFromResult option serves a deeply memoized value and does not rerender unnecessarily', async () => {
+  test('useQuery with selectFromResult option serves a deeply memoized value and does not change unnecessarily', async () => {
     const { fixture } = await render(HooksComponents.PostsHookContainerComponent, {
       declarations: [HooksComponents.PostComponent, HooksComponents.SelectedPostHookComponent],
       imports: postStoreRef.imports,
@@ -903,11 +946,11 @@ describe('selectFromResult (mutation) behavior', () => {
     const { increment } = mutationApi.endpoints;
 
     expect(getState().actions).toMatchSequence(
-      // api.internalActions.middlewareRegistered.match,
+      mutationApi.internalActions.middlewareRegistered.match,
       increment.matchPending,
       increment.matchFulfilled,
-      mutationApi.internalActions.unsubscribeMutationResult.match,
       increment.matchPending,
+      mutationApi.internalActions.removeMutationResult.match,
       increment.matchFulfilled,
     );
   });
@@ -955,20 +998,6 @@ describe('selectFromResult (mutation) behavior', () => {
     expect(getRenderCount()).toBe(5);
   });
 
-  test('useMutation return value contains originalArgs', async () => {
-    await render(HooksComponents.MutationOriginalArgsComponent, {
-      imports: mutationStoreRef.imports,
-    });
-
-    const incrementButton = screen.getByTestId('incrementButton');
-    const originalArgs = screen.getByTestId('originalArgs');
-
-    expect(originalArgs).toHaveTextContent('');
-
-    fireEvent.click(incrementButton);
-    expect(originalArgs).toHaveTextContent('5');
-  });
-
   test('useMutation with selectFromResult option has a type error if the result is not an object', async () => {
     await render(HooksComponents.NoObjectMutationComponent, { imports: mutationStoreRef.imports });
 
@@ -996,7 +1025,7 @@ describe('skip behaviour', () => {
 
   test('normal skip', async () => {
     let current: any;
-    const { rerender } = await render(HooksComponents.SkipComponent, {
+    const { change } = await render(HooksComponents.SkipComponent, {
       imports: storeRef.imports,
       componentProperties: {
         query$: api.endpoints.getUser.useQuery(1, { skip: true }).pipe(tap((value) => (current = value))),
@@ -1006,13 +1035,13 @@ describe('skip behaviour', () => {
     expect(current).toEqual(uninitialized);
     expect(subscriptionCount('getUser(1)')).toBe(0);
 
-    rerender({
+    change({
       query$: api.endpoints.getUser.useQuery(1).pipe(tap((value) => (current = value))),
     });
     expect(current).toMatchObject({ status: QueryStatus.pending });
     expect(subscriptionCount('getUser(1)')).toBe(1);
 
-    rerender({
+    change({
       query$: api.endpoints.getUser.useQuery(1, { skip: true }).pipe(tap((value) => (current = value))),
     });
     expect(current).toEqual(uninitialized);
@@ -1021,7 +1050,7 @@ describe('skip behaviour', () => {
 
   test('skipToken', async () => {
     let current: any;
-    const { rerender } = await render(HooksComponents.SkipComponent, {
+    const { change } = await render(HooksComponents.SkipComponent, {
       imports: storeRef.imports,
       componentProperties: {
         query$: api.endpoints.getUser.useQuery(skipToken).pipe(tap((value) => (current = value))),
@@ -1033,14 +1062,14 @@ describe('skip behaviour', () => {
     // also no subscription on `getUser(skipToken)` or similar:
     expect(getState().api.subscriptions).toEqual({});
 
-    rerender({
+    change({
       query$: api.endpoints.getUser.useQuery(1).pipe(tap((value) => (current = value))),
     });
     expect(current).toMatchObject({ status: QueryStatus.pending });
     expect(subscriptionCount('getUser(1)')).toBe(1);
     expect(getState().api.subscriptions).not.toEqual({});
 
-    rerender({
+    change({
       query$: api.endpoints.getUser.useQuery(skipToken).pipe(tap((value) => (current = value))),
     });
     expect(current).toEqual(uninitialized);

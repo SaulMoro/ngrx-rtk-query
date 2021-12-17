@@ -1,5 +1,5 @@
 import type { AnyAction, ThunkAction } from '@reduxjs/toolkit';
-import type { MutationDefinition, QueryDefinition, EndpointDefinition, SkipToken } from '@reduxjs/toolkit/query';
+import type { MutationDefinition, QueryDefinition, SkipToken } from '@reduxjs/toolkit/query';
 import type { QueryStatus, QuerySubState, SubscriptionOptions } from '@reduxjs/toolkit/dist/query/core/apiState';
 import type {
   MutationActionCreatorResult,
@@ -7,7 +7,7 @@ import type {
 } from '@reduxjs/toolkit/dist/query/core/buildInitiate';
 import type { MutationResultSelectorResult } from '@reduxjs/toolkit/dist/query/core/buildSelectors';
 import type { PrefetchOptions } from '@reduxjs/toolkit/dist/query/core/module';
-import type { QueryArgFrom } from '@reduxjs/toolkit/dist/query/endpointDefinitions';
+import type { EndpointDefinition, QueryArgFrom, ResultTypeFrom } from '@reduxjs/toolkit/dist/query/endpointDefinitions';
 import type { Id, NoInfer, Override } from '@reduxjs/toolkit/dist/query/tsHelpers';
 import { Observable } from 'rxjs';
 import type { UninitializedValue } from '../constants';
@@ -117,6 +117,7 @@ export type UseQuerySubscription<D extends QueryDefinition<any, any, any, any>> 
   arg: QueryArgFrom<D> | SkipToken | UninitializedValue,
   options?: UseQuerySubscriptionOptions,
   promiseRef?: { current?: QueryActionCreatorResult<D> },
+  argCacheRef?: { current?: any },
 ) => Pick<QueryActionCreatorResult<D>, 'refetch'>;
 
 export type UseLazyTrigger<D extends QueryDefinition<any, any, any, any>> = (
@@ -188,7 +189,7 @@ export type LazyQueryOptions<SelectFromResultType = UseQueryStateDefaultResult<Q
 export type UseLazyQuerySubscription<D extends QueryDefinition<any, any, any, any>> = (
   options?: SubscriptionOptions,
   promiseRef?: { current?: QueryActionCreatorResult<any> },
-) => [UseLazyTrigger<D>, QueryArgFrom<D> | UninitializedValue];
+) => readonly [UseLazyTrigger<D>, QueryArgFrom<D> | UninitializedValue];
 
 export type QueryStateSelector<R extends Record<string, any>, D extends QueryDefinition<any, any, any, any>> = (
   state: UseQueryStateDefaultResult<D>,
@@ -210,6 +211,7 @@ export type UseQueryState<D extends QueryDefinition<any, any, any, any>> = <R = 
   arg: QueryArgFrom<D> | Observable<QueryArgFrom<D> | UninitializedValue> | SkipToken,
   options?: UseQueryStateOptions<D, R>,
   lastValue?: { current?: any },
+  argCacheRef?: { current?: any },
 ) => Observable<UseQueryStateResult<D, R>>;
 
 export type UseQueryStateOptions<D extends QueryDefinition<any, any, any, any>, R extends Record<string, any>> = {
@@ -260,6 +262,12 @@ export type UseQueryStateResult<_ extends QueryDefinition<any, any, any, any>, R
 
 export type UseQueryStateBaseResult<D extends QueryDefinition<any, any, any, any>> = QuerySubState<D> & {
   /**
+   * Where `data` tries to hold data as much as possible, also re-using
+   * data from the last arguments passed into the hook, this property
+   * will always contain the received data from the query, for the current query arguments.
+   */
+  currentData?: ResultTypeFrom<D>;
+  /**
    * Query has not started yet.
    */
   isUninitialized: false;
@@ -288,9 +296,14 @@ export type UseQueryStateDefaultResult<D extends QueryDefinition<any, any, any, 
       | { isLoading: true; isFetching: boolean; data: undefined }
       | ({
           isSuccess: true;
-          isFetching: boolean;
+          isFetching: true;
           error: undefined;
         } & Required<Pick<UseQueryStateBaseResult<D>, 'data' | 'fulfilledTimeStamp'>>)
+      | ({
+          isSuccess: true;
+          isFetching: false;
+          error: undefined;
+        } & Required<Pick<UseQueryStateBaseResult<D>, 'data' | 'fulfilledTimeStamp' | 'currentData'>>)
       | ({ isError: true } & Required<Pick<UseQueryStateBaseResult<D>, 'error'>>)
     >
 > & {
@@ -308,10 +321,16 @@ export type MutationStateSelector<R extends Record<string, any>, D extends Mutat
 
 export type UseMutationStateOptions<D extends MutationDefinition<any, any, any, any>, R extends Record<string, any>> = {
   selectFromResult?: MutationStateSelector<R, D>;
+  fixedCacheKey?: string;
 };
 
 export type UseMutationStateResult<D extends MutationDefinition<any, any, any, any>, R> = NoInfer<R> & {
   originalArgs?: QueryArgFrom<D>;
+  /**
+   * Resets the hook state to it's initial `uninitialized` state.
+   * This will also remove the last result from the cache.
+   */
+  reset: () => void;
 };
 
 /**
@@ -330,9 +349,40 @@ export type UseMutation<D extends MutationDefinition<any, any, any, any>> = <
 >(
   options?: UseMutationStateOptions<D, R>,
 ) => {
-  dispatch: (arg: QueryArgFrom<D>) => MutationActionCreatorResult<D>;
+  /**
+   * Triggers the mutation and returns a Promise.
+   *
+   * @remarks
+   * If you need to access the error or success payload immediately after a mutation, you can chain .unwrap().
+   *
+   * @example
+   * ```ts
+   * // codeblock-meta title="Using .unwrap with async await"
+   * try {
+   *   const payload = await this.addPost.dispatch(({ id: 1, name: 'Example' })).unwrap();
+   *   console.log('fulfilled', payload)
+   * } catch (error) {
+   *   console.error('rejected', error);
+   * }
+   * ```
+   *
+   * @example
+   * ```ts
+   * // codeblock-meta title="Using .unwrap with async await"
+   * this.deletePostMutation
+   *    .dispatch(+this.route.snapshot.params.id)
+   *    .unwrap()
+   *    .then(() => this.router.navigate(['/posts']))
+   *    .catch(() => console.error('Error deleting Post'));
+   * ```
+   */
+  dispatch: MutationTrigger<D>;
   state$: Observable<UseMutationStateResult<D, R>>;
 };
+
+export type MutationTrigger<D extends MutationDefinition<any, any, any, any>> = (
+  arg: QueryArgFrom<D>,
+) => MutationActionCreatorResult<D>;
 
 export type GenericPrefetchThunk = (
   endpointName: any,
