@@ -1,3 +1,10 @@
+# [3.0.0-next.2](https://github.com/SaulMoro/ngrx-rtk-query/compare/v3.0.0-next.1...v3.0.0-next.2) (2021-12-17)
+
+
+### Bug Fixes
+
+* **lib:** useQuery stable arg ([9ba9a8a](https://github.com/SaulMoro/ngrx-rtk-query/commit/9ba9a8a7cef749fb96b785c17711332f3146db8d))
+
 # [3.0.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v2.4.0...v3.0.0-next.1) (2021-12-16)
 
 
