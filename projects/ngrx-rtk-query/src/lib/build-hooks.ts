@@ -144,6 +144,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       QueryDefinition<any, any, any, any, any>,
       Definitions
     >;
+    type ApiRootState = Parameters<ReturnType<typeof select>>[0];
 
     const useQuerySubscription: UseQuerySubscription<any> = (
       arg: any,
@@ -210,8 +211,12 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       const trigger: UseLazyTrigger<any> = (arg: any, { preferCacheValue = false } = {}) => {
         promiseRef.current?.unsubscribe();
 
-        promiseRef.current = dispatch(initiate(arg, { subscriptionOptions, forceRefetch: !preferCacheValue }));
+        const promise = dispatch(initiate(arg, { subscriptionOptions, forceRefetch: !preferCacheValue }));
+
+        promiseRef.current = promise;
         argState = arg;
+
+        return promise;
       };
 
       /* if "cleanup on unmount" was triggered from a fast refresh, we want to reinstate the query */
@@ -241,15 +246,13 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         ),
         distinctUntilChanged(shallowEqual),
         switchMap((stableArg) => {
-          const selectDefaultResult = createSelectorFactory((projector) => resultMemoize(projector, shallowEqual))(
-            select(stableArg),
-            (subState: any) => queryStatePreSelector(subState, lastValue.current, stableArg),
-          );
+          const selectDefaultResult = createSelectorFactory<ApiRootState, any>((projector) =>
+            resultMemoize(projector, shallowEqual),
+          )(select(stableArg), (subState: any) => queryStatePreSelector(subState, lastValue.current, stableArg));
 
-          const querySelector = createSelectorFactory((projector) => resultMemoize(projector, shallowEqual))(
-            selectDefaultResult,
-            selectFromResult,
-          );
+          const querySelector = createSelectorFactory<ApiRootState, any>((projector) =>
+            resultMemoize(projector, shallowEqual),
+          )(selectDefaultResult, selectFromResult);
 
           return useSelector((state: RootState<Definitions, any, any>) => querySelector(state)).pipe(
             tap(() => (lastValue.current = selectDefaultResult(getState()))),
@@ -363,7 +366,11 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       );
 
       return {
-        fetch: (arg, extra) => infoSubject.next({ lastArg: arg, extra }),
+        fetch: (arg, extra) => {
+          infoSubject.next({ lastArg: arg, extra });
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          return promiseRef.current!;
+        },
         state$,
         lastArg$: info$.pipe(map(({ lastArg }) => lastArg)),
       };

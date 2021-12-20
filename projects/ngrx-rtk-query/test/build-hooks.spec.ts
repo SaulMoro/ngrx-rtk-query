@@ -5,7 +5,7 @@ import { BehaviorSubject } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { rest } from 'msw';
 
-import { getState } from '../src/lib/thunk.service';
+import { dispatch, getState } from '../src/lib/thunk.service';
 import { resetPostsApi } from './mocks/lib-posts.handlers';
 import { server } from './mocks/server';
 import * as HooksComponents from './helper-components';
@@ -317,6 +317,55 @@ describe('hooks tests', () => {
     });
   });
 
+  describe('api.util.resetApiState resets hook', () => {
+    test('without `selectFromResult`', async () => {
+      const { fixture } = await render(HooksComponents.ResetApiStateComponent, { imports: storeRef.imports });
+
+      await waitFor(() => expect(fixture.componentInstance.result?.isSuccess).toBe(true));
+
+      void dispatch(api.util.resetApiState());
+
+      expect(fixture.componentInstance.result).toEqual(
+        expect.objectContaining({
+          isError: false,
+          isFetching: true,
+          isLoading: true,
+          isSuccess: false,
+          isUninitialized: false,
+          refetch: expect.any(Function),
+          status: 'pending',
+        }),
+      );
+    });
+
+    test('with `selectFromResult`', async () => {
+      const selectFromResult = jest.fn((x) => x);
+      let result: any;
+      await render(HooksComponents.ResetApiStateComponent, {
+        componentProperties: {
+          query$: api.endpoints.getUser
+            .useQuery(5, { selectFromResult })
+            .pipe(tap((currentResult) => (result = currentResult))),
+          result,
+        },
+        imports: storeRef.imports,
+      });
+
+      await waitFor(() => expect(result?.isSuccess).toBe(true));
+      selectFromResult.mockClear();
+      void dispatch(api.util.resetApiState());
+
+      expect(selectFromResult).toHaveBeenNthCalledWith(1, {
+        isError: false,
+        isFetching: false,
+        isLoading: false,
+        isSuccess: false,
+        isUninitialized: true,
+        status: 'uninitialized',
+      });
+    });
+  });
+
   describe('useLazyQuery', () => {
     let data: any;
 
@@ -433,6 +482,65 @@ describe('hooks tests', () => {
       // We unsubscribe after the component unmounts
       expect(getState().actions.filter(api.internalActions.unsubscribeQueryResult.match)).toHaveLength(4);
     });
+
+    test('useLazyQuery hook callback returns various properties to handle the result', async () => {
+      await render(HooksComponents.LazyFetchingCallbackComponent, { imports: storeRef.imports });
+
+      expect(screen.queryByText(/An error has occurred/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Successfully fetched user/i)).not.toBeInTheDocument();
+      expect(screen.queryByText('Request was aborted')).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Fetch User and abort' }));
+      await screen.findByText('An error has occurred fetching userId: 1');
+      expect(screen.queryByText(/Successfully fetched user/i)).not.toBeInTheDocument();
+      screen.getByText('Request was aborted');
+
+      fireEvent.click(screen.getByRole('button', { name: 'Fetch User successfully' }));
+      await screen.findByText('Successfully fetched user Timmy');
+      expect(screen.queryByText(/An error has occurred/i)).not.toBeInTheDocument();
+      expect(screen.queryByText('Request was aborted')).not.toBeInTheDocument();
+    });
+
+    // eslint-disable-next-line max-len
+    test('unwrapping the useLazyQuery trigger result does not throw on ConditionError and instead returns the aggregate error', async () => {
+      await render(HooksComponents.LazyFetchingCbAdvComponent, { imports: storeRef.imports });
+
+      const fetchButton = screen.getByRole('button', { name: 'Fetch User' });
+      fireEvent.click(fetchButton);
+      fireEvent.click(fetchButton); /* This technically dispatches a ConditionError,
+      but we don't want to see that here. We want the real error to resolve. */
+
+      await waitFor(() => {
+        const errorResult = screen.getByTestId('error')?.textContent || '';
+        const unwrappedErrorResult = screen.getByTestId('unwrappedError')?.textContent || '';
+
+        expect(JSON.parse(errorResult)).toMatchObject({ status: 500, data: null });
+        // eslint-disable-next-line testing-library/no-wait-for-multiple-assertions
+        expect(JSON.parse(unwrappedErrorResult)).toMatchObject(JSON.parse(errorResult));
+      });
+
+      expect(screen.getByTestId('result')).toHaveTextContent('');
+    });
+
+    test('useLazyQuery does not throw on ConditionError and instead returns the aggregate result', async () => {
+      await render(HooksComponents.LazyFetchingCbUserAdvComponent, { imports: storeRef.imports });
+
+      const fetchButton = screen.getByRole('button', { name: 'Fetch User' });
+      fireEvent.click(fetchButton);
+      fireEvent.click(fetchButton); /* This technically dispatches a ConditionError, but we don't want to see that here.
+      We want the real result to resolve and ignore the error. */
+
+      await waitFor(() => {
+        const dataResult = screen.getByTestId('result')?.textContent || '';
+        const unwrappedDataResult = screen.getByTestId('unwrappedResult')?.textContent || '';
+
+        expect(JSON.parse(dataResult)).toMatchObject({ name: 'Timmy' });
+        // eslint-disable-next-line testing-library/no-wait-for-multiple-assertions
+        expect(JSON.parse(unwrappedDataResult)).toMatchObject(JSON.parse(dataResult));
+      });
+
+      expect(screen.getByTestId('error')).toHaveTextContent('');
+    });
   });
 
   describe('useMutation', () => {
@@ -527,7 +635,7 @@ describe('hooks tests', () => {
 
       userEvent.hover(prefetchControl);
       expect(api.endpoints.getUser.select(HooksComponents.HIGH_PRIORITY_USER_ID)(getState())).toEqual({
-        data: {},
+        data: { name: 'Timmy' },
         endpointName: 'getUser',
         error: undefined,
         fulfilledTimeStamp: expect.any(Number),
@@ -544,7 +652,7 @@ describe('hooks tests', () => {
       await waitFor(() => expect(fetchControl).toHaveTextContent('false'));
 
       expect(api.endpoints.getUser.select(HooksComponents.HIGH_PRIORITY_USER_ID)(getState())).toEqual({
-        data: {},
+        data: { name: 'Timmy' },
         endpointName: 'getUser',
         fulfilledTimeStamp: expect.any(Number),
         isError: false,
@@ -570,7 +678,7 @@ describe('hooks tests', () => {
       // Try to prefetch what we just loaded
       userEvent.hover(prefetchControl);
       expect(api.endpoints.getUser.select(HooksComponents.LOW_PRIORITY_USER_ID)(getState())).toEqual({
-        data: {},
+        data: { name: 'Timmy' },
         endpointName: 'getUser',
         fulfilledTimeStamp: expect.any(Number),
         isError: false,
@@ -586,7 +694,7 @@ describe('hooks tests', () => {
       await waitMs();
 
       expect(api.endpoints.getUser.select(HooksComponents.LOW_PRIORITY_USER_ID)(getState())).toEqual({
-        data: {},
+        data: { name: 'Timmy' },
         endpointName: 'getUser',
         fulfilledTimeStamp: expect.any(Number),
         isError: false,
@@ -620,7 +728,7 @@ describe('hooks tests', () => {
       // This should run the query being that we're past the threshold
       userEvent.hover(prefetchControl);
       expect(api.endpoints.getUser.select(HooksComponents.LOW_PRIORITY_USER_ID)(getState())).toEqual({
-        data: {},
+        data: { name: 'Timmy' },
         endpointName: 'getUser',
         fulfilledTimeStamp: expect.any(Number),
         isError: false,
@@ -636,7 +744,7 @@ describe('hooks tests', () => {
       await waitFor(() => expect(fetchControl).toHaveTextContent('false'));
 
       expect(api.endpoints.getUser.select(HooksComponents.LOW_PRIORITY_USER_ID)(getState())).toEqual({
-        data: {},
+        data: { name: 'Timmy' },
         endpointName: 'getUser',
         fulfilledTimeStamp: expect.any(Number),
         isError: false,

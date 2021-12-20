@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, ChangeDetectionStrategy, NgModule, ViewChild } from '@angular/core';
 import { SerializedError } from '@reduxjs/toolkit';
+import { SubscriptionOptions } from '@reduxjs/toolkit/dist/query/core/apiState';
 import { LazyQueryOptions } from 'ngrx-rtk-query';
 import { BehaviorSubject } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
@@ -383,6 +384,132 @@ export class LazyFetchingMultiComponent {
   data: any;
 }
 
+@Component({
+  selector: 'lib-test-lazy-query-callback',
+  template: `
+    <div *ngIf="userQuery.state$ | async as query">
+      <button (click)="handleClick(false)">Fetch User successfully</button>
+      <button (click)="handleClick(true)">Fetch User and abort</button>
+
+      <div>{{ successMsg }}</div>
+      <div>{{ errMsg }}</div>
+      <div>{{ isAborted ? 'Request was aborted' : '' }}</div>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class LazyFetchingCallbackComponent {
+  userQuery = api.endpoints.getUser.useLazyQuery();
+  successMsg = '';
+  errMsg = '';
+  isAborted = false;
+
+  handleClick(abort: boolean): void {
+    const res = this.userQuery.fetch(1);
+
+    // no-op simply for clearer type assertions
+    res.then((result) => {
+      if (result.isSuccess) {
+        expectType<{
+          data: {
+            name: string;
+          };
+        }>(result);
+      }
+      if (result.isError) {
+        expectType<{
+          error: { status: number; data: unknown } | SerializedError;
+        }>(result);
+      }
+    });
+
+    expectType<number>(res.arg);
+    expectType<string>(res.requestId);
+    expectType<() => void>(res.abort);
+    expectType<() => Promise<{ name: string }>>(res.unwrap);
+    expectType<() => void>(res.unsubscribe);
+    expectType<(options: SubscriptionOptions) => void>(res.updateSubscriptionOptions);
+    expectType<() => void>(res.refetch);
+
+    // abort the query immediately to force an error
+    if (abort) res.abort();
+    res
+      .unwrap()
+      .then((result) => {
+        expectType<{ name: string }>(result);
+
+        this.successMsg = `Successfully fetched user ${result.name}`;
+        this.errMsg = '';
+        this.isAborted = false;
+      })
+      .catch((err) => {
+        this.successMsg = '';
+        this.errMsg = `An error has occurred fetching userId: ${res.arg}`;
+        this.isAborted = err.name === 'AbortError';
+      });
+  }
+}
+
+@Component({
+  selector: 'lib-test-lazy-query-callback-adv',
+  template: `
+    <div *ngIf="userQuery.state$ | async as query">
+      <button (click)="handleClick()">Fetch User</button>
+
+      <div data-testid="result">{{ stringify(query.data) }}</div>
+      <div data-testid="error">{{ stringify(query.error) }}</div>
+      <div data-testid="unwrappedError">{{ stringify(unwrappedError) }}</div>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class LazyFetchingCbAdvComponent {
+  userQuery = api.endpoints.getUserAndForceError.useLazyQuery();
+  unwrappedError: any;
+
+  async handleClick(): Promise<void> {
+    const res = this.userQuery.fetch(1);
+
+    try {
+      await res.unwrap();
+    } catch (error) {
+      this.unwrappedError = error;
+    }
+  }
+
+  // no pipes here
+  stringify(data: any): string {
+    return JSON.stringify(data);
+  }
+}
+
+@Component({
+  selector: 'lib-test-lazy-query-callback-user-adv',
+  template: `
+    <div *ngIf="userQuery.state$ | async as query">
+      <button (click)="handleClick()">Fetch User</button>
+
+      <div data-testid="result">{{ stringify(query.data) }}</div>
+      <div data-testid="error">{{ stringify(query.error) }}</div>
+      <div data-testid="unwrappedResult">{{ stringify(unwrappedResult) }}</div>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class LazyFetchingCbUserAdvComponent {
+  userQuery = api.endpoints.getUser.useLazyQuery();
+  unwrappedResult?: { name: string };
+
+  async handleClick(): Promise<void> {
+    this.unwrappedResult = await this.userQuery.fetch(1).unwrap();
+  }
+
+  // no pipes here
+  stringify(data: any): string {
+    return JSON.stringify(data);
+  }
+}
+
 /**
  *  Query Invalidations
  */
@@ -721,4 +848,23 @@ export class NoObjectMutationComponent {
 })
 export class SkipComponent {
   query$ = api.endpoints.getUser.useQuery(1, { skip: true });
+}
+
+/**
+ * ResetApiState
+ */
+
+@Component({
+  selector: 'lib-test-reset-api-state',
+  template: ` <div *ngIf="query$ | async as query">{{ stringify(query) }}</div> `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class ResetApiStateComponent {
+  query$ = api.endpoints.getUser.useQuery(5).pipe(tap((result) => (this.result = result)));
+  result: any;
+
+  // no pipes here
+  stringify(data: any): string {
+    return JSON.stringify(data);
+  }
 }

@@ -69,6 +69,12 @@ export class LazyComponent {
   constructor(private formBuilder: FormBuilder) {}
 
   startCounterById({ id, preferCacheValue }: { id: string; preferCacheValue: boolean }): void {
-    this.countQuery.fetch(id, { preferCacheValue });
+    this.countQuery
+      .fetch(id, { preferCacheValue })
+      .unwrap()
+      .then(() => {
+        this.form.reset();
+      })
+      .catch(console.error);
   }
 }

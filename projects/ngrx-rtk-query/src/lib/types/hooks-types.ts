@@ -123,7 +123,7 @@ export type UseQuerySubscription<D extends QueryDefinition<any, any, any, any>> 
 export type UseLazyTrigger<D extends QueryDefinition<any, any, any, any>> = (
   arg: QueryArgFrom<D>,
   extra?: { preferCacheValue?: boolean },
-) => void;
+) => QueryActionCreatorResult<D>;
 
 export type UseLazyQueryLastPromiseInfo<D extends QueryDefinition<any, any, any, any>> = {
   lastArg: QueryArgFrom<D> | UninitializedValue;
@@ -158,6 +158,20 @@ export type UseLazyQuery<D extends QueryDefinition<any, any, any, any>> = <R = U
    * By default, this will start a new request even if there is already a value in the cache.
    * If you want to use the cache value and only start a request if there is no cache value,
    * set the second argument to `true`.
+   *
+   * @remarks
+   * If you need to access the error or success payload immediately after a lazy query, you can chain .unwrap().
+   *
+   * @example
+   * ```ts
+   * // codeblock-meta title="Using .unwrap with async await"
+   * try {
+   *   const payload = await getUserById(1).unwrap();
+   *   console.log('fulfilled', payload)
+   * } catch (error) {
+   *   console.error('rejected', error);
+   * }
+   * ```
    */
   fetch: UseLazyTrigger<D>;
   state$: Observable<UseQueryStateResult<D, R>>;
