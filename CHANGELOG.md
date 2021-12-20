@@ -1,3 +1,21 @@
+# [3.0.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v2.4.0...v3.0.0) (2021-12-17)
+
+
+### Bug Fixes
+
+* **lib:** fix mutation reset and add test cases ([d7fb35b](https://github.com/SaulMoro/ngrx-rtk-query/commit/d7fb35b627564cbd6f45e23b8b1bf4eb3c577e3d))
+* **lib:** useQuery stable arg ([9ba9a8a](https://github.com/SaulMoro/ngrx-rtk-query/commit/9ba9a8a7cef749fb96b785c17711332f3146db8d))
+
+
+### Features
+
+* **lib:** add support to RTK 1.7.1 ([be59dd3](https://github.com/SaulMoro/ngrx-rtk-query/commit/be59dd3a119688d08c46d24276ca7cb2ad38d002))
+
+
+### BREAKING CHANGES
+
+* **lib:** add support to RTK 1.7.1
+
 # [3.0.0-next.3](https://github.com/SaulMoro/ngrx-rtk-query/compare/v3.0.0-next.2...v3.0.0-next.3) (2021-12-17)
 
 
