@@ -144,6 +144,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       QueryDefinition<any, any, any, any, any>,
       Definitions
     >;
+    type ApiRootState = Parameters<ReturnType<typeof select>>[0];
 
     const useQuerySubscription: UseQuerySubscription<any> = (
       arg: any,
@@ -245,15 +246,13 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         ),
         distinctUntilChanged(shallowEqual),
         switchMap((stableArg) => {
-          const selectDefaultResult = createSelectorFactory((projector) => resultMemoize(projector, shallowEqual))(
-            select(stableArg),
-            (subState: any) => queryStatePreSelector(subState, lastValue.current, stableArg),
-          );
+          const selectDefaultResult = createSelectorFactory<ApiRootState, any>((projector) =>
+            resultMemoize(projector, shallowEqual),
+          )(select(stableArg), (subState: any) => queryStatePreSelector(subState, lastValue.current, stableArg));
 
-          const querySelector = createSelectorFactory((projector) => resultMemoize(projector, shallowEqual))(
-            selectDefaultResult,
-            selectFromResult,
-          );
+          const querySelector = createSelectorFactory<ApiRootState, any>((projector) =>
+            resultMemoize(projector, shallowEqual),
+          )(selectDefaultResult, selectFromResult);
 
           return useSelector((state: RootState<Definitions, any, any>) => querySelector(state)).pipe(
             tap(() => (lastValue.current = selectDefaultResult(getState()))),

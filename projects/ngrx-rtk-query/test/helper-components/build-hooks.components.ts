@@ -450,6 +450,66 @@ export class LazyFetchingCallbackComponent {
   }
 }
 
+@Component({
+  selector: 'lib-test-lazy-query-callback-adv',
+  template: `
+    <div *ngIf="userQuery.state$ | async as query">
+      <button (click)="handleClick()">Fetch User</button>
+
+      <div data-testid="result">{{ stringify(query.data) }}</div>
+      <div data-testid="error">{{ stringify(query.error) }}</div>
+      <div data-testid="unwrappedError">{{ stringify(unwrappedError) }}</div>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class LazyFetchingCbAdvComponent {
+  userQuery = api.endpoints.getUserAndForceError.useLazyQuery();
+  unwrappedError: any;
+
+  async handleClick(): Promise<void> {
+    const res = this.userQuery.fetch(1);
+
+    try {
+      await res.unwrap();
+    } catch (error) {
+      this.unwrappedError = error;
+    }
+  }
+
+  // no pipes here
+  stringify(data: any): string {
+    return JSON.stringify(data);
+  }
+}
+
+@Component({
+  selector: 'lib-test-lazy-query-callback-user-adv',
+  template: `
+    <div *ngIf="userQuery.state$ | async as query">
+      <button (click)="handleClick()">Fetch User</button>
+
+      <div data-testid="result">{{ stringify(query.data) }}</div>
+      <div data-testid="error">{{ stringify(query.error) }}</div>
+      <div data-testid="unwrappedResult">{{ stringify(unwrappedResult) }}</div>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class LazyFetchingCbUserAdvComponent {
+  userQuery = api.endpoints.getUser.useLazyQuery();
+  unwrappedResult?: { name: string };
+
+  async handleClick(): Promise<void> {
+    this.unwrappedResult = await this.userQuery.fetch(1).unwrap();
+  }
+
+  // no pipes here
+  stringify(data: any): string {
+    return JSON.stringify(data);
+  }
+}
+
 /**
  *  Query Invalidations
  */
@@ -788,4 +848,23 @@ export class NoObjectMutationComponent {
 })
 export class SkipComponent {
   query$ = api.endpoints.getUser.useQuery(1, { skip: true });
+}
+
+/**
+ * ResetApiState
+ */
+
+@Component({
+  selector: 'lib-test-reset-api-state',
+  template: ` <div *ngIf="query$ | async as query">{{ stringify(query) }}</div> `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class ResetApiStateComponent {
+  query$ = api.endpoints.getUser.useQuery(5).pipe(tap((result) => (this.result = result)));
+  result: any;
+
+  // no pipes here
+  stringify(data: any): string {
+    return JSON.stringify(data);
+  }
 }

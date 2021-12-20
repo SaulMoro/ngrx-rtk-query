@@ -5,7 +5,7 @@ import { BehaviorSubject } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { rest } from 'msw';
 
-import { getState } from '../src/lib/thunk.service';
+import { dispatch, getState } from '../src/lib/thunk.service';
 import { resetPostsApi } from './mocks/lib-posts.handlers';
 import { server } from './mocks/server';
 import * as HooksComponents from './helper-components';
@@ -317,6 +317,55 @@ describe('hooks tests', () => {
     });
   });
 
+  describe('api.util.resetApiState resets hook', () => {
+    test('without `selectFromResult`', async () => {
+      const { fixture } = await render(HooksComponents.ResetApiStateComponent, { imports: storeRef.imports });
+
+      await waitFor(() => expect(fixture.componentInstance.result?.isSuccess).toBe(true));
+
+      void dispatch(api.util.resetApiState());
+
+      expect(fixture.componentInstance.result).toEqual(
+        expect.objectContaining({
+          isError: false,
+          isFetching: true,
+          isLoading: true,
+          isSuccess: false,
+          isUninitialized: false,
+          refetch: expect.any(Function),
+          status: 'pending',
+        }),
+      );
+    });
+
+    test('with `selectFromResult`', async () => {
+      const selectFromResult = jest.fn((x) => x);
+      let result: any;
+      await render(HooksComponents.ResetApiStateComponent, {
+        componentProperties: {
+          query$: api.endpoints.getUser
+            .useQuery(5, { selectFromResult })
+            .pipe(tap((currentResult) => (result = currentResult))),
+          result,
+        },
+        imports: storeRef.imports,
+      });
+
+      await waitFor(() => expect(result?.isSuccess).toBe(true));
+      selectFromResult.mockClear();
+      void dispatch(api.util.resetApiState());
+
+      expect(selectFromResult).toHaveBeenNthCalledWith(1, {
+        isError: false,
+        isFetching: false,
+        isLoading: false,
+        isSuccess: false,
+        isUninitialized: true,
+        status: 'uninitialized',
+      });
+    });
+  });
+
   describe('useLazyQuery', () => {
     let data: any;
 
@@ -450,6 +499,47 @@ describe('hooks tests', () => {
       await screen.findByText('Successfully fetched user Timmy');
       expect(screen.queryByText(/An error has occurred/i)).not.toBeInTheDocument();
       expect(screen.queryByText('Request was aborted')).not.toBeInTheDocument();
+    });
+
+    // eslint-disable-next-line max-len
+    test('unwrapping the useLazyQuery trigger result does not throw on ConditionError and instead returns the aggregate error', async () => {
+      await render(HooksComponents.LazyFetchingCbAdvComponent, { imports: storeRef.imports });
+
+      const fetchButton = screen.getByRole('button', { name: 'Fetch User' });
+      fireEvent.click(fetchButton);
+      fireEvent.click(fetchButton); /* This technically dispatches a ConditionError,
+      but we don't want to see that here. We want the real error to resolve. */
+
+      await waitFor(() => {
+        const errorResult = screen.getByTestId('error')?.textContent || '';
+        const unwrappedErrorResult = screen.getByTestId('unwrappedError')?.textContent || '';
+
+        expect(JSON.parse(errorResult)).toMatchObject({ status: 500, data: null });
+        // eslint-disable-next-line testing-library/no-wait-for-multiple-assertions
+        expect(JSON.parse(unwrappedErrorResult)).toMatchObject(JSON.parse(errorResult));
+      });
+
+      expect(screen.getByTestId('result')).toHaveTextContent('');
+    });
+
+    test('useLazyQuery does not throw on ConditionError and instead returns the aggregate result', async () => {
+      await render(HooksComponents.LazyFetchingCbUserAdvComponent, { imports: storeRef.imports });
+
+      const fetchButton = screen.getByRole('button', { name: 'Fetch User' });
+      fireEvent.click(fetchButton);
+      fireEvent.click(fetchButton); /* This technically dispatches a ConditionError, but we don't want to see that here.
+      We want the real result to resolve and ignore the error. */
+
+      await waitFor(() => {
+        const dataResult = screen.getByTestId('result')?.textContent || '';
+        const unwrappedDataResult = screen.getByTestId('unwrappedResult')?.textContent || '';
+
+        expect(JSON.parse(dataResult)).toMatchObject({ name: 'Timmy' });
+        // eslint-disable-next-line testing-library/no-wait-for-multiple-assertions
+        expect(JSON.parse(unwrappedDataResult)).toMatchObject(JSON.parse(dataResult));
+      });
+
+      expect(screen.getByTestId('error')).toHaveTextContent('');
     });
   });
 
