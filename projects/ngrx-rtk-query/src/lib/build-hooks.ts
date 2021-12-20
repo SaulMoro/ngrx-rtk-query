@@ -210,8 +210,12 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       const trigger: UseLazyTrigger<any> = (arg: any, { preferCacheValue = false } = {}) => {
         promiseRef.current?.unsubscribe();
 
-        promiseRef.current = dispatch(initiate(arg, { subscriptionOptions, forceRefetch: !preferCacheValue }));
+        const promise = dispatch(initiate(arg, { subscriptionOptions, forceRefetch: !preferCacheValue }));
+
+        promiseRef.current = promise;
         argState = arg;
+
+        return promise;
       };
 
       /* if "cleanup on unmount" was triggered from a fast refresh, we want to reinstate the query */
@@ -363,7 +367,11 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       );
 
       return {
-        fetch: (arg, extra) => infoSubject.next({ lastArg: arg, extra }),
+        fetch: (arg, extra) => {
+          infoSubject.next({ lastArg: arg, extra });
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          return promiseRef.current!;
+        },
         state$,
         lastArg$: info$.pipe(map(({ lastArg }) => lastArg)),
       };

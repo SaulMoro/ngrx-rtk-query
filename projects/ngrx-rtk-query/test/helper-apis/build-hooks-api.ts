@@ -28,8 +28,17 @@ export const api = createApi({
     return { data: arg?.body ? { ...arg.body, ...(amount ? { amount } : {}) } : {} };
   },
   endpoints: (build) => ({
-    getUser: build.query<any, number>({
-      query: (arg) => arg,
+    getUser: build.query<{ name: string }, number>({
+      query: () => ({
+        body: { name: 'Timmy' },
+      }),
+    }),
+    getUserAndForceError: build.query<{ name: string }, number>({
+      query: () => ({
+        body: {
+          forceError: true,
+        },
+      }),
     }),
     getIncrementedAmount: build.query<any, void>({
       query: () => ({

@@ -433,6 +433,24 @@ describe('hooks tests', () => {
       // We unsubscribe after the component unmounts
       expect(getState().actions.filter(api.internalActions.unsubscribeQueryResult.match)).toHaveLength(4);
     });
+
+    test('useLazyQuery hook callback returns various properties to handle the result', async () => {
+      await render(HooksComponents.LazyFetchingCallbackComponent, { imports: storeRef.imports });
+
+      expect(screen.queryByText(/An error has occurred/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Successfully fetched user/i)).not.toBeInTheDocument();
+      expect(screen.queryByText('Request was aborted')).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Fetch User and abort' }));
+      await screen.findByText('An error has occurred fetching userId: 1');
+      expect(screen.queryByText(/Successfully fetched user/i)).not.toBeInTheDocument();
+      screen.getByText('Request was aborted');
+
+      fireEvent.click(screen.getByRole('button', { name: 'Fetch User successfully' }));
+      await screen.findByText('Successfully fetched user Timmy');
+      expect(screen.queryByText(/An error has occurred/i)).not.toBeInTheDocument();
+      expect(screen.queryByText('Request was aborted')).not.toBeInTheDocument();
+    });
   });
 
   describe('useMutation', () => {
@@ -527,7 +545,7 @@ describe('hooks tests', () => {
 
       userEvent.hover(prefetchControl);
       expect(api.endpoints.getUser.select(HooksComponents.HIGH_PRIORITY_USER_ID)(getState())).toEqual({
-        data: {},
+        data: { name: 'Timmy' },
         endpointName: 'getUser',
         error: undefined,
         fulfilledTimeStamp: expect.any(Number),
@@ -544,7 +562,7 @@ describe('hooks tests', () => {
       await waitFor(() => expect(fetchControl).toHaveTextContent('false'));
 
       expect(api.endpoints.getUser.select(HooksComponents.HIGH_PRIORITY_USER_ID)(getState())).toEqual({
-        data: {},
+        data: { name: 'Timmy' },
         endpointName: 'getUser',
         fulfilledTimeStamp: expect.any(Number),
         isError: false,
@@ -570,7 +588,7 @@ describe('hooks tests', () => {
       // Try to prefetch what we just loaded
       userEvent.hover(prefetchControl);
       expect(api.endpoints.getUser.select(HooksComponents.LOW_PRIORITY_USER_ID)(getState())).toEqual({
-        data: {},
+        data: { name: 'Timmy' },
         endpointName: 'getUser',
         fulfilledTimeStamp: expect.any(Number),
         isError: false,
@@ -586,7 +604,7 @@ describe('hooks tests', () => {
       await waitMs();
 
       expect(api.endpoints.getUser.select(HooksComponents.LOW_PRIORITY_USER_ID)(getState())).toEqual({
-        data: {},
+        data: { name: 'Timmy' },
         endpointName: 'getUser',
         fulfilledTimeStamp: expect.any(Number),
         isError: false,
@@ -620,7 +638,7 @@ describe('hooks tests', () => {
       // This should run the query being that we're past the threshold
       userEvent.hover(prefetchControl);
       expect(api.endpoints.getUser.select(HooksComponents.LOW_PRIORITY_USER_ID)(getState())).toEqual({
-        data: {},
+        data: { name: 'Timmy' },
         endpointName: 'getUser',
         fulfilledTimeStamp: expect.any(Number),
         isError: false,
@@ -636,7 +654,7 @@ describe('hooks tests', () => {
       await waitFor(() => expect(fetchControl).toHaveTextContent('false'));
 
       expect(api.endpoints.getUser.select(HooksComponents.LOW_PRIORITY_USER_ID)(getState())).toEqual({
-        data: {},
+        data: { name: 'Timmy' },
         endpointName: 'getUser',
         fulfilledTimeStamp: expect.any(Number),
         isError: false,

@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, ChangeDetectionStrategy, NgModule, ViewChild } from '@angular/core';
 import { SerializedError } from '@reduxjs/toolkit';
+import { SubscriptionOptions } from '@reduxjs/toolkit/dist/query/core/apiState';
 import { LazyQueryOptions } from 'ngrx-rtk-query';
 import { BehaviorSubject } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
@@ -381,6 +382,72 @@ export class LazyFetchingMultiComponent {
   userQuery = api.endpoints.getUser.useLazyQuery();
   userQueryState$ = this.userQuery.state$.pipe(tap(({ data }) => (this.data = data)));
   data: any;
+}
+
+@Component({
+  selector: 'lib-test-lazy-query-callback',
+  template: `
+    <div *ngIf="userQuery.state$ | async as query">
+      <button (click)="handleClick(false)">Fetch User successfully</button>
+      <button (click)="handleClick(true)">Fetch User and abort</button>
+
+      <div>{{ successMsg }}</div>
+      <div>{{ errMsg }}</div>
+      <div>{{ isAborted ? 'Request was aborted' : '' }}</div>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class LazyFetchingCallbackComponent {
+  userQuery = api.endpoints.getUser.useLazyQuery();
+  successMsg = '';
+  errMsg = '';
+  isAborted = false;
+
+  handleClick(abort: boolean): void {
+    const res = this.userQuery.fetch(1);
+
+    // no-op simply for clearer type assertions
+    res.then((result) => {
+      if (result.isSuccess) {
+        expectType<{
+          data: {
+            name: string;
+          };
+        }>(result);
+      }
+      if (result.isError) {
+        expectType<{
+          error: { status: number; data: unknown } | SerializedError;
+        }>(result);
+      }
+    });
+
+    expectType<number>(res.arg);
+    expectType<string>(res.requestId);
+    expectType<() => void>(res.abort);
+    expectType<() => Promise<{ name: string }>>(res.unwrap);
+    expectType<() => void>(res.unsubscribe);
+    expectType<(options: SubscriptionOptions) => void>(res.updateSubscriptionOptions);
+    expectType<() => void>(res.refetch);
+
+    // abort the query immediately to force an error
+    if (abort) res.abort();
+    res
+      .unwrap()
+      .then((result) => {
+        expectType<{ name: string }>(result);
+
+        this.successMsg = `Successfully fetched user ${result.name}`;
+        this.errMsg = '';
+        this.isAborted = false;
+      })
+      .catch((err) => {
+        this.successMsg = '';
+        this.errMsg = `An error has occurred fetching userId: ${res.arg}`;
+        this.isAborted = err.name === 'AbortError';
+      });
+  }
 }
 
 /**
