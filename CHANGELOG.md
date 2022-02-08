@@ -1,3 +1,10 @@
+# [3.1.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v3.0.0...v3.1.0) (2021-12-20)
+
+
+### Features
+
+* **lib-lazy:** add unwrap to lazyQueries ([8400cd6](https://github.com/SaulMoro/ngrx-rtk-query/commit/8400cd6e569680929db499eb07d87adb038d7348))
+
 # [3.1.0-next.2](https://github.com/SaulMoro/ngrx-rtk-query/compare/v3.1.0-next.1...v3.1.0-next.2) (2022-02-08)
 
 
