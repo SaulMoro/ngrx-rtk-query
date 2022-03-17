@@ -1,3 +1,16 @@
+# [3.3.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v3.2.0...v3.3.0) (2022-03-17)
+
+
+### Bug Fixes
+
+* error in merge ([9015881](https://github.com/SaulMoro/ngrx-rtk-query/commit/90158818483bc19dd231f3283d4094ce41ce108a))
+
+
+### Features
+
+* **lib:** update to rtk 1.8.0 ([07a576f](https://github.com/SaulMoro/ngrx-rtk-query/commit/07a576ffb4844bf9d1f234591bca35962f6b9e09))
+* **lib:** update to rtk 1.8.0 ([0dc48bc](https://github.com/SaulMoro/ngrx-rtk-query/commit/0dc48bc57164aa545a3003a098f30272b0ae5e30))
+
 # [3.3.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v3.2.0...v3.3.0-next.1) (2022-03-17)
 
 
