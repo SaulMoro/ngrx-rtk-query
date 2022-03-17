@@ -1,3 +1,15 @@
+# [3.2.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v3.1.0...v3.2.0) (2022-02-08)
+
+
+### Bug Fixes
+
+* **lib:** add peerDependency ([4c7be36](https://github.com/SaulMoro/ngrx-rtk-query/commit/4c7be362140e31b08efae1befde562541ad48a28))
+
+
+### Features
+
+* **lib:** add support to RTK 1.7.2 ([50e9261](https://github.com/SaulMoro/ngrx-rtk-query/commit/50e9261220884235a38ba3034ad01ed2e492d864))
+
 # [3.2.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v3.1.0...v3.2.0-next.1) (2022-02-08)
 
 
