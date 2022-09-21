@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CharactersListComponent } from './characters-list.component';
 
 describe('CharactersListComponent', () => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let component: CharactersListComponent;
   let fixture: ComponentFixture<CharactersListComponent>;
 

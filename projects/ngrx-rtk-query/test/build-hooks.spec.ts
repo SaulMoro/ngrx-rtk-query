@@ -13,7 +13,7 @@ import { actionsReducer, expectExactType, setupApiStore, waitMs } from './helper
 import { api, defaultApi, invalidationsApi, libPostsApi, mutationApi, resetAmount } from './helper-apis';
 
 describe('hooks tests', () => {
-  const storeRef = setupApiStore(api, { ...actionsReducer });
+  const storeRef = setupApiStore(api, { ...actionsReducer(api.reducerPath) });
 
   let getRenderCount: () => number = () => 0;
 
@@ -633,7 +633,7 @@ describe('hooks tests', () => {
       // Resolve initial query
       await waitFor(() => expect(fetchControl).toHaveTextContent('false'));
 
-      userEvent.hover(prefetchControl);
+      fireEvent.mouseEnter(prefetchControl);
       expect(api.endpoints.getUser.select(HooksComponents.HIGH_PRIORITY_USER_ID)(getState())).toEqual({
         data: { name: 'Timmy' },
         endpointName: 'getUser',
@@ -676,7 +676,7 @@ describe('hooks tests', () => {
       await waitFor(() => expect(fetchControl).toHaveTextContent('false'));
 
       // Try to prefetch what we just loaded
-      userEvent.hover(prefetchControl);
+      fireEvent.mouseEnter(prefetchControl);
       expect(api.endpoints.getUser.select(HooksComponents.LOW_PRIORITY_USER_ID)(getState())).toEqual({
         data: { name: 'Timmy' },
         endpointName: 'getUser',
@@ -726,7 +726,7 @@ describe('hooks tests', () => {
       await waitMs(400);
 
       // This should run the query being that we're past the threshold
-      userEvent.hover(prefetchControl);
+      fireEvent.mouseEnter(prefetchControl);
       expect(api.endpoints.getUser.select(HooksComponents.LOW_PRIORITY_USER_ID)(getState())).toEqual({
         data: { name: 'Timmy' },
         endpointName: 'getUser',
@@ -776,7 +776,7 @@ describe('hooks tests', () => {
       // Get a snapshot of the last result
       const latestQueryData = api.endpoints.getUser.select(HooksComponents.LOW_PRIORITY_USER_ID)(getState());
 
-      userEvent.hover(prefetchControl);
+      fireEvent.mouseEnter(prefetchControl);
       //  Serve up the result from the cache being that the condition wasn't met
       expect(api.endpoints.getUser.select(HooksComponents.LOW_PRIORITY_USER_ID)(getState())).toEqual(latestQueryData);
     });
@@ -786,7 +786,7 @@ describe('hooks tests', () => {
 
       const prefetchControl = screen.getByTestId('lowPriority');
 
-      userEvent.hover(prefetchControl);
+      fireEvent.mouseEnter(prefetchControl);
 
       expect(api.endpoints.getUser.select(HooksComponents.LOW_PRIORITY_USER_ID)(getState())).toEqual({
         endpointName: 'getUser',
@@ -807,7 +807,7 @@ describe('hooks tests', () => {
 });
 
 describe('useQuery and useMutation invalidation behavior', () => {
-  const invalidationsStoreRef = setupApiStore(invalidationsApi, { ...actionsReducer });
+  const invalidationsStoreRef = setupApiStore(invalidationsApi, { ...actionsReducer(invalidationsApi.reducerPath) });
 
   // eslint-disable-next-line max-len
   test('initially failed useQueries that provide an tag will refetch after a mutation invalidates it', async () => {
@@ -909,7 +909,7 @@ describe('hooks with createApi defaults set', () => {
 });
 
 describe('selectFromResult (query) behaviors', () => {
-  const postStoreRef = setupApiStore(libPostsApi);
+  const postStoreRef = setupApiStore(libPostsApi, { ...actionsReducer(libPostsApi.reducerPath) });
 
   let getRenderCount: () => number = () => 0;
 
@@ -1027,7 +1027,7 @@ describe('selectFromResult (query) behaviors', () => {
 });
 
 describe('selectFromResult (mutation) behavior', () => {
-  const mutationStoreRef = setupApiStore(mutationApi, { ...actionsReducer });
+  const mutationStoreRef = setupApiStore(mutationApi, { ...actionsReducer(mutationApi.reducerPath) });
 
   let getRenderCount: () => number = () => 0;
 
@@ -1036,7 +1036,9 @@ describe('selectFromResult (mutation) behavior', () => {
   });
 
   test('causes no more than one rerender when using selectFromResult with an empty object', async () => {
-    const { fixture } = await render(HooksComponents.MutationSelectComponent, { imports: mutationStoreRef.imports });
+    const { fixture } = await render(HooksComponents.MutationSelectComponent, {
+      imports: mutationStoreRef.imports,
+    });
     getRenderCount = fixture.componentInstance.renderCounter.getRenderCount;
 
     const incrementButton = screen.getByTestId('incrementButton');
@@ -1044,11 +1046,11 @@ describe('selectFromResult (mutation) behavior', () => {
     expect(getRenderCount()).toBe(1);
 
     fireEvent.click(incrementButton);
-    await waitMs(200); // give our baseQuery a chance to return
+    await waitMs(400); // give our baseQuery a chance to return
     expect(getRenderCount()).toBe(2);
 
     fireEvent.click(incrementButton);
-    await waitMs(200);
+    await waitMs(400);
     expect(getRenderCount()).toBe(3);
 
     const { increment } = mutationApi.endpoints;
@@ -1114,7 +1116,7 @@ describe('selectFromResult (mutation) behavior', () => {
 });
 
 describe('skip behaviour', () => {
-  const storeRef = setupApiStore(api, { ...actionsReducer });
+  const storeRef = setupApiStore(api, { ...actionsReducer(api.reducerPath) });
 
   const uninitialized = {
     status: QueryStatus.uninitialized,

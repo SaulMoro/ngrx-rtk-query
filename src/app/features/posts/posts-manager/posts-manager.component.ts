@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, Validators } from '@angular/forms';
 import { useAddPostMutation } from '../services';
 
 @Component({
@@ -30,7 +30,7 @@ import { useAddPostMutation } from '../services';
 })
 export class PostsManagerComponent {
   addPost = useAddPostMutation();
-  postNameFormControl = new FormControl('', [Validators.required]);
+  postNameFormControl = new UntypedFormControl('', [Validators.required]);
 
   constructor() {}
 

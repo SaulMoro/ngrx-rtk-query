@@ -810,7 +810,7 @@ export class PostLibTestModule {}
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NoObjectQueryComponent {
-  _res1$ = libPostsApi.endpoints.getPosts.useQuery(undefined, {
+  _res1$ = libPostsApi.endpoints.getPosts.useQuery({
     // @ts-expect-error selectFromResult must always return an object
     selectFromResult: ({ data }) => data?.length ?? 0,
   });

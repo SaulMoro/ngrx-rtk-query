@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PostDetailComponent } from './post-detail.component';
 
 describe('PostDetailComponent', () => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let component: PostDetailComponent;
   let fixture: ComponentFixture<PostDetailComponent>;
 
