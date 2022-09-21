@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { LazyComponent } from './lazy.component';
 
 describe('LazyComponent', () => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let component: LazyComponent;
   let fixture: ComponentFixture<LazyComponent>;
 

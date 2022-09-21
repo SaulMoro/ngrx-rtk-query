@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CounterComponent } from './counter.component';
 
 describe('CounterComponent', () => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let component: CounterComponent;
   let fixture: ComponentFixture<CounterComponent>;
 
