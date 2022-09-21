@@ -1,3 +1,17 @@
+## [3.3.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v3.3.0...v3.3.1) (2022-03-30)
+
+
+### Bug Fixes
+
+* lib versions compatible ([eb06bd8](https://github.com/SaulMoro/ngrx-rtk-query/commit/eb06bd8685d766ca16197d43d0ba2edfd97472fd))
+
+## [3.3.1-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v3.3.0...v3.3.1-next.1) (2022-03-30)
+
+
+### Bug Fixes
+
+* lib versions compatible ([eb06bd8](https://github.com/SaulMoro/ngrx-rtk-query/commit/eb06bd8685d766ca16197d43d0ba2edfd97472fd))
+
 # [3.3.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v3.2.0...v3.3.0) (2022-03-17)
 
 
