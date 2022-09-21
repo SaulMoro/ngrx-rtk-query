@@ -5,4 +5,11 @@ export * from './lib/store-rtk-query.module';
 export { createApi, angularHooksModule } from './lib/module';
 export { ThunkService, dispatch } from './lib/thunk.service';
 
-export { QueryOptions, LazyQueryOptions } from './lib/types';
+export {
+  QueryOptions,
+  LazyQueryOptions,
+  TypedUseQueryHookResult,
+  TypedUseQueryStateResult,
+  TypedUseQuerySubscriptionResult,
+  TypedUseMutationResult,
+} from './lib/types';

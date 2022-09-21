@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { ActionReducer, MetaReducer, StoreModule } from '@ngrx/store';
+import { ActionReducer, INIT, MetaReducer, StoreModule } from '@ngrx/store';
 import type { AnyAction } from '@reduxjs/toolkit';
 import { dispatch, StoreRtkQueryModule } from 'ngrx-rtk-query';
 
-export const DEFAULT_DELAY_MS = 150;
+export const DEFAULT_DELAY_MS = 200;
 
 export async function waitMs(time = DEFAULT_DELAY_MS) {
   const now = Date.now();
@@ -47,11 +47,11 @@ expect.extend({
   },
 });
 
-export const actionsReducer = {
+export const actionsReducer = (apiName: string) => ({
   actions: (state: AnyAction[] = [], action: AnyAction) => {
-    return [...state, action];
+    return action.type === INIT || !(action.type as String).startsWith(apiName) ? state : [...state, action];
   },
-};
+});
 
 export function setupApiStore<
   A extends {

@@ -396,7 +396,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       const requestIdSubject = new BehaviorSubject<string | undefined>(undefined);
       const requestId$ = requestIdSubject.asObservable();
 
-      const triggerMutation = (arg: any) => {
+      const triggerMutation = (arg: Parameters<typeof initiate>['0']) => {
         const promise = dispatch(initiate(arg, { fixedCacheKey }));
         if (!promiseRef.current?.arg.fixedCacheKey) {
           removePrevMutation();

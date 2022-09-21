@@ -1,5 +1,5 @@
 import type { AnyAction, ThunkAction } from '@reduxjs/toolkit';
-import type { MutationDefinition, QueryDefinition, SkipToken } from '@reduxjs/toolkit/query';
+import type { BaseQueryFn, MutationDefinition, QueryDefinition, SkipToken } from '@reduxjs/toolkit/query';
 import type { QueryStatus, QuerySubState, SubscriptionOptions } from '@reduxjs/toolkit/dist/query/core/apiState';
 import type {
   MutationActionCreatorResult,
@@ -49,7 +49,24 @@ export type UseQuery<D extends QueryDefinition<any, any, any, any>> = <
 >(
   arg: QueryArgFrom<D> | Observable<QueryArgFrom<D> | UninitializedValue> | SkipToken,
   options?: UseQueryOptions<D, R> | Observable<UseQueryOptions<D, R>>,
-) => Observable<UseQueryStateResult<D, R> & ReturnType<UseQuerySubscription<D>>>;
+) => Observable<UseQueryHookResult<D, R>>;
+
+export type UseQueryHookResult<
+  D extends QueryDefinition<any, any, any, any>,
+  R = UseQueryStateDefaultResult<D>,
+> = UseQueryStateResult<D, R> & UseQuerySubscriptionResult<D>;
+
+/**
+ * Helper type to manually type the result
+ * of the `useQuery` hook in userland code.
+ */
+export type TypedUseQueryHookResult<
+  ResultType,
+  QueryArg,
+  BaseQuery extends BaseQueryFn,
+  R = UseQueryStateDefaultResult<QueryDefinition<QueryArg, BaseQuery, string, ResultType, string>>,
+> = TypedUseQueryStateResult<ResultType, QueryArg, BaseQuery, R> &
+  TypedUseQuerySubscriptionResult<ResultType, QueryArg, BaseQuery>;
 
 export interface UseQuerySubscriptionOptions extends SubscriptionOptions {
   /**
@@ -62,7 +79,7 @@ export interface UseQuerySubscriptionOptions extends SubscriptionOptions {
    *   * The cached data **will not be used** on the initial load, and will ignore updates from
    * any identical query until the `skip` condition is removed
    *   * The query will have a status of `uninitialized`
-   *   * If `skip: false` is set after skipping the initial load, the cached result will be used
+   *   * If `skip: false` is set after the initial load, the cached result will be used
    * - **If the query does not have cached data:**
    *   * The query will have a status of `uninitialized`
    *   * The query will not exist in the state when viewed with the dev tools
@@ -90,11 +107,12 @@ export interface UseQuerySubscriptionOptions extends SubscriptionOptions {
 
 export type UseQueryOptions<
   D extends QueryDefinition<any, any, any, any>,
-  R = UseQueryStateDefaultResult<D>,
+  R extends Record<string, any> = UseQueryStateDefaultResult<D>,
 > = UseQuerySubscriptionOptions & UseQueryStateOptions<D, R>;
 
-export type QueryOptions<SelectFromResultType = UseQueryStateDefaultResult<QueryDefinition<any, any, any, any>>> =
-  UseQueryOptions<any, SelectFromResultType>;
+export type QueryOptions<
+  SelectFromResultType extends Record<string, any> = UseQueryStateDefaultResult<QueryDefinition<any, any, any, any>>,
+> = UseQueryOptions<any, SelectFromResultType>;
 
 /**
  * A hook that automatically triggers fetches of data from an endpoint, and 'subscribes' the
@@ -118,7 +136,22 @@ export type UseQuerySubscription<D extends QueryDefinition<any, any, any, any>> 
   options?: UseQuerySubscriptionOptions,
   promiseRef?: { current?: QueryActionCreatorResult<D> },
   argCacheRef?: { current?: any },
-) => Pick<QueryActionCreatorResult<D>, 'refetch'>;
+) => UseQuerySubscriptionResult<D>;
+
+export type UseQuerySubscriptionResult<D extends QueryDefinition<any, any, any, any>> = Pick<
+  QueryActionCreatorResult<D>,
+  'refetch'
+>;
+
+/**
+ * Helper type to manually type the result
+ * of the `useQuerySubscription` hook in userland code.
+ */
+export type TypedUseQuerySubscriptionResult<
+  ResultType,
+  QueryArg,
+  BaseQuery extends BaseQueryFn,
+> = UseQuerySubscriptionResult<QueryDefinition<QueryArg, BaseQuery, string, ResultType, string>>;
 
 export type UseLazyTrigger<D extends QueryDefinition<any, any, any, any>> = (
   arg: QueryArgFrom<D>,
@@ -129,6 +162,17 @@ export type UseLazyQueryLastPromiseInfo<D extends QueryDefinition<any, any, any,
   lastArg: QueryArgFrom<D> | UninitializedValue;
   extra?: Parameters<UseLazyTrigger<D>>[1];
 };
+
+/**
+ * Helper type to manually type the result
+ * of the `useQueryState` hook in userland code.
+ */
+export type TypedUseQueryStateResult<
+  ResultType,
+  QueryArg,
+  BaseQuery extends BaseQueryFn,
+  R = UseQueryStateDefaultResult<QueryDefinition<QueryArg, BaseQuery, string, ResultType, string>>,
+> = NoInfer<R>;
 
 /**
  * A hook similar to [`useQuery`](#usequery), but with manual control over when the data fetching occurs.
@@ -146,11 +190,13 @@ export type UseLazyQueryLastPromiseInfo<D extends QueryDefinition<any, any, any,
  *
  * #### Note
  *
- * When the trigger function returned from a LazyQuery, it always initiates a new request to the server even if there
- * is cached data. Set `preferCacheValue`(the second argument to the function) as true if you want it to immediately
- * return a cached value if one exists.
+ * When the trigger function returned from a LazyQuery is called, it always initiates a new request to the server even
+ * if there is cached data. Set `preferCacheValue`(the second argument to the function) as true if you want it to
+ * immediately return a cached value if one exists.
  */
-export type UseLazyQuery<D extends QueryDefinition<any, any, any, any>> = <R = UseQueryStateDefaultResult<D>>(
+export type UseLazyQuery<D extends QueryDefinition<any, any, any, any>> = <
+  R extends Record<string, any> = UseQueryStateDefaultResult<D>,
+>(
   options?: UseLazyQueryOptions<D, R> | Observable<UseLazyQueryOptions<D, R>>,
 ) => {
   /**
@@ -181,11 +227,12 @@ export type UseLazyQuery<D extends QueryDefinition<any, any, any, any>> = <R = U
 
 export type UseLazyQueryOptions<
   D extends QueryDefinition<any, any, any, any>,
-  R = UseQueryStateDefaultResult<D>,
+  R extends Record<string, any> = UseQueryStateDefaultResult<D>,
 > = SubscriptionOptions & Omit<UseQueryStateOptions<D, R>, 'skip'>;
 
-export type LazyQueryOptions<SelectFromResultType = UseQueryStateDefaultResult<QueryDefinition<any, any, any, any>>> =
-  UseLazyQueryOptions<any, SelectFromResultType>;
+export type LazyQueryOptions<
+  SelectFromResultType extends Record<string, any> = UseQueryStateDefaultResult<QueryDefinition<any, any, any, any>>,
+> = UseLazyQueryOptions<any, SelectFromResultType>;
 
 /**
  * A hook similar to [`useQuerySubscription`](#usequerysubscription), but with manual control over when
@@ -222,7 +269,9 @@ export type QueryStateSelector<R extends Record<string, any>, D extends QueryDef
  * - Returns the latest request status and cached data from the Redux store
  * - Re-renders as the request status changes and data becomes available
  */
-export type UseQueryState<D extends QueryDefinition<any, any, any, any>> = <R = UseQueryStateDefaultResult<D>>(
+export type UseQueryState<D extends QueryDefinition<any, any, any, any>> = <
+  R extends Record<string, any> = UseQueryStateDefaultResult<D>,
+>(
   arg: QueryArgFrom<D> | Observable<QueryArgFrom<D> | UninitializedValue> | SkipToken,
   options?: UseQueryStateOptions<D, R>,
   lastValue?: { current?: any },
@@ -240,7 +289,7 @@ export type UseQueryStateOptions<D extends QueryDefinition<any, any, any, any>, 
    *   * The cached data **will not be used** on the initial load, and will ignore updates from
    * any identical query until the `skip` condition is removed
    *   * The query will have a status of `uninitialized`
-   *   * If `skip: false` is set after skipping the initial load, the cached result will be used
+   *   * If `skip: false` is set after the initial load, the cached result will be used
    * - **If the query does not have cached data:**
    *   * The query will have a status of `uninitialized`
    *   * The query will not exist in the state when viewed with the dev tools
@@ -347,6 +396,17 @@ export type UseMutationStateResult<D extends MutationDefinition<any, any, any, a
    */
   reset: () => void;
 };
+
+/**
+ * Helper type to manually type the result
+ * of the `useMutation` hook in userland code.
+ */
+export type TypedUseMutationResult<
+  ResultType,
+  QueryArg,
+  BaseQuery extends BaseQueryFn,
+  R = MutationResultSelectorResult<MutationDefinition<QueryArg, BaseQuery, string, ResultType, string>>,
+> = UseMutationStateResult<MutationDefinition<QueryArg, BaseQuery, string, ResultType, string>, R>;
 
 /**
  * A hook that lets you trigger an update request for a given endpoint, and subscribes the component

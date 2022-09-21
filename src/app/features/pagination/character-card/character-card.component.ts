@@ -32,7 +32,7 @@ import { Character, CharacterStatus } from '../models';
 
       <p class="self-start mt-3 text-xs text-gray-500 dark:text-gray-400">
         Last known location:
-        <span class="inline-block text-indigo-700 hover:text-indigo-800">{{ character.location?.name }}</span>
+        <span class="inline-block text-indigo-700 hover:text-indigo-800">{{ character.location.name }}</span>
       </p>
       <div
         *ngIf="episodeQuery.state$ | async as episodeQuery"

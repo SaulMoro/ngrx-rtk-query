@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
+import { UntypedFormBuilder, Validators } from '@angular/forms';
 
 import { counterApiEndpoints, useGetCountByIdQuery, useLazyGetCountByIdQuery } from '@app/core/services';
 
@@ -66,9 +66,9 @@ export class LazyComponent {
     preferCacheValue: [false],
   });
 
-  constructor(private formBuilder: FormBuilder) {}
+  constructor(private formBuilder: UntypedFormBuilder) {}
 
-  async startCounterById({ id, preferCacheValue }: { id: string; preferCacheValue: boolean }) {
+  async startCounterById({ id, preferCacheValue }: { id: string; preferCacheValue: boolean }): Promise<void> {
     this.countQuery
       .fetch(id, { preferCacheValue })
       .unwrap()

@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { tap } from 'rxjs/operators';
 
 import { useDeletePostMutation, useGetPostQuery, useUpdatePostMutation } from '../services/posts';
@@ -59,7 +59,7 @@ export class PostDetailComponent {
   updatePostMutation = useUpdatePostMutation();
   deletePostMutation = useDeletePostMutation();
 
-  postFormControl = new FormControl('');
+  postFormControl = new UntypedFormControl('');
   isEditing = false;
 
   constructor(private route: ActivatedRoute, private router: Router) {}

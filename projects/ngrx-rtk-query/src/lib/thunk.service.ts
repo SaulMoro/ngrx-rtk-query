@@ -37,6 +37,7 @@ export function select<K>(mapFn: (state: any) => K): Observable<K> {
 @Injectable()
 export class ThunkService {
   constructor(private readonly store: Store) {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     service = this;
   }
 
