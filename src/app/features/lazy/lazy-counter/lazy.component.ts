@@ -68,13 +68,22 @@ export class LazyComponent {
 
   constructor(private formBuilder: FormBuilder) {}
 
-  startCounterById({ id, preferCacheValue }: { id: string; preferCacheValue: boolean }): void {
+  async startCounterById({ id, preferCacheValue }: { id: string; preferCacheValue: boolean }) {
     this.countQuery
       .fetch(id, { preferCacheValue })
       .unwrap()
-      .then(() => {
+      .then((result) => {
+        console.log('result method 1', result);
         this.form.reset();
       })
       .catch(console.error);
+
+    try {
+      const result = await this.countQuery.fetch(id, { preferCacheValue }).unwrap();
+      console.log('result method 2', result);
+      this.form.reset();
+    } catch (error) {
+      console.error(error);
+    }
   }
 }
