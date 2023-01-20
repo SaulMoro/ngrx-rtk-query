@@ -1,3 +1,16 @@
+# [3.4.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v3.3.1...v3.4.0) (2022-09-21)
+
+
+### Bug Fixes
+
+* **app:** lint issues ([521fef5](https://github.com/SaulMoro/ngrx-rtk-query/commit/521fef5c37cdd21b734fd8f2da1624ea9f9644d6))
+
+
+### Features
+
+* **app:** example 2 lazy query method ([a79d46a](https://github.com/SaulMoro/ngrx-rtk-query/commit/a79d46af3795fd0a06833a98c5a451645f63599f))
+* update to angular 14 and rtk 1.8.5 ([dfcb136](https://github.com/SaulMoro/ngrx-rtk-query/commit/dfcb1364a70916c97a297c4424dfd32f9bbab2ba))
+
 # [3.4.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v3.3.1...v3.4.0-next.1) (2022-09-21)
 
 
