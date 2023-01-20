@@ -29,7 +29,7 @@
 
 |   Angular   | ngrx-rtk-query | @reduxjs/toolkit |       Support       |
 | :---------: | :------------: | :--------------: | :-----------------: |
-|   >=13.x    |   >=3.x.x      |      ~1.8.5      | Bugs / New Features |
+|   >=13.x    |   >=3.x.x      |      ~1.9.1      | Bugs / New Features |
 | 11.x - 12.x |     2.3.0      |       1.6.2      |        None         |
 
 Only the latest version of Angular in the table above is actively supported. This is due to the fact that compilation of Angular libraries is [incompatible between major versions](https://angular.io/guide/creating-libraries#ensuring-library-version-compatibility).

@@ -6,6 +6,11 @@ import { waitMs } from '../helper';
 // This can be used to test how many renders happen due to data changes or
 // the refetching behavior of components.
 let amount = 0;
+let nextItemId = 0;
+
+interface Item {
+  id: number;
+}
 
 export const resetAmount = () => (amount = 0);
 
@@ -23,6 +28,15 @@ export const api = createApi({
           data: null,
         },
       };
+    }
+
+    if (arg?.body && 'listItems' in arg.body) {
+      const items: Item[] = [];
+      for (let i = 0; i < 3; i++) {
+        const item = { id: nextItemId++ };
+        items.push(item);
+      }
+      return { data: items };
     }
 
     return { data: arg?.body ? { ...arg.body, ...(amount ? { amount } : {}) } : {} };
@@ -53,6 +67,23 @@ export const api = createApi({
     }),
     getError: build.query({
       query: (query) => '/error',
+    }),
+    listItems: build.query<Item[], { pageNumber: number }>({
+      serializeQueryArgs: ({ endpointName }) => {
+        return endpointName;
+      },
+      query: ({ pageNumber }) => ({
+        url: `items?limit=1&offset=${pageNumber}`,
+        body: {
+          listItems: true,
+        },
+      }),
+      merge: (currentCache, newItems) => {
+        currentCache.push(...newItems);
+      },
+      forceRefetch: ({ currentArg, previousArg }) => {
+        return true;
+      },
     }),
   }),
 });

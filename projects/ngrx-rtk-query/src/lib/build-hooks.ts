@@ -12,11 +12,11 @@ import type {
   PrefetchOptions,
 } from '@reduxjs/toolkit/dist/query/core/module';
 import type { QueryResultSelectorResult } from '@reduxjs/toolkit/dist/query/core/buildSelectors';
-import { SerializeQueryArgs } from '@reduxjs/toolkit/dist/query/defaultSerializeQueryArgs';
+import type { SerializeQueryArgs } from '@reduxjs/toolkit/dist/query/defaultSerializeQueryArgs';
 import { ApiContext } from '@reduxjs/toolkit/dist/query/apiTypes';
 import { createSelectorFactory, resultMemoize } from '@ngrx/store';
 import { BehaviorSubject, of, isObservable, combineLatest } from 'rxjs';
-import { distinctUntilChanged, finalize, map, shareReplay, switchMap, take, tap } from 'rxjs/operators';
+import { distinctUntilChanged, finalize, map, shareReplay, switchMap, tap } from 'rxjs/operators';
 
 import type { AngularHooksModuleOptions } from './module';
 import type {
@@ -35,7 +35,7 @@ import type {
   UseQuerySubscription,
 } from './types';
 import { UNINITIALIZED_VALUE } from './constants';
-import { shallowEqual } from './utils';
+import { defaultSerializeQueryArgs, shallowEqual } from './utils';
 import { getState } from './thunk.service';
 import { useStableQueryArgs } from './useSerializedStableValue';
 
@@ -106,6 +106,9 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       )
         lastResult = undefined;
     }
+    if (queryArgs === skipToken) {
+      lastResult = undefined;
+    }
 
     // data is the last known good request result we have tracked
     // or if none has been tracked yet the last good result for the current args
@@ -151,10 +154,16 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       { refetchOnReconnect, refetchOnFocus, refetchOnMountOrArgChange, skip = false, pollingInterval = 0 } = {},
       promiseRef = {},
       argCacheRef = {},
+      lastRenderHadSubscription = { current: false },
     ) => {
       const stableArg = useStableQueryArgs(
         skip ? skipToken : arg,
-        serializeQueryArgs,
+        // Even if the user provided a per-endpoint `serializeQueryArgs` with
+        // a consistent return value, _here_ we want to use the default behavior
+        // so we can tell if _anything_ actually changed. Otherwise, we can end up
+        // with a case where the query args did change but the serialization doesn't,
+        // and then we never try to initiate a refetch.
+        defaultSerializeQueryArgs,
         context.endpointDefinitions[name],
         name,
         argCacheRef,
@@ -162,17 +171,37 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       const subscriptionOptions = { refetchOnReconnect, refetchOnFocus, pollingInterval };
 
       const { queryCacheKey, requestId } = promiseRef.current || {};
-      useSelector(
-        (state: RootState<Definitions, string, string>) =>
-          !!queryCacheKey && !!requestId && !state[api.reducerPath].subscriptions[queryCacheKey]?.[requestId],
-      )
-        .pipe(take(1))
-        .subscribe((subscriptionRemoved) => {
-          if (subscriptionRemoved) {
-            promiseRef.current?.unsubscribe();
-            promiseRef.current = undefined;
+
+      // HACK Because the latest state is in the middleware, we actually
+      // dispatch an action that will be intercepted and returned.
+      let currentRenderHasSubscription = false;
+      if (queryCacheKey && requestId) {
+        // This _should_ return a boolean, even if the types don't line up
+        const returnedValue = dispatch(
+          api.internalActions.internal_probeSubscription({
+            queryCacheKey,
+            requestId,
+          }),
+        );
+
+        if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test') {
+          if (typeof returnedValue !== 'boolean') {
+            throw new Error(
+              `Warning: Middleware for RTK-Query API at reducerPath "${api.reducerPath}" has not
+              been added to the store. You must add the middleware for RTK-Query to function correctly!`,
+            );
           }
-        });
+        }
+
+        currentRenderHasSubscription = !!returnedValue;
+      }
+
+      const subscriptionRemoved = !currentRenderHasSubscription && lastRenderHadSubscription.current;
+      lastRenderHadSubscription.current = currentRenderHasSubscription;
+      if (subscriptionRemoved) {
+        promiseRef.current?.unsubscribe();
+        promiseRef.current = undefined;
+      }
 
       if (stableArg !== skipToken && stableArg !== UNINITIALIZED_VALUE) {
         const lastPromise = promiseRef?.current;
@@ -192,7 +221,10 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         /**
          * A method to manually refetch data for the query
          */
-        refetch: () => void promiseRef.current?.refetch(),
+        refetch: () => {
+          if (!promiseRef.current) throw new Error('Cannot refetch a query that has not been started yet.');
+          return promiseRef.current?.refetch();
+        },
       };
     };
 

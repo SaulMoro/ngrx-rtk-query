@@ -60,20 +60,32 @@ export function setupApiStore<
     metareducer: MetaReducer<any>;
     util: { resetApiState(): any };
   },
-  R extends Record<string, ActionReducer<any, any>>,
->(api: A, extraReducers?: R, withoutListeners?: boolean) {
+  R extends Record<string, ActionReducer<any, any>> = Record<never, never>,
+>(
+  api: A,
+  extraReducers?: R,
+  options: {
+    withoutListeners?: boolean;
+    withoutTestLifecycles?: boolean;
+    metareducer?: {
+      prepend?: MetaReducer<any>[];
+      concat?: MetaReducer<any>[];
+    };
+  } = {},
+) {
+  const { metareducer } = options;
   const getStore = () =>
     StoreModule.forRoot(
       { [api.reducerPath]: api.reducer, ...extraReducers },
       {
-        metaReducers: [api.metareducer],
+        metaReducers: [...(metareducer?.prepend ?? []), api.metareducer, ...(metareducer?.concat ?? [])],
         runtimeChecks: { strictStateSerializability: true, strictStateImmutability: true },
       },
     );
   type StoreType = ReturnType<typeof getStore>;
   const initialStore = getStore() as StoreType;
 
-  const getRTKQueryStore = () => StoreRtkQueryModule.forRoot({ setupListeners: !withoutListeners });
+  const getRTKQueryStore = () => StoreRtkQueryModule.forRoot({ setupListeners: !options.withoutListeners });
   const initialRTKQueryStore = getRTKQueryStore();
 
   const refObj = {
@@ -83,17 +95,19 @@ export function setupApiStore<
     imports: [initialStore, initialRTKQueryStore],
   };
 
-  beforeEach(() => {
-    const store = getStore() as StoreType;
-    const rtkQueryStore = getRTKQueryStore();
-    refObj.store = store;
-    refObj.rtkQueryStore = rtkQueryStore;
-    refObj.imports = [store, rtkQueryStore];
-  });
+  if (!options.withoutTestLifecycles) {
+    beforeEach(() => {
+      const store = getStore() as StoreType;
+      const rtkQueryStore = getRTKQueryStore();
+      refObj.store = store;
+      refObj.rtkQueryStore = rtkQueryStore;
+      refObj.imports = [store, rtkQueryStore];
+    });
 
-  afterEach(() => {
-    dispatch(api.util.resetApiState());
-  });
+    afterEach(() => {
+      dispatch(api.util.resetApiState());
+    });
+  }
 
   return refObj;
 }

@@ -9,9 +9,13 @@ let delayedActions: Action[] = [];
 
 export function dispatch(action: Action): Action;
 export function dispatch<R>(action: ThunkAction<R, any, any, AnyAction>): R;
-export function dispatch<R>(action: Action | ThunkAction<R, any, any, AnyAction>): R | Action {
+export function dispatch<R>(action: Action | ThunkAction<R, any, any, AnyAction>): R | Action;
+export function dispatch<R>(action: Action | ThunkAction<R, any, any, AnyAction>): R | Action | boolean {
   if (typeof action === 'function') {
     return action(dispatch, getState, {});
+  } else if (action.type.endsWith('internal_probeSubscription')) {
+    service.dispatch(action);
+    return true;
   }
 
   // Middleware dispatch actions before Store starts

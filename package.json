@@ -42,7 +42,7 @@
     "@ngrx/effects": "^15.1.0",
     "@ngrx/router-store": "^15.1.0",
     "@ngrx/store": "^15.1.0",
-    "@reduxjs/toolkit": "~1.8.5",
+    "@reduxjs/toolkit": "^1.9.1",
     "rxjs": "~7.5.7",
     "tslib": "^2.4.1",
     "zone.js": "~0.12.0"
