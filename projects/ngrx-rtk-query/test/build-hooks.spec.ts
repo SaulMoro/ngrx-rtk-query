@@ -843,6 +843,7 @@ describe('useQuery and useMutation invalidation behavior', () => {
     expect(getState().actions).toMatchSequence(
       invalidationsApi.internalActions.middlewareRegistered.match,
       checkSession.matchPending,
+      invalidationsApi.internalActions.subscriptionsUpdated.match,
       checkSession.matchRejected,
       login.matchPending,
       login.matchFulfilled,
