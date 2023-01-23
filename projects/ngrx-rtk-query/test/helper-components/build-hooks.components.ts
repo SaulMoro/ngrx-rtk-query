@@ -177,6 +177,39 @@ export class RefetchOnMountSkipComponent {
 }
 
 @Component({
+  selector: 'lib-item-list-query',
+  template: `
+    {{ renderCounter.increment() }}
+    {{ setIds() }}
+    <div *ngIf="query$ | async as query">
+      <button (click)="setPageNumber()">Next Page</button>
+      <ul>
+        <li *ngFor="let id of ids">ID: {{ id }}</li>
+      </ul>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class ItemListComponent extends BaseRenderCounterComponent {
+  page = new BehaviorSubject<{ pageNumber: number }>({ pageNumber: 0 });
+  pageNumber$ = this.page.asObservable();
+  ids = [0];
+
+  query$ = api.useListItemsQuery(this.pageNumber$);
+
+  setPageNumber(): void {
+    this.page.next({ pageNumber: this.page.getValue().pageNumber + 1 });
+  }
+
+  setIds(): void {
+    this.ids = Array(this.renderCounter.getRenderCount())
+      .fill(1)
+      .map((x, i) => i);
+    console.log(this.ids);
+  }
+}
+
+@Component({
   selector: 'lib-test-mutation',
   template: `
     <div *ngIf="updateUserMutation.state$ | async as updateUser">
