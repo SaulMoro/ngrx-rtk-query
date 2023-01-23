@@ -1,3 +1,29 @@
+# [3.5.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v3.4.0...v3.5.0) (2023-01-23)
+
+
+### Bug Fixes
+
+* style issues ([44c34ed](https://github.com/SaulMoro/ngrx-rtk-query/commit/44c34edce6af79c69ba871adf929ef2e019c298c))
+
+
+### Features
+
+* update to rtk 1.9.1 v1 ([a099292](https://github.com/SaulMoro/ngrx-rtk-query/commit/a099292b03c234df0a0a2118eac120054ce66e34))
+* update to rtk 1.9.1 v2 ([0ca58f2](https://github.com/SaulMoro/ngrx-rtk-query/commit/0ca58f2693ce48102f59dc206506656b26e6280c))
+
+# [3.5.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v3.4.0...v3.5.0-next.1) (2023-01-23)
+
+
+### Bug Fixes
+
+* style issues ([44c34ed](https://github.com/SaulMoro/ngrx-rtk-query/commit/44c34edce6af79c69ba871adf929ef2e019c298c))
+
+
+### Features
+
+* update to rtk 1.9.1 v1 ([a099292](https://github.com/SaulMoro/ngrx-rtk-query/commit/a099292b03c234df0a0a2118eac120054ce66e34))
+* update to rtk 1.9.1 v2 ([0ca58f2](https://github.com/SaulMoro/ngrx-rtk-query/commit/0ca58f2693ce48102f59dc206506656b26e6280c))
+
 # [3.4.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v3.3.1...v3.4.0) (2022-09-21)
 
 
