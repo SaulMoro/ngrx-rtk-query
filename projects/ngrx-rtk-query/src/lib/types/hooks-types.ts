@@ -136,6 +136,7 @@ export type UseQuerySubscription<D extends QueryDefinition<any, any, any, any>> 
   options?: UseQuerySubscriptionOptions,
   promiseRef?: { current?: QueryActionCreatorResult<D> },
   argCacheRef?: { current?: any },
+  lastRenderHadSubscription?: { current?: boolean },
 ) => UseQuerySubscriptionResult<D>;
 
 export type UseQuerySubscriptionResult<D extends QueryDefinition<any, any, any, any>> = Pick<

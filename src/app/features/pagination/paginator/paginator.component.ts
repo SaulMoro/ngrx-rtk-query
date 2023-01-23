@@ -6,9 +6,9 @@ import { Component, ChangeDetectionStrategy, EventEmitter, Input, Output } from 
     <ng-container *ngIf="currentPage && pages && pages > 1">
       <div class="flex text-gray-700">
         <button
-          class="flex items-center justify-center w-12 h-12 mr-1 transition-colors duration-200 bg-gray-200 rounded-full"
+          class="mr-1 flex h-12 w-12 items-center justify-center rounded-full bg-gray-200 transition-colors duration-200"
           queryParamsHandling="merge"
-          [ngClass]="currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-300'"
+          [ngClass]="currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-300'"
           [disabled]="currentPage === 1"
           [routerLink]="['./']"
           [queryParams]="{ page: currentPage - 1 }"
@@ -27,10 +27,10 @@ import { Component, ChangeDetectionStrategy, EventEmitter, Input, Output } from 
             <polyline points="15 18 9 12 15 6"></polyline>
           </svg>
         </button>
-        <div class="flex h-12 font-medium bg-gray-200 rounded-full">
+        <div class="flex h-12 rounded-full bg-gray-200 font-medium">
           <a
             *ngIf="currentPage > 2"
-            class="items-center justify-center hidden w-12 leading-5 transition duration-200 ease-in rounded-full md:flex hover:bg-indigo-300"
+            class="hidden w-12 items-center justify-center rounded-full leading-5 transition duration-200 ease-in hover:bg-indigo-300 md:flex"
             queryParamsHandling="merge"
             [routerLink]="['./']"
             [queryParams]="{ page: 1 }"
@@ -40,7 +40,7 @@ import { Component, ChangeDetectionStrategy, EventEmitter, Input, Output } from 
           </a>
           <a
             *ngIf="currentPage > 3"
-            class="items-center justify-center hidden w-12 leading-5 transition duration-200 ease-in rounded-full md:flex hover:bg-indigo-300"
+            class="hidden w-12 items-center justify-center rounded-full leading-5 transition duration-200 ease-in hover:bg-indigo-300 md:flex"
             queryParamsHandling="merge"
             [routerLink]="['./']"
             [queryParams]="{ page: 2 }"
@@ -50,14 +50,14 @@ import { Component, ChangeDetectionStrategy, EventEmitter, Input, Output } from 
           </a>
           <span
             *ngIf="currentPage > 4"
-            class="items-center justify-center hidden w-12 leading-5 transition duration-200 ease-in rounded-full md:flex"
+            class="hidden w-12 items-center justify-center rounded-full leading-5 transition duration-200 ease-in md:flex"
           >
             ...
           </span>
 
           <a
             *ngIf="currentPage - 1 >= 1"
-            class="items-center justify-center hidden w-12 leading-5 transition duration-200 ease-in rounded-full md:flex hover:bg-indigo-300"
+            class="hidden w-12 items-center justify-center rounded-full leading-5 transition duration-200 ease-in hover:bg-indigo-300 md:flex"
             queryParamsHandling="merge"
             [routerLink]="['./']"
             [queryParams]="{ page: currentPage - 1 }"
@@ -66,7 +66,7 @@ import { Component, ChangeDetectionStrategy, EventEmitter, Input, Output } from 
             {{ currentPage - 1 }}
           </a>
           <a
-            class="items-center justify-center hidden w-12 leading-5 transition duration-200 ease-in bg-indigo-500 rounded-full md:flex"
+            class="hidden w-12 items-center justify-center rounded-full bg-indigo-500 leading-5 transition duration-200 ease-in md:flex"
             queryParamsHandling="merge"
             [routerLink]="['./']"
             [queryParams]="{ page: currentPage }"
@@ -75,7 +75,7 @@ import { Component, ChangeDetectionStrategy, EventEmitter, Input, Output } from 
           </a>
           <a
             *ngIf="currentPage < pages"
-            class="items-center justify-center hidden w-12 leading-5 transition duration-200 ease-in rounded-full md:flex hover:bg-indigo-300"
+            class="hidden w-12 items-center justify-center rounded-full leading-5 transition duration-200 ease-in hover:bg-indigo-300 md:flex"
             queryParamsHandling="merge"
             [routerLink]="['./']"
             [queryParams]="{ page: currentPage + 1 }"
@@ -86,13 +86,13 @@ import { Component, ChangeDetectionStrategy, EventEmitter, Input, Output } from 
 
           <span
             *ngIf="currentPage + 3 < pages"
-            class="items-center justify-center hidden w-12 leading-5 transition duration-200 ease-in rounded-full md:flex"
+            class="hidden w-12 items-center justify-center rounded-full leading-5 transition duration-200 ease-in md:flex"
           >
             ...
           </span>
           <a
             *ngIf="currentPage + 2 < pages"
-            class="items-center justify-center hidden w-12 leading-5 transition duration-200 ease-in rounded-full md:flex hover:bg-indigo-300"
+            class="hidden w-12 items-center justify-center rounded-full leading-5 transition duration-200 ease-in hover:bg-indigo-300 md:flex"
             queryParamsHandling="merge"
             [routerLink]="['./']"
             [queryParams]="{ page: pages - 1 }"
@@ -102,7 +102,7 @@ import { Component, ChangeDetectionStrategy, EventEmitter, Input, Output } from 
           </a>
           <a
             *ngIf="currentPage + 1 < pages"
-            class="items-center justify-center hidden w-12 leading-5 transition duration-200 ease-in rounded-full md:flex hover:bg-indigo-300"
+            class="hidden w-12 items-center justify-center rounded-full leading-5 transition duration-200 ease-in hover:bg-indigo-300 md:flex"
             queryParamsHandling="merge"
             [routerLink]="['./']"
             [queryParams]="{ page: pages }"
@@ -112,9 +112,9 @@ import { Component, ChangeDetectionStrategy, EventEmitter, Input, Output } from 
           </a>
         </div>
         <button
-          class="flex items-center justify-center w-12 h-12 ml-1 transition-colors duration-200 bg-gray-200 rounded-full"
+          class="ml-1 flex h-12 w-12 items-center justify-center rounded-full bg-gray-200 transition-colors duration-200"
           queryParamsHandling="merge"
-          [ngClass]="currentPage === +pages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-300'"
+          [ngClass]="currentPage === +pages ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-300'"
           [disabled]="currentPage === +pages"
           [routerLink]="['./']"
           [queryParams]="{ page: currentPage + 1 }"

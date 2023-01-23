@@ -1,17 +1,27 @@
 import { Injectable } from '@angular/core';
 import { Action, Store } from '@ngrx/store';
-import type { AnyAction, ThunkAction } from '@reduxjs/toolkit';
+import { AnyAction, ThunkAction } from '@reduxjs/toolkit';
+import { InternalMiddlewareState } from '@reduxjs/toolkit/dist/query/core/buildMiddleware/types';
 import { Observable } from 'rxjs';
 import { take } from 'rxjs/operators';
 
 let service: ThunkService;
 let delayedActions: Action[] = [];
+export const internalBatchState: InternalMiddlewareState = {
+  currentSubscriptions: {},
+};
 
 export function dispatch(action: Action): Action;
 export function dispatch<R>(action: ThunkAction<R, any, any, AnyAction>): R;
-export function dispatch<R>(action: Action | ThunkAction<R, any, any, AnyAction>): R | Action {
+export function dispatch<R>(action: Action | ThunkAction<R, any, any, AnyAction>): R | Action;
+export function dispatch<R>(action: Action | ThunkAction<R, any, any, AnyAction>): R | Action | boolean {
   if (typeof action === 'function') {
     return action(dispatch, getState, {});
+  } else if (action.type.endsWith('internal_probeSubscription')) {
+    const queryCacheKey = (action as any).payload.queryCacheKey;
+    const requestId = (action as any).payload.requestId;
+    const hasSubscription = !!internalBatchState.currentSubscriptions[queryCacheKey]?.[requestId];
+    return hasSubscription;
   }
 
   // Middleware dispatch actions before Store starts

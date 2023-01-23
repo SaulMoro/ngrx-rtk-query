@@ -10,7 +10,7 @@ import { useAddPostMutation } from '../services';
         <input id="name" placeholder="New post name" type="text" [formControl]="postNameFormControl" />
         <button
           *ngIf="addPost.state$ | async as addPostState"
-          class="m-4 btn btn-primary"
+          class="btn btn-primary m-4"
           [disabled]="postNameFormControl.invalid || addPostState.isLoading"
           (click)="addNewPost()"
         >

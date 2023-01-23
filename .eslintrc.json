@@ -30,7 +30,10 @@
         "plugin:rxjs/recommended",
         "plugin:ngrx/recommended"
       ],
-      "plugins": ["@typescript-eslint", "prettier", "rxjs", "ngrx"],
+      "plugins": ["@typescript-eslint", "prettier", "rxjs", "ngrx", "tailwindcss"],
+      "settings": {
+        "tailwindcss/classRegex": ["^class(Name)?$", "ngClass"]
+      },
       "rules": {
         "@angular-eslint/directive-selector": [
           "error",
@@ -86,13 +89,20 @@
         "rxjs/no-cyclic-action": "off",
         "rxjs/no-unsafe-switchmap": "error",
         "ngrx/select-style": "error",
-        "ngrx/no-reducer-in-key-names": "off"
+        "ngrx/no-reducer-in-key-names": "off",
+        "tailwindcss/no-custom-classname": "off"
       }
     },
     {
       "files": ["*.html"],
       "extends": ["plugin:@angular-eslint/template/recommended"],
-      "rules": {}
+      "plugins": ["tailwindcss"],
+      "settings": {
+        "tailwindcss/classRegex": ["^class(Name)?$", "ngClass"]
+      },
+      "rules": {
+        "tailwindcss/no-custom-classname": "off"
+      }
     },
     {
       "files": ["**/*.{spec,test}.ts"],

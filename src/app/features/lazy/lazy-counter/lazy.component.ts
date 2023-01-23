@@ -13,7 +13,7 @@ const { getCountById } = counterApiEndpoints;
         <h1 class="text-xl font-semibold">Start Lazy Counter</h1>
         <div>
           <input type="text" placeholder="Type counter id" formControlName="id" />
-          <button class="m-4 btn btn-primary" type="submit" [disabled]="form.invalid || countQuery.isLoading">
+          <button class="btn btn-primary m-4" type="submit" [disabled]="form.invalid || countQuery.isLoading">
             {{ countQuery.isLoading ? 'Starting...' : 'Start Counter' }}
           </button>
           <label class="space-x-2 text-sm" for="preferCacheValue">
@@ -24,26 +24,26 @@ const { getCountById } = counterApiEndpoints;
       </form>
 
       <section class="space-y-4">
-        <h1 class="font-medium text-md">Current id: {{ countQuery.originalArgs || 'Not Started' }}</h1>
+        <h1 class="text-md font-medium">Current id: {{ countQuery.originalArgs || 'Not Started' }}</h1>
         <app-counter-row [counterData]="countQuery"></app-counter-row>
       </section>
     </div>
 
     <div class="mt-8 space-y-8">
       <section *ngIf="countQuery.state$ | async as countQuery" class="space-y-4">
-        <h1 class="font-medium text-md">Duplicate state (Share state, subscription & selectFromResult)</h1>
+        <h1 class="text-md font-medium">Duplicate state (Share state, subscription & selectFromResult)</h1>
         <h1 class="text-sm">Use in same component (not subscripted by self)</h1>
         <app-counter-row [counterData]="countQuery"></app-counter-row>
       </section>
 
       <section *ngIf="selectFromState$ | async as countQuery" class="space-y-4">
-        <h1 class="font-medium text-md">Select from state (Share state & subscription, another selectFromResult)</h1>
+        <h1 class="text-md font-medium">Select from state (Share state & subscription, another selectFromResult)</h1>
         <h1 class="text-sm">Use in same component or child components (not subscripted by self)</h1>
         <app-counter-row [counterData]="countQuery"></app-counter-row>
       </section>
 
       <section *ngIf="countQuery$ | async as countQuery" class="space-y-4">
-        <h1 class="font-medium text-md">
+        <h1 class="text-md font-medium">
           Related Query (Share cache data / another subscription & selectFromResult or Options)
         </h1>
         <h1 class="text-sm">Use anywhere (subscripted by self), skip subscribe with uninitialized value</h1>

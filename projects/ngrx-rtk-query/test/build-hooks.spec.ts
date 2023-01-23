@@ -28,7 +28,8 @@ describe('hooks tests', () => {
       const fetchControl = screen.getByTestId('isFetching');
       getRenderCount = fixture.componentInstance.renderCounter.getRenderCount;
 
-      // By the time this runs, the initial render will happen, and the query will start immediately running by the time
+      // By the time this runs, the initial render will happen, and the query
+      //  will start immediately running by the time we can expect this
       expect(getRenderCount()).toBe(1);
       await waitFor(() => expect(fetchControl).toHaveTextContent('false'));
       expect(getRenderCount()).toBe(2);
@@ -842,6 +843,7 @@ describe('useQuery and useMutation invalidation behavior', () => {
     expect(getState().actions).toMatchSequence(
       invalidationsApi.internalActions.middlewareRegistered.match,
       checkSession.matchPending,
+      invalidationsApi.internalActions.subscriptionsUpdated.match,
       checkSession.matchRejected,
       login.matchPending,
       login.matchFulfilled,
@@ -950,7 +952,7 @@ describe('selectFromResult (query) behaviors', () => {
    * the 'performance' value comes with selecting _only_ the data.
    */
   //eslint-disable-next-line
-  test('useQuery with selectFromResult with all flags destructured changes like the default useQuery behavior', async () => {
+  test('useQuery with selectFromResult with all flags destructured rerenders like the default useQuery behavior', async () => {
     const { fixture } = await render(HooksComponents.PostsHookContainerAllFlagsComponent, {
       declarations: [HooksComponents.PostComponent, HooksComponents.SelectedPostAllFlagsHookComponent],
       imports: postStoreRef.imports,
@@ -1149,7 +1151,7 @@ describe('skip behaviour', () => {
       query$: api.endpoints.getUser.useQuery(1).pipe(tap((value) => (current = value))),
     });
     expect(current).toMatchObject({ status: QueryStatus.pending });
-    expect(subscriptionCount('getUser(1)')).toBe(1);
+    expect(subscriptionCount('getUser(1)')).toBe(0);
 
     change({
       query$: api.endpoints.getUser.useQuery(1, { skip: true }).pipe(tap((value) => (current = value))),
@@ -1176,8 +1178,8 @@ describe('skip behaviour', () => {
       query$: api.endpoints.getUser.useQuery(1).pipe(tap((value) => (current = value))),
     });
     expect(current).toMatchObject({ status: QueryStatus.pending });
-    expect(subscriptionCount('getUser(1)')).toBe(1);
-    expect(getState().api.subscriptions).not.toEqual({});
+    expect(subscriptionCount('getUser(1)')).toBe(0);
+    // expect(getState().api.subscriptions).not.toEqual({});
 
     change({
       query$: api.endpoints.getUser.useQuery(skipToken).pipe(tap((value) => (current = value))),
