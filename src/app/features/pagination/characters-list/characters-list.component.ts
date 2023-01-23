@@ -10,7 +10,7 @@ import { useGetCharactersQuery } from '../services';
     <section *ngIf="charactersQuery$ | async as charactersQuery" class="space-y-4">
       <div class="flex items-center justify-between">
         <button
-          class="w-32 btn-outline btn-primary"
+          class="btn-outline btn-primary w-32"
           [disabled]="charactersQuery.isFetching"
           (click)="charactersQuery.refetch()"
         >

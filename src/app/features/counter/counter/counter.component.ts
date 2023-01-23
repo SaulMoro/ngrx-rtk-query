@@ -14,7 +14,7 @@ import { pollingOptions } from '../utils/polling-options';
   selector: 'app-counter',
   template: `
     <section class="space-y-4">
-      <h1 class="font-medium text-md">{{ id }}</h1>
+      <h1 class="text-md font-medium">{{ id }}</h1>
       <div class="flex items-center space-x-4">
         <button
           *ngIf="increment.state$ | async as incrementState"

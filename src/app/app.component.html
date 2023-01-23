@@ -1,6 +1,6 @@
-<div class="flex flex-col h-full min-h-screen">
-  <header class="flex items-center h-16 px-4 bg-gray-100">
-    <nav class="space-x-6 group">
+<div class="flex h-full min-h-screen flex-col">
+  <header class="flex h-16 items-center bg-gray-100 px-4">
+    <nav class="group space-x-6">
       <a class="nav-link" routerLinkActive="border-b-2 group-hover:border-b-0" [routerLink]="['/counter']">
         Counter Examples
       </a>
@@ -17,7 +17,7 @@
     </nav>
   </header>
 
-  <main class="flex-grow px-4 py-4 overflow-auto">
+  <main class="flex-grow overflow-auto px-4 py-4">
     <router-outlet></router-outlet>
   </main>
 </div>

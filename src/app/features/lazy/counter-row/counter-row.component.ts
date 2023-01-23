@@ -5,7 +5,7 @@ import { useDecrementCountByIdMutation, useIncrementCountByIdMutation } from '@a
 @Component({
   selector: 'app-counter-row',
   template: `
-    <div class="flex items-center mt-4 space-x-4">
+    <div class="mt-4 flex items-center space-x-4">
       <button
         *ngIf="increment.state$ | async as incrementState"
         class="btn-outline btn-primary"
