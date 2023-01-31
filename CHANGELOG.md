@@ -1,3 +1,18 @@
+# [3.6.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v3.5.0...v3.6.0-next.1) (2023-01-31)
+
+
+### Bug Fixes
+
+* circular dependency ([9513511](https://github.com/SaulMoro/ngrx-rtk-query/commit/9513511ae6bf0e9f5058fdfa92679fd5406f839d))
+* provide Api store name ([156faa4](https://github.com/SaulMoro/ngrx-rtk-query/commit/156faa429675e722980be6b68be5e10a3ff836d9))
+
+
+### Features
+
+* add standalone api provider ([9228faa](https://github.com/SaulMoro/ngrx-rtk-query/commit/9228faad3b2f8f629aa8ccb35afc13aadf8a63ea))
+* add standalone provider ([0d1addf](https://github.com/SaulMoro/ngrx-rtk-query/commit/0d1addfe2ba1dcc678159b7f41575e48500ff0e8))
+* add standalone provider ([d685a21](https://github.com/SaulMoro/ngrx-rtk-query/commit/d685a21bdf83295a87517a2b18d56c63745d5800))
+
 # [3.5.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v3.4.0...v3.5.0) (2023-01-23)
 
 
