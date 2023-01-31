@@ -158,13 +158,13 @@ export class CoreStoreModule {}
 New **Standalone Api provider** !!
 
 ```typescript
-import { provideApi } from 'ngrx-rtk-query';
+import { provideStoreApi } from 'ngrx-rtk-query';
 
 ...
   providers: [
     ...
 
-    provideApi(counterApi),
+    provideStoreApi(counterApi),
 
     ...
   ],
@@ -234,13 +234,13 @@ export class PostsQueryModule {}
 // OR 
 // New Standalone Provider Api
 
-import { provideApi } from 'ngrx-rtk-query';
+import { provideStoreApi } from 'ngrx-rtk-query';
 
 ...
   providers: [
     ...
 
-    provideApi(postsApi),
+    provideStoreApi(postsApi),
 
     ...
   ],

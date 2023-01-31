@@ -11,7 +11,7 @@ export function provideStoreRtkQuery(config?: Partial<StoreQueryConfig>): Enviro
   return importProvidersFrom(StoreRtkQueryModule.forRoot(config));
 }
 
-export function provideApi(
+export function provideStoreApi(
   api: Api<any, Record<string, any>, string, string, AngularHooksModule | CoreModule>,
 ): EnvironmentProviders {
   return provideState(api.reducerPath, api.reducer, { metaReducers: [api.metareducer] });
