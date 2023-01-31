@@ -29,7 +29,8 @@
 
 |   Angular   | ngrx-rtk-query | @reduxjs/toolkit |       Support       |
 | :---------: | :------------: | :--------------: | :-----------------: |
-|   >=13.x    |   >=3.x.x      |      ~1.9.1      | Bugs / New Features |
+|   >=15.x    |   >=3.6.x      |      ~1.9.2      | Bugs / New Features |
+|   >=13.x    |     3.5.x      |      ~1.9.1      |       Modules       |
 | 11.x - 12.x |     2.3.0      |       1.6.2      |        None         |
 
 Only the latest version of Angular in the table above is actively supported. This is due to the fact that compilation of Angular libraries is [incompatible between major versions](https://angular.io/guide/creating-libraries#ensuring-library-version-compatibility).
@@ -58,6 +59,22 @@ import { StoreRtkQueryModule } from 'ngrx-rtk-query';
   ],
 })
 class AppModule {}
+```
+
+New **Standalone provider** install !!
+
+```typescript
+import { provideStoreRtkQuery } from 'ngrx-rtk-query';
+
+bootstrapApplication(AppComponent, {
+  providers: [
+    ...
+
+    provideStoreRtkQuery({ setupListeners: true }),
+
+    ...
+  ],
+}).catch((err) => console.error(err));
 ```
 
 ## Basic Usage
