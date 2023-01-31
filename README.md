@@ -155,6 +155,22 @@ export const reducers: ActionReducerMap<RootState> = {
 export class CoreStoreModule {}
 ```
 
+New **Standalone Api provider** !!
+
+```typescript
+import { provideApi } from 'ngrx-rtk-query';
+
+...
+  providers: [
+    ...
+
+    provideApi(counterApi),
+
+    ...
+  ],
+...
+```
+
 Use the query in a component
 
 ```ts
@@ -213,6 +229,22 @@ export const postsApi = createApi({
   imports: [StoreModule.forFeature(postsApi.reducerPath, postsApi.reducer, { metaReducers: [postsApi.metareducer] })],
 })
 export class PostsQueryModule {}
+
+//
+// OR 
+// New Standalone Provider Api
+
+import { provideApi } from 'ngrx-rtk-query';
+
+...
+  providers: [
+    ...
+
+    provideApi(postsApi),
+
+    ...
+  ],
+...
 ```
 
 ### **Queries**
