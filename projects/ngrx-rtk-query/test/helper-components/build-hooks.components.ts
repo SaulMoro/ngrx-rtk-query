@@ -205,7 +205,6 @@ export class ItemListComponent extends BaseRenderCounterComponent {
     this.ids = Array(this.renderCounter.getRenderCount())
       .fill(1)
       .map((x, i) => i);
-    console.log(this.ids);
   }
 }
 
