@@ -2,10 +2,10 @@ import { EnvironmentProviders, importProvidersFrom } from '@angular/core';
 import { provideState } from '@ngrx/store';
 import { CoreModule } from '@reduxjs/toolkit/dist/query/core/module';
 import { Api } from '@reduxjs/toolkit/query';
-import { StoreRtkQueryModule } from 'ngrx-rtk-query';
 
 import { AngularHooksModule } from './module';
 import { StoreQueryConfig } from './store-rtk-query.config';
+import { StoreRtkQueryModule } from './store-rtk-query.module';
 
 export function provideStoreRtkQuery(config?: Partial<StoreQueryConfig>): EnvironmentProviders {
   return importProvidersFrom(StoreRtkQueryModule.forRoot(config));
