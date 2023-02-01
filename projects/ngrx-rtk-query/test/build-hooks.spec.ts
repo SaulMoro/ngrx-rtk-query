@@ -318,6 +318,17 @@ describe('hooks tests', () => {
     });
   });
 
+  // eslint-disable-next-line jest/expect-expect
+  test(`useQuery refetches when query args object changes even if serialized args don't change`, async () => {
+    await render(HooksComponents.ItemListComponent, { imports: storeRef.imports });
+
+    await screen.findByText('ID: 0');
+
+    fireEvent.click(screen.getByText('Next Page'));
+
+    await screen.findByText('ID: 2');
+  });
+
   describe('api.util.resetApiState resets hook', () => {
     test('without `selectFromResult`', async () => {
       const { fixture } = await render(HooksComponents.ResetApiStateComponent, { imports: storeRef.imports });

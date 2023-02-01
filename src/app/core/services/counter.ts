@@ -1,5 +1,4 @@
-import { fetchBaseQuery } from '@reduxjs/toolkit/query';
-import { createApi } from 'ngrx-rtk-query';
+import { createApi, fetchBaseQuery } from 'ngrx-rtk-query';
 
 export interface CountResponse {
   count: number;

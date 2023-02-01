@@ -29,7 +29,8 @@
 
 |   Angular   | ngrx-rtk-query | @reduxjs/toolkit |       Support       |
 | :---------: | :------------: | :--------------: | :-----------------: |
-|   >=13.x    |   >=3.x.x      |      ~1.9.1      | Bugs / New Features |
+|   >=15.x    |   >=4.0.x      |      ~1.9.2      | Bugs / New Features |
+|   >=13.x    |     3.5.x      |      ~1.9.1      |        None         |
 | 11.x - 12.x |     2.3.0      |       1.6.2      |        None         |
 
 Only the latest version of Angular in the table above is actively supported. This is due to the fact that compilation of Angular libraries is [incompatible between major versions](https://angular.io/guide/creating-libraries#ensuring-library-version-compatibility).
@@ -54,10 +55,32 @@ import { StoreRtkQueryModule } from 'ngrx-rtk-query';
 @NgModule({
   imports: [
     ... // NgRx Modules here!!
-    StoreRtkQueryModule.forRoot({ setupListeners: true })
+    StoreRtkQueryModule.forRoot({ 
+      setupListeners: true,
+      baseUrl: environment.baseAPI, // Optional environment baseUrl
+    })
   ],
 })
 class AppModule {}
+```
+
+New **Standalone provider** install !!
+
+```typescript
+import { provideStoreRtkQuery } from 'ngrx-rtk-query';
+
+bootstrapApplication(AppComponent, {
+  providers: [
+    ...
+
+    provideStoreRtkQuery({ 
+      setupListeners: true,
+      baseUrl: environment.baseAPI, // Optional environment baseUrl
+    }),
+
+    ...
+  ],
+}).catch((err) => console.error(err));
 ```
 
 ## Basic Usage
@@ -74,8 +97,7 @@ npm install @reduxjs/toolkit
 We'll create a service definition that queries the publicly available
 
 ```ts
-import { fetchBaseQuery } from '@reduxjs/toolkit/query';
-import { createApi } from 'ngrx-rtk-query';
+import { createApi, fetchBaseQuery } from 'ngrx-rtk-query';
 
 export interface CountResponse {
   count: number;
@@ -138,6 +160,22 @@ export const reducers: ActionReducerMap<RootState> = {
 export class CoreStoreModule {}
 ```
 
+New **Standalone Api provider** !!
+
+```typescript
+import { provideStoreApi } from 'ngrx-rtk-query';
+
+...
+  providers: [
+    ...
+
+    provideStoreApi(counterApi),
+
+    ...
+  ],
+...
+```
+
 Use the query in a component
 
 ```ts
@@ -196,6 +234,22 @@ export const postsApi = createApi({
   imports: [StoreModule.forFeature(postsApi.reducerPath, postsApi.reducer, { metaReducers: [postsApi.metareducer] })],
 })
 export class PostsQueryModule {}
+
+//
+// OR 
+// New Standalone Provider Api
+
+import { provideStoreApi } from 'ngrx-rtk-query';
+
+...
+  providers: [
+    ...
+
+    provideStoreApi(postsApi),
+
+    ...
+  ],
+...
 ```
 
 ### **Queries**

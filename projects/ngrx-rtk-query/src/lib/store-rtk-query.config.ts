@@ -4,6 +4,7 @@ import { onFocus, onFocusLost, onOnline, onOffline } from '@reduxjs/toolkit/dist
 
 export interface StoreQueryConfig {
   setupListeners: boolean;
+  baseUrl: string;
   customHandler?: (
     dispatch: ThunkDispatch<any, any, any>,
     actions: {
@@ -15,8 +16,14 @@ export interface StoreQueryConfig {
   ) => () => void;
 }
 
+export let currentConfig: StoreQueryConfig | undefined;
+export const setupConfig = (config: StoreQueryConfig) => {
+  currentConfig = config;
+};
+
 export const defaultConfig: StoreQueryConfig = {
   setupListeners: false,
+  baseUrl: '',
 };
 
 export const STORE_RTK_QUERY_CONFIG = new InjectionToken<StoreQueryConfig>('STORE_RTK_QUERY_CONFIG');

@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { StoreModule } from '@ngrx/store';
-import { fetchBaseQuery } from '@reduxjs/toolkit/query';
-import { createApi } from 'ngrx-rtk-query';
+import { createApi, fetchBaseQuery } from 'ngrx-rtk-query';
 import { Character, Episode } from '../models';
 
 type ListResponse<T> = {
