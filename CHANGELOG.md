@@ -1,3 +1,15 @@
+# [4.0.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v3.6.0-next.4...v4.0.0-next.1) (2023-02-01)
+
+
+### Features
+
+* add breaking change ([a4821f6](https://github.com/SaulMoro/ngrx-rtk-query/commit/a4821f6ef9eb7b4fb1b3ce24e75344d0bd80bc37))
+
+
+### BREAKING CHANGES
+
+* Add Angular 15 breaking change
+
 # [3.6.0-next.4](https://github.com/SaulMoro/ngrx-rtk-query/compare/v3.6.0-next.3...v3.6.0-next.4) (2023-02-01)
 
 
