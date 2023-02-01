@@ -55,7 +55,10 @@ import { StoreRtkQueryModule } from 'ngrx-rtk-query';
 @NgModule({
   imports: [
     ... // NgRx Modules here!!
-    StoreRtkQueryModule.forRoot({ setupListeners: true })
+    StoreRtkQueryModule.forRoot({ 
+      setupListeners: true,
+      baseUrl: environment.baseAPI, // Optional environment baseUrl
+    })
   ],
 })
 class AppModule {}
@@ -70,7 +73,10 @@ bootstrapApplication(AppComponent, {
   providers: [
     ...
 
-    provideStoreRtkQuery({ setupListeners: true }),
+    provideStoreRtkQuery({ 
+      setupListeners: true,
+      baseUrl: environment.baseAPI, // Optional environment baseUrl
+    }),
 
     ...
   ],
@@ -91,8 +97,7 @@ npm install @reduxjs/toolkit
 We'll create a service definition that queries the publicly available
 
 ```ts
-import { fetchBaseQuery } from '@reduxjs/toolkit/query';
-import { createApi } from 'ngrx-rtk-query';
+import { createApi, fetchBaseQuery } from 'ngrx-rtk-query';
 
 export interface CountResponse {
   count: number;

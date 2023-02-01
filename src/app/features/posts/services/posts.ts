@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { StoreModule } from '@ngrx/store';
-import { fetchBaseQuery, retry } from '@reduxjs/toolkit/query';
-import { createApi } from 'ngrx-rtk-query';
+import { retry } from '@reduxjs/toolkit/query';
+import { createApi, fetchBaseQuery } from 'ngrx-rtk-query';
 import { Post } from '../models';
 
 type PostsResponse = Post[];
