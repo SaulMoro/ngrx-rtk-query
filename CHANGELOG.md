@@ -1,3 +1,10 @@
+# [3.6.0-next.2](https://github.com/SaulMoro/ngrx-rtk-query/compare/v3.6.0-next.1...v3.6.0-next.2) (2023-01-31)
+
+
+### Bug Fixes
+
+* circular dependency ([7cbf747](https://github.com/SaulMoro/ngrx-rtk-query/commit/7cbf7473a9bb536c3bad14926aa97a010755ea1d))
+
 # [3.6.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v3.5.0...v3.6.0-next.1) (2023-01-31)
 
 
