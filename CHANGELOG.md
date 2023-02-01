@@ -1,3 +1,10 @@
+# [3.6.0-next.4](https://github.com/SaulMoro/ngrx-rtk-query/compare/v3.6.0-next.3...v3.6.0-next.4) (2023-02-01)
+
+
+### Features
+
+* add Angular 15, NgRx 15 support and Standalone APIs ([8a80d47](https://github.com/SaulMoro/ngrx-rtk-query/commit/8a80d47fe38b1649e55c8097911ad108d9d2392c))
+
 # [3.6.0-next.3](https://github.com/SaulMoro/ngrx-rtk-query/compare/v3.6.0-next.2...v3.6.0-next.3) (2023-02-01)
 
 
