@@ -1,3 +1,27 @@
+# [4.0.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v3.5.0...v4.0.0) (2023-02-01)
+
+
+### Bug Fixes
+
+* circular dependency ([7cbf747](https://github.com/SaulMoro/ngrx-rtk-query/commit/7cbf7473a9bb536c3bad14926aa97a010755ea1d))
+* circular dependency ([9513511](https://github.com/SaulMoro/ngrx-rtk-query/commit/9513511ae6bf0e9f5058fdfa92679fd5406f839d))
+* provide Api store name ([156faa4](https://github.com/SaulMoro/ngrx-rtk-query/commit/156faa429675e722980be6b68be5e10a3ff836d9))
+
+
+### Features
+
+* add Angular 15, NgRx 15 support and Standalone APIs ([8a80d47](https://github.com/SaulMoro/ngrx-rtk-query/commit/8a80d47fe38b1649e55c8097911ad108d9d2392c))
+* add baseUrl to Root config ([913dc42](https://github.com/SaulMoro/ngrx-rtk-query/commit/913dc42d1f487b67423b8caab4f32c37f6bb14c2))
+* add breaking change ([a4821f6](https://github.com/SaulMoro/ngrx-rtk-query/commit/a4821f6ef9eb7b4fb1b3ce24e75344d0bd80bc37))
+* add standalone api provider ([9228faa](https://github.com/SaulMoro/ngrx-rtk-query/commit/9228faad3b2f8f629aa8ccb35afc13aadf8a63ea))
+* add standalone provider ([0d1addf](https://github.com/SaulMoro/ngrx-rtk-query/commit/0d1addfe2ba1dcc678159b7f41575e48500ff0e8))
+* add standalone provider ([d685a21](https://github.com/SaulMoro/ngrx-rtk-query/commit/d685a21bdf83295a87517a2b18d56c63745d5800))
+
+
+### BREAKING CHANGES
+
+* Add Angular 15 breaking change
+
 # [4.0.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v3.6.0-next.4...v4.0.0-next.1) (2023-02-01)
 
 
