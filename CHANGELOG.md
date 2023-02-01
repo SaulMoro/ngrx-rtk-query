@@ -1,3 +1,10 @@
+# [3.6.0-next.3](https://github.com/SaulMoro/ngrx-rtk-query/compare/v3.6.0-next.2...v3.6.0-next.3) (2023-02-01)
+
+
+### Features
+
+* add baseUrl to Root config ([913dc42](https://github.com/SaulMoro/ngrx-rtk-query/commit/913dc42d1f487b67423b8caab4f32c37f6bb14c2))
+
 # [3.6.0-next.2](https://github.com/SaulMoro/ngrx-rtk-query/compare/v3.6.0-next.1...v3.6.0-next.2) (2023-01-31)
 
 
