@@ -1,6 +1,5 @@
 import { EnvironmentProviders, importProvidersFrom } from '@angular/core';
 import { provideState } from '@ngrx/store';
-
 import { StoreQueryConfig } from './store-rtk-query.config';
 import { StoreRtkQueryModule } from './store-rtk-query.module';
 
