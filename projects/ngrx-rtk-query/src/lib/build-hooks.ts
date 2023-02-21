@@ -1,24 +1,26 @@
-import type { Api, EndpointDefinitions, MutationDefinition, QueryDefinition } from '@reduxjs/toolkit/query';
-import { skipToken, QueryStatus } from '@reduxjs/toolkit/query';
+import { createSelectorFactory, resultMemoize } from '@ngrx/store';
+import { ApiContext } from '@reduxjs/toolkit/dist/query/apiTypes';
 import type { QueryKeys, RootState } from '@reduxjs/toolkit/dist/query/core/apiState';
 import type {
   MutationActionCreatorResult,
   QueryActionCreatorResult,
 } from '@reduxjs/toolkit/dist/query/core/buildInitiate';
+import type { QueryResultSelectorResult } from '@reduxjs/toolkit/dist/query/core/buildSelectors';
 import type {
   ApiEndpointMutation,
   ApiEndpointQuery,
   CoreModule,
   PrefetchOptions,
 } from '@reduxjs/toolkit/dist/query/core/module';
-import type { QueryResultSelectorResult } from '@reduxjs/toolkit/dist/query/core/buildSelectors';
 import type { SerializeQueryArgs } from '@reduxjs/toolkit/dist/query/defaultSerializeQueryArgs';
-import { ApiContext } from '@reduxjs/toolkit/dist/query/apiTypes';
-import { createSelectorFactory, resultMemoize } from '@ngrx/store';
-import { BehaviorSubject, of, isObservable, combineLatest } from 'rxjs';
+import type { Api, EndpointDefinitions, MutationDefinition, QueryDefinition } from '@reduxjs/toolkit/query';
+import { QueryStatus, skipToken } from '@reduxjs/toolkit/query';
+import { BehaviorSubject, combineLatest, isObservable, of } from 'rxjs';
 import { distinctUntilChanged, finalize, map, shareReplay, switchMap, tap } from 'rxjs/operators';
 
+import { UNINITIALIZED_VALUE } from './constants';
 import type { AngularHooksModuleOptions } from './module';
+import { getState } from './thunk.service';
 import type {
   GenericPrefetchThunk,
   MutationStateSelector,
@@ -34,12 +36,10 @@ import type {
   UseQueryStateDefaultResult,
   UseQuerySubscription,
 } from './types';
-import { UNINITIALIZED_VALUE } from './constants';
-import { defaultSerializeQueryArgs, shallowEqual } from './utils';
-import { getState } from './thunk.service';
 import { useStableQueryArgs } from './useSerializedStableValue';
+import { defaultSerializeQueryArgs, shallowEqual } from './utils';
 
-const defaultQueryStateSelector: QueryStateSelector<any, any> = (x) => x;
+// const defaultQueryStateSelector: QueryStateSelector<any, any> = (x) => x;
 const defaultMutationStateSelector: MutationStateSelector<any, any> = (x) => x;
 
 /**
@@ -105,9 +105,6 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         })
       )
         lastResult = undefined;
-    }
-    if (queryArgs === skipToken) {
-      lastResult = undefined;
     }
 
     // data is the last known good request result we have tracked
@@ -261,7 +258,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
 
     const useQueryState: UseQueryState<any> = (
       arg: any,
-      { skip = false, selectFromResult = defaultQueryStateSelector } = {},
+      { skip = false, selectFromResult } = {},
       lastValue = {},
       argCacheRef = {},
     ) => {
@@ -282,9 +279,12 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
             resultMemoize(projector, shallowEqual),
           )(select(stableArg), (subState: any) => queryStatePreSelector(subState, lastValue.current, stableArg));
 
-          const querySelector = createSelectorFactory<ApiRootState, any>((projector) =>
-            resultMemoize(projector, shallowEqual),
-          )(selectDefaultResult, selectFromResult);
+          const querySelector = selectFromResult
+            ? createSelectorFactory<ApiRootState, any>((projector) => resultMemoize(projector, shallowEqual))(
+                selectDefaultResult,
+                selectFromResult,
+              )
+            : selectDefaultResult;
 
           return useSelector((state: RootState<Definitions, any, any>) => querySelector(state)).pipe(
             tap(() => (lastValue.current = selectDefaultResult(getState()))),
