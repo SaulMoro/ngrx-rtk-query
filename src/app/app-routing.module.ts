@@ -11,6 +11,7 @@ const routes: Routes = [
     loadChildren: () => import('./features/pagination/pagination.module').then((m) => m.PaginationModule),
   },
   { path: 'lazy', loadChildren: () => import('./features/lazy/lazy.module').then((m) => m.LazyModule) },
+  { path: 'skip', loadChildren: () => import('./features/skip/skip.module').then((m) => m.SkipModule) },
 ];
 
 @NgModule({
