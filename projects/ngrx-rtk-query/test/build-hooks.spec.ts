@@ -1,16 +1,16 @@
-import { fireEvent, render, waitFor, screen } from '@testing-library/angular';
-import userEvent from '@testing-library/user-event';
 import { QueryStatus, skipToken } from '@reduxjs/toolkit/query';
+import { fireEvent, render, screen, waitFor } from '@testing-library/angular';
+import userEvent from '@testing-library/user-event';
+import { rest } from 'msw';
 import { BehaviorSubject } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
-import { rest } from 'msw';
 
 import { dispatch, getState } from '../src/lib/thunk.service';
-import { resetPostsApi } from './mocks/lib-posts.handlers';
-import { server } from './mocks/server';
-import * as HooksComponents from './helper-components';
 import { actionsReducer, expectExactType, setupApiStore, waitMs } from './helper';
 import { api, defaultApi, invalidationsApi, libPostsApi, mutationApi, resetAmount } from './helper-apis';
+import * as HooksComponents from './helper-components';
+import { resetPostsApi } from './mocks/lib-posts.handlers';
+import { server } from './mocks/server';
 
 describe('hooks tests', () => {
   const storeRef = setupApiStore(api, { ...actionsReducer(api.reducerPath) });

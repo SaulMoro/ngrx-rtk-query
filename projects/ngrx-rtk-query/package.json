@@ -7,7 +7,7 @@
     "@angular/core": ">= 15.0.0",
     "@ngrx/store": ">= 15.0.0",
     "rxjs": ">= 7.5 < 8",
-    "@reduxjs/toolkit": "~1.9.2"
+    "@reduxjs/toolkit": "1.9.3"
   },
   "dependencies": {
     "tslib": "^2.0.0"
