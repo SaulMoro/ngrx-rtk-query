@@ -12,9 +12,9 @@ import type {
   CoreModule,
   PrefetchOptions,
 } from '@reduxjs/toolkit/dist/query/core/module';
-import type { SerializeQueryArgs } from '@reduxjs/toolkit/dist/query/defaultSerializeQueryArgs';
+import { SerializeQueryArgs } from '@reduxjs/toolkit/dist/query/defaultSerializeQueryArgs';
 import type { Api, EndpointDefinitions, MutationDefinition, QueryDefinition } from '@reduxjs/toolkit/query';
-import { QueryStatus, skipToken } from '@reduxjs/toolkit/query';
+import { defaultSerializeQueryArgs, QueryStatus, skipToken } from '@reduxjs/toolkit/query';
 import { BehaviorSubject, combineLatest, isObservable, of } from 'rxjs';
 import { distinctUntilChanged, finalize, map, shareReplay, switchMap, tap } from 'rxjs/operators';
 
@@ -23,8 +23,11 @@ import type { AngularHooksModuleOptions } from './module';
 import { getState } from './thunk.service';
 import type {
   GenericPrefetchThunk,
+  MutationHooks,
+  MutationSelector,
   MutationStateSelector,
   QueryHooks,
+  QuerySelector,
   QueryStateSelector,
   UseLazyQuery,
   UseLazyQueryLastPromiseInfo,
@@ -37,7 +40,7 @@ import type {
   UseQuerySubscription,
 } from './types';
 import { useStableQueryArgs } from './useSerializedStableValue';
-import { defaultSerializeQueryArgs, shallowEqual } from './utils';
+import { shallowEqual } from './utils';
 
 // const defaultQueryStateSelector: QueryStateSelector<any, any> = (x) => x;
 const defaultMutationStateSelector: MutationStateSelector<any, any> = (x) => x;
@@ -414,16 +417,17 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       useLazyQuerySubscription,
       useLazyQuery,
       useQuery,
+      selector: select as QuerySelector<any>,
     };
   }
 
-  function buildMutationHook(name: string): UseMutation<any> {
+  function buildMutationHook(name: string): MutationHooks<any> {
     const { initiate, select } = api.endpoints[name] as ApiEndpointMutation<
       MutationDefinition<any, any, any, any, any>,
       Definitions
     >;
 
-    return ({ selectFromResult = defaultMutationStateSelector, fixedCacheKey } = {}) => {
+    const useMutation: UseMutation<any> = ({ selectFromResult = defaultMutationStateSelector, fixedCacheKey } = {}) => {
       const promiseRef: { current?: MutationActionCreatorResult<any> } = {};
       const requestIdSubject = new BehaviorSubject<string | undefined>(undefined);
       const requestId$ = requestIdSubject.asObservable();
@@ -476,6 +480,11 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       );
 
       return { dispatch: triggerMutation, state$ } as const;
+    };
+
+    return {
+      useMutation,
+      selector: select as MutationSelector<any>,
     };
   }
 }
