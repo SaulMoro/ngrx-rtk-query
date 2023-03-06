@@ -95,28 +95,24 @@ export const angularHooksModule = ({
     return {
       injectEndpoint(endpointName, definition) {
         if (isQueryDefinition(definition)) {
-          const {
-            useQuery,
-            useLazyQuery,
-            useLazyQuerySubscription,
-            useQueryState,
-            useQuerySubscription,
-            select: querySelect,
-          } = buildQueryHooks(endpointName);
+          const { useQuery, useLazyQuery, useLazyQuerySubscription, useQueryState, useQuerySubscription, selector } =
+            buildQueryHooks(endpointName);
           safeAssign(anyApi.endpoints[endpointName], {
             useQuery,
             useLazyQuery,
             useLazyQuerySubscription,
             useQueryState,
             useQuerySubscription,
-            select: querySelect,
+            selector,
           });
           (api as any)[`use${capitalize(endpointName)}Query`] = useQuery;
           (api as any)[`useLazy${capitalize(endpointName)}Query`] = useLazyQuery;
+          (api as any)[`select${capitalize(endpointName)}Query`] = selector;
         } else if (isMutationDefinition(definition)) {
-          const { useMutation, select: mutationSelect } = buildMutationHook(endpointName);
-          safeAssign(anyApi.endpoints[endpointName], { useMutation, select: mutationSelect });
+          const { useMutation, selector } = buildMutationHook(endpointName);
+          safeAssign(anyApi.endpoints[endpointName], { useMutation, selector });
           (api as any)[`use${capitalize(endpointName)}Mutation`] = useMutation;
+          (api as any)[`select${capitalize(endpointName)}Mutation`] = selector;
         }
       },
     };
