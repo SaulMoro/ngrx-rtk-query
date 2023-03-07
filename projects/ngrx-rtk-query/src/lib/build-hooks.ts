@@ -1,4 +1,4 @@
-import { createSelectorFactory, resultMemoize } from '@ngrx/store';
+import { createSelectorFactory, defaultMemoize } from '@ngrx/store';
 import { ApiContext } from '@reduxjs/toolkit/dist/query/apiTypes';
 import type { QueryKeys, RootState } from '@reduxjs/toolkit/dist/query/core/apiState';
 import type {
@@ -207,7 +207,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         const lastPromise = promiseRef?.current;
         const lastSubscriptionOptions = promiseRef.current?.subscriptionOptions;
 
-        if (!lastPromise || !shallowEqual(lastPromise.arg, stableArg)) {
+        if (!lastPromise || lastPromise.arg !== stableArg) {
           lastPromise?.unsubscribe();
           promiseRef.current = dispatch(
             initiate(stableArg, { subscriptionOptions, forceRefetch: refetchOnMountOrArgChange }),
@@ -279,14 +279,13 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         distinctUntilChanged(shallowEqual),
         switchMap((stableArg) => {
           const selectDefaultResult = createSelectorFactory<ApiRootState, any>((projector) =>
-            resultMemoize(projector, shallowEqual),
+            defaultMemoize(projector, shallowEqual, shallowEqual),
           )(select(stableArg), (subState: any) => queryStatePreSelector(subState, lastValue.current, stableArg));
 
           const querySelector = selectFromResult
-            ? createSelectorFactory<ApiRootState, any>((projector) => resultMemoize(projector, shallowEqual))(
-                selectDefaultResult,
-                selectFromResult,
-              )
+            ? createSelectorFactory<ApiRootState, any>((projector) =>
+                defaultMemoize(projector, shallowEqual, shallowEqual),
+              )(selectDefaultResult, selectFromResult)
             : selectDefaultResult;
 
           return useSelector((state: RootState<Definitions, any, any>) => querySelector(state)).pipe(
@@ -465,9 +464,10 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         }),
         distinctUntilChanged(shallowEqual),
         switchMap((requestId) => {
-          const mutationSelector = createSelectorFactory((projector) => resultMemoize(projector, shallowEqual))(
-            select(requestId ? { fixedCacheKey, requestId } : skipToken),
-            (subState: any) => selectFromResult(subState),
+          const mutationSelector = createSelectorFactory((projector) =>
+            defaultMemoize(projector, shallowEqual, shallowEqual),
+          )(select(requestId ? { fixedCacheKey, requestId } : skipToken), (subState: any) =>
+            selectFromResult(subState),
           );
           const currentState = useSelector((state: RootState<Definitions, any, any>) => mutationSelector(state));
           const originalArgs = fixedCacheKey == null ? promiseRef.current?.arg.originalArgs : undefined;
