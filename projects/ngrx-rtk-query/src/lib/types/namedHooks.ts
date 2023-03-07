@@ -1,5 +1,5 @@
-import type { EndpointDefinitions, MutationDefinition, QueryDefinition } from '@reduxjs/toolkit/query';
 import type { DefinitionType } from '@reduxjs/toolkit/dist/query/endpointDefinitions';
+import type { EndpointDefinitions, MutationDefinition, QueryDefinition } from '@reduxjs/toolkit/query';
 import type { UseLazyQuery, UseMutation, UseQuery } from './hooks-types';
 
 export type HooksWithUniqueNames<Definitions extends EndpointDefinitions> = keyof Definitions extends infer Keys

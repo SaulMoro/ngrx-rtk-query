@@ -1,14 +1,18 @@
+import { MemoizedSelector } from '@ngrx/store';
 import type { AnyAction, ThunkAction } from '@reduxjs/toolkit';
-import type { BaseQueryFn, MutationDefinition, QueryDefinition, SkipToken } from '@reduxjs/toolkit/query';
 import type { QueryStatus, QuerySubState, SubscriptionOptions } from '@reduxjs/toolkit/dist/query/core/apiState';
 import type {
   MutationActionCreatorResult,
   QueryActionCreatorResult,
 } from '@reduxjs/toolkit/dist/query/core/buildInitiate';
-import type { MutationResultSelectorResult } from '@reduxjs/toolkit/dist/query/core/buildSelectors';
+import type {
+  MutationResultSelectorResult,
+  QueryResultSelectorResult,
+} from '@reduxjs/toolkit/dist/query/core/buildSelectors';
 import type { PrefetchOptions } from '@reduxjs/toolkit/dist/query/core/module';
 import type { EndpointDefinition, QueryArgFrom, ResultTypeFrom } from '@reduxjs/toolkit/dist/query/endpointDefinitions';
 import type { Id, NoInfer, Override } from '@reduxjs/toolkit/dist/query/tsHelpers';
+import type { BaseQueryFn, MutationDefinition, QueryDefinition, SkipToken } from '@reduxjs/toolkit/query';
 import { Observable } from 'rxjs';
 import type { UninitializedValue } from '../constants';
 
@@ -18,11 +22,20 @@ export interface QueryHooks<Definition extends QueryDefinition<any, any, any, an
   useQuerySubscription: UseQuerySubscription<Definition>;
   useLazyQuerySubscription: UseLazyQuerySubscription<Definition>;
   useQueryState: UseQueryState<Definition>;
+  selector: QuerySelector<Definition>;
 }
 
 export interface MutationHooks<Definition extends MutationDefinition<any, any, any, any, any>> {
   useMutation: UseMutation<Definition>;
+  selector: MutationSelector<Definition>;
 }
+
+export type QuerySelector<Definition extends QueryDefinition<any, any, any, any>> = (
+  queryArg: QueryArgFrom<Definition> | SkipToken,
+) => MemoizedSelector<Record<string, any>, QueryResultSelectorResult<Definition>>;
+export type MutationSelector<Definition extends MutationDefinition<any, any, any, any>> = (
+  requestId: string | { requestId: string | undefined; fixedCacheKey: string | undefined } | SkipToken,
+) => MemoizedSelector<Record<string, any>, MutationResultSelectorResult<Definition>>;
 
 /**
  * A hook that automatically triggers fetches of data from an endpoint, 'subscribes' the component

@@ -1,3 +1,24 @@
+# [4.1.0-next.2](https://github.com/SaulMoro/ngrx-rtk-query/compare/v4.1.0-next.1...v4.1.0-next.2) (2023-03-07)
+
+
+### Bug Fixes
+
+* **lib:** update  and  to handle  instead of ([6effb8b](https://github.com/SaulMoro/ngrx-rtk-query/commit/6effb8b7723ae589c306c523c9db2d1b2a305573))
+* **ngrx-rtk-query:** named hooks type ([18b59e6](https://github.com/SaulMoro/ngrx-rtk-query/commit/18b59e61f33f0e48c43f1eb4819561c4f4f68abc))
+* **ngrx-rtk-query:** new params and result memoized selectors for hooks ([a49d860](https://github.com/SaulMoro/ngrx-rtk-query/commit/a49d860645bcee40d2d72327fc1db65ff92f5bb0))
+
+# [4.1.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v4.0.1...v4.1.0-next.1) (2023-03-06)
+
+
+### Bug Fixes
+
+* **lib:** add select hooks ([e53cfd0](https://github.com/SaulMoro/ngrx-rtk-query/commit/e53cfd007aa09d3b6d5393fd8760e35a428ee39e))
+
+
+### Features
+
+* **lib:** add select hooks ([328b6c5](https://github.com/SaulMoro/ngrx-rtk-query/commit/328b6c5865924a5f948ecd6249183ac49438bf5e))
+
 ## [4.0.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v4.0.0...v4.0.1) (2023-02-21)
 
 

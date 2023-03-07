@@ -1,21 +1,21 @@
-import { buildCreateApi, coreModule } from '@reduxjs/toolkit/query';
-import type {
-  BaseQueryFn,
-  EndpointDefinitions,
-  QueryDefinition,
-  MutationDefinition,
-  Api,
-  Module,
-} from '@reduxjs/toolkit/query';
+import type { MetaReducer } from '@ngrx/store';
 import type { QueryKeys } from '@reduxjs/toolkit/dist/query/core/apiState';
 import type { PrefetchOptions } from '@reduxjs/toolkit/dist/query/core/module';
 import { QueryArgFrom } from '@reduxjs/toolkit/dist/query/endpointDefinitions';
-import type { MetaReducer } from '@ngrx/store';
+import type {
+  Api,
+  BaseQueryFn,
+  EndpointDefinitions,
+  Module,
+  MutationDefinition,
+  QueryDefinition,
+} from '@reduxjs/toolkit/query';
+import { buildCreateApi, coreModule } from '@reduxjs/toolkit/query';
 
 import { buildHooks } from './build-hooks';
 import { buildMetaReducer } from './build-metareducer';
 import { dispatch, getState as getStateFromStore, select } from './thunk.service';
-import { QueryHooks, MutationHooks, HooksWithUniqueNames, isQueryDefinition, isMutationDefinition } from './types';
+import { HooksWithUniqueNames, isMutationDefinition, isQueryDefinition, MutationHooks, QueryHooks } from './types';
 import { capitalize, safeAssign } from './utils';
 
 export const angularHooksModuleName = /* @__PURE__ */ Symbol();
@@ -95,7 +95,7 @@ export const angularHooksModule = ({
     return {
       injectEndpoint(endpointName, definition) {
         if (isQueryDefinition(definition)) {
-          const { useQuery, useLazyQuery, useLazyQuerySubscription, useQueryState, useQuerySubscription } =
+          const { useQuery, useLazyQuery, useLazyQuerySubscription, useQueryState, useQuerySubscription, selector } =
             buildQueryHooks(endpointName);
           safeAssign(anyApi.endpoints[endpointName], {
             useQuery,
@@ -103,12 +103,13 @@ export const angularHooksModule = ({
             useLazyQuerySubscription,
             useQueryState,
             useQuerySubscription,
+            selector,
           });
           (api as any)[`use${capitalize(endpointName)}Query`] = useQuery;
           (api as any)[`useLazy${capitalize(endpointName)}Query`] = useLazyQuery;
         } else if (isMutationDefinition(definition)) {
-          const useMutation = buildMutationHook(endpointName);
-          safeAssign(anyApi.endpoints[endpointName], { useMutation });
+          const { useMutation, selector } = buildMutationHook(endpointName);
+          safeAssign(anyApi.endpoints[endpointName], { useMutation, selector });
           (api as any)[`use${capitalize(endpointName)}Mutation`] = useMutation;
         }
       },

@@ -1,0 +1,7 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+FILE=".git/hooks/prepare-commit-msg"
+if test -f "$FILE"; then
+  node "$FILE" $1
+fi

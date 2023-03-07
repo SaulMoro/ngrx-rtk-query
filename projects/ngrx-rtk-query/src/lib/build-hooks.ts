@@ -1,4 +1,4 @@
-import { createSelectorFactory, resultMemoize } from '@ngrx/store';
+import { createSelectorFactory, defaultMemoize } from '@ngrx/store';
 import { ApiContext } from '@reduxjs/toolkit/dist/query/apiTypes';
 import type { QueryKeys, RootState } from '@reduxjs/toolkit/dist/query/core/apiState';
 import type {
@@ -12,9 +12,9 @@ import type {
   CoreModule,
   PrefetchOptions,
 } from '@reduxjs/toolkit/dist/query/core/module';
-import type { SerializeQueryArgs } from '@reduxjs/toolkit/dist/query/defaultSerializeQueryArgs';
+import { SerializeQueryArgs } from '@reduxjs/toolkit/dist/query/defaultSerializeQueryArgs';
 import type { Api, EndpointDefinitions, MutationDefinition, QueryDefinition } from '@reduxjs/toolkit/query';
-import { QueryStatus, skipToken } from '@reduxjs/toolkit/query';
+import { defaultSerializeQueryArgs, QueryStatus, skipToken } from '@reduxjs/toolkit/query';
 import { BehaviorSubject, combineLatest, isObservable, of } from 'rxjs';
 import { distinctUntilChanged, finalize, map, shareReplay, switchMap, tap } from 'rxjs/operators';
 
@@ -23,8 +23,11 @@ import type { AngularHooksModuleOptions } from './module';
 import { getState } from './thunk.service';
 import type {
   GenericPrefetchThunk,
+  MutationHooks,
+  MutationSelector,
   MutationStateSelector,
   QueryHooks,
+  QuerySelector,
   QueryStateSelector,
   UseLazyQuery,
   UseLazyQueryLastPromiseInfo,
@@ -37,7 +40,7 @@ import type {
   UseQuerySubscription,
 } from './types';
 import { useStableQueryArgs } from './useSerializedStableValue';
-import { defaultSerializeQueryArgs, shallowEqual } from './utils';
+import { shallowEqual } from './utils';
 
 // const defaultQueryStateSelector: QueryStateSelector<any, any> = (x) => x;
 const defaultMutationStateSelector: MutationStateSelector<any, any> = (x) => x;
@@ -204,7 +207,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         const lastPromise = promiseRef?.current;
         const lastSubscriptionOptions = promiseRef.current?.subscriptionOptions;
 
-        if (!lastPromise || !shallowEqual(lastPromise.arg, stableArg)) {
+        if (!lastPromise || lastPromise.arg !== stableArg) {
           lastPromise?.unsubscribe();
           promiseRef.current = dispatch(
             initiate(stableArg, { subscriptionOptions, forceRefetch: refetchOnMountOrArgChange }),
@@ -276,14 +279,13 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         distinctUntilChanged(shallowEqual),
         switchMap((stableArg) => {
           const selectDefaultResult = createSelectorFactory<ApiRootState, any>((projector) =>
-            resultMemoize(projector, shallowEqual),
+            defaultMemoize(projector, shallowEqual, shallowEqual),
           )(select(stableArg), (subState: any) => queryStatePreSelector(subState, lastValue.current, stableArg));
 
           const querySelector = selectFromResult
-            ? createSelectorFactory<ApiRootState, any>((projector) => resultMemoize(projector, shallowEqual))(
-                selectDefaultResult,
-                selectFromResult,
-              )
+            ? createSelectorFactory<ApiRootState, any>((projector) =>
+                defaultMemoize(projector, shallowEqual, shallowEqual),
+              )(selectDefaultResult, selectFromResult)
             : selectDefaultResult;
 
           return useSelector((state: RootState<Definitions, any, any>) => querySelector(state)).pipe(
@@ -301,34 +303,19 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       // Refs
       const promiseRef: { current?: QueryActionCreatorResult<any> } = {};
       const lastValue: { current?: any } = {};
-      const argQueryRef: { current?: any } = {};
       const argRef: { current?: any } = {};
 
       const arg$ = isObservable(arg) ? arg : of(arg);
       const options$ = isObservable(options) ? options : of(options);
 
-      return combineLatest([
-        arg$.pipe(
-          map((currentArg) =>
-            useStableQueryArgs(
-              currentArg === UNINITIALIZED_VALUE ? skipToken : currentArg,
-              serializeQueryArgs,
-              context.endpointDefinitions[name],
-              name,
-              argQueryRef,
-            ),
-          ),
-          distinctUntilChanged(shallowEqual),
-        ),
-        options$.pipe(distinctUntilChanged((prev, curr) => shallowEqual(prev, curr))),
-      ]).pipe(
-        switchMap(([stableArg, currentOptions]) => {
-          const querySubscriptionResults = useQuerySubscription(stableArg, currentOptions, promiseRef, argRef);
+      return combineLatest([arg$, options$.pipe(distinctUntilChanged((prev, curr) => shallowEqual(prev, curr)))]).pipe(
+        switchMap(([currentArg, currentOptions]) => {
+          const querySubscriptionResults = useQuerySubscription(currentArg, currentOptions, promiseRef, argRef);
           const queryStateResults$ = useQueryState(
-            stableArg,
+            currentArg,
             {
               selectFromResult:
-                stableArg === skipToken || currentOptions?.skip ? undefined : noPendingQueryStateSelector,
+                currentArg === skipToken || currentOptions?.skip ? undefined : noPendingQueryStateSelector,
               ...currentOptions,
             },
             lastValue,
@@ -414,16 +401,17 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       useLazyQuerySubscription,
       useLazyQuery,
       useQuery,
+      selector: select as QuerySelector<any>,
     };
   }
 
-  function buildMutationHook(name: string): UseMutation<any> {
+  function buildMutationHook(name: string): MutationHooks<any> {
     const { initiate, select } = api.endpoints[name] as ApiEndpointMutation<
       MutationDefinition<any, any, any, any, any>,
       Definitions
     >;
 
-    return ({ selectFromResult = defaultMutationStateSelector, fixedCacheKey } = {}) => {
+    const useMutation: UseMutation<any> = ({ selectFromResult = defaultMutationStateSelector, fixedCacheKey } = {}) => {
       const promiseRef: { current?: MutationActionCreatorResult<any> } = {};
       const requestIdSubject = new BehaviorSubject<string | undefined>(undefined);
       const requestId$ = requestIdSubject.asObservable();
@@ -461,9 +449,10 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         }),
         distinctUntilChanged(shallowEqual),
         switchMap((requestId) => {
-          const mutationSelector = createSelectorFactory((projector) => resultMemoize(projector, shallowEqual))(
-            select(requestId ? { fixedCacheKey, requestId } : skipToken),
-            (subState: any) => selectFromResult(subState),
+          const mutationSelector = createSelectorFactory((projector) =>
+            defaultMemoize(projector, shallowEqual, shallowEqual),
+          )(select(requestId ? { fixedCacheKey, requestId } : skipToken), (subState: any) =>
+            selectFromResult(subState),
           );
           const currentState = useSelector((state: RootState<Definitions, any, any>) => mutationSelector(state));
           const originalArgs = fixedCacheKey == null ? promiseRef.current?.arg.originalArgs : undefined;
@@ -476,6 +465,11 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       );
 
       return { dispatch: triggerMutation, state$ } as const;
+    };
+
+    return {
+      useMutation,
+      selector: select as MutationSelector<any>,
     };
   }
 }
