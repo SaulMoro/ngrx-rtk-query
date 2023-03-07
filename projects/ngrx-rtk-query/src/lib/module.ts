@@ -107,12 +107,10 @@ export const angularHooksModule = ({
           });
           (api as any)[`use${capitalize(endpointName)}Query`] = useQuery;
           (api as any)[`useLazy${capitalize(endpointName)}Query`] = useLazyQuery;
-          (api as any)[`select${capitalize(endpointName)}Query`] = selector;
         } else if (isMutationDefinition(definition)) {
           const { useMutation, selector } = buildMutationHook(endpointName);
           safeAssign(anyApi.endpoints[endpointName], { useMutation, selector });
           (api as any)[`use${capitalize(endpointName)}Mutation`] = useMutation;
-          (api as any)[`select${capitalize(endpointName)}Mutation`] = selector;
         }
       },
     };
