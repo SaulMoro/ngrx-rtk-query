@@ -3,5 +3,5 @@
 
 FILE=".git/hooks/prepare-commit-msg"
 if test -f "$FILE"; then
-  node "$FILE" $1
+  node "$FILE" $1 $2
 fi

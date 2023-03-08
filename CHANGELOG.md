@@ -1,3 +1,5 @@
+# [4.1.0-next.3](https://github.com/SaulMoro/ngrx-rtk-query/compare/v4.1.0-next.2...v4.1.0-next.3) (2023-03-08)
+
 # [4.1.0-next.2](https://github.com/SaulMoro/ngrx-rtk-query/compare/v4.1.0-next.1...v4.1.0-next.2) (2023-03-07)
 
 
