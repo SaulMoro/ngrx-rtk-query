@@ -203,7 +203,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         promiseRef.current = undefined;
       }
 
-      if (stableArg !== skipToken && stableArg !== UNINITIALIZED_VALUE) {
+      if (stableArg !== skipToken) {
         const lastPromise = promiseRef?.current;
         const lastSubscriptionOptions = promiseRef.current?.subscriptionOptions;
 
@@ -269,7 +269,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       return arg$.pipe(
         map((currentArg) =>
           useStableQueryArgs(
-            skip || currentArg === UNINITIALIZED_VALUE ? skipToken : currentArg,
+            skip ? skipToken : currentArg,
             serializeQueryArgs,
             context.endpointDefinitions[name],
             name,
@@ -391,7 +391,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
           return promiseRef.current!;
         },
         state$,
-        lastArg$: info$.pipe(map(({ lastArg }) => lastArg)),
+        lastArg$: info$.pipe(map(({ lastArg }) => (lastArg !== UNINITIALIZED_VALUE ? lastArg : skipToken))),
       };
     };
 
