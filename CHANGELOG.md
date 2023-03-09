@@ -1,3 +1,10 @@
+## [4.1.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v4.1.0...v4.1.1) (2023-03-09)
+
+
+### Bug Fixes
+
+* skipToken observable in useQuery hook ([6dfd8c9](https://github.com/SaulMoro/ngrx-rtk-query/commit/6dfd8c910a6db02abd7f7b51e589eac349c193d5))
+
 ## [4.1.1-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v4.1.0...v4.1.1-next.1) (2023-03-09)
 
 
