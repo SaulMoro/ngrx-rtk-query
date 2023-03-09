@@ -60,7 +60,7 @@ export type MutationSelector<Definition extends MutationDefinition<any, any, any
 export type UseQuery<D extends QueryDefinition<any, any, any, any>> = <
   R extends Record<string, any> = UseQueryStateDefaultResult<D>,
 >(
-  arg: QueryArgFrom<D> | Observable<QueryArgFrom<D> | UninitializedValue> | SkipToken,
+  arg: QueryArgFrom<D> | Observable<QueryArgFrom<D> | SkipToken> | SkipToken,
   options?: UseQueryOptions<D, R> | Observable<UseQueryOptions<D, R>>,
 ) => Observable<UseQueryHookResult<D, R>>;
 
@@ -145,7 +145,7 @@ export type QueryOptions<
  * - Accepts polling/re-fetching options to trigger automatic re-fetches when the corresponding criteria is met
  */
 export type UseQuerySubscription<D extends QueryDefinition<any, any, any, any>> = (
-  arg: QueryArgFrom<D> | SkipToken | UninitializedValue,
+  arg: QueryArgFrom<D> | SkipToken,
   options?: UseQuerySubscriptionOptions,
   promiseRef?: { current?: QueryActionCreatorResult<D> },
   argCacheRef?: { current?: any },
@@ -173,7 +173,7 @@ export type UseLazyTrigger<D extends QueryDefinition<any, any, any, any>> = (
 ) => QueryActionCreatorResult<D>;
 
 export type UseLazyQueryLastPromiseInfo<D extends QueryDefinition<any, any, any, any>> = {
-  lastArg: QueryArgFrom<D> | UninitializedValue;
+  lastArg: QueryArgFrom<D>;
   extra?: Parameters<UseLazyTrigger<D>>[1];
 };
 
@@ -236,7 +236,7 @@ export type UseLazyQuery<D extends QueryDefinition<any, any, any, any>> = <
    */
   fetch: UseLazyTrigger<D>;
   state$: Observable<UseQueryStateResult<D, R>>;
-  lastArg$: Observable<QueryArgFrom<D> | UninitializedValue>;
+  lastArg$: Observable<QueryArgFrom<D>>;
 };
 
 export type UseLazyQueryOptions<
@@ -286,7 +286,7 @@ export type QueryStateSelector<R extends Record<string, any>, D extends QueryDef
 export type UseQueryState<D extends QueryDefinition<any, any, any, any>> = <
   R extends Record<string, any> = UseQueryStateDefaultResult<D>,
 >(
-  arg: QueryArgFrom<D> | Observable<QueryArgFrom<D> | UninitializedValue> | SkipToken,
+  arg: QueryArgFrom<D> | Observable<QueryArgFrom<D> | SkipToken> | SkipToken,
   options?: UseQueryStateOptions<D, R>,
   lastValue?: { current?: any },
   argCacheRef?: { current?: any },
