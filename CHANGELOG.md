@@ -1,3 +1,10 @@
+## [4.1.2](https://github.com/SaulMoro/ngrx-rtk-query/compare/v4.1.1...v4.1.2) (2023-04-19)
+
+
+### Bug Fixes
+
+* update to rtk 1.9.5 ([9094d2e](https://github.com/SaulMoro/ngrx-rtk-query/commit/9094d2e74d01312cec9be7d13dd8c0925f7020c1))
+
 ## [4.1.2-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v4.1.1...v4.1.2-next.1) (2023-04-19)
 
 
