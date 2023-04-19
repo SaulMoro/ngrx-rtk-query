@@ -22,8 +22,8 @@
         "plugin:@angular-eslint/recommended",
         "plugin:@angular-eslint/recommended--extra",
         "plugin:@angular-eslint/ng-cli-compat",
-        "plugin:@angular-eslint/ng-cli-compat--formatting-add-on",
         "plugin:@angular-eslint/template/process-inline-templates",
+        "plugin:@angular-eslint/ng-cli-compat--formatting-add-on",
         "eslint:recommended",
         "plugin:@typescript-eslint/recommended",
         "plugin:prettier/recommended",
@@ -86,6 +86,7 @@
             "allowConciseArrowFunctionExpressionsStartingWithVoid": true
           }
         ],
+        "jsdoc/newline-after-description": "off",
         "rxjs/no-cyclic-action": "off",
         "rxjs/no-unsafe-switchmap": "error",
         "ngrx/select-style": "error",
