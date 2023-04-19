@@ -18,6 +18,8 @@ jobs:
           node-version: '16.x'
 
       - name: NPM Install, lint, test and build
+        env:
+          NODE_OPTIONS: '--max_old_space_size=4096'
         run: |
           npm ci
           npm run lint
