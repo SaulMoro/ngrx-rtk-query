@@ -1,5 +1,5 @@
 module.exports = {
-  extends: ['stylelint-config-standard-scss', 'stylelint-config-recommended-scss', 'stylelint-config-prettier'],
+  extends: ['stylelint-config-standard-scss', 'stylelint-config-recommended-scss'],
   ignoreFiles: ['dist/**', 'coverage/**'],
   rules: {
     'at-rule-no-unknown': [

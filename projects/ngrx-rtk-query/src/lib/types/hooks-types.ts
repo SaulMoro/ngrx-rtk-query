@@ -101,7 +101,7 @@ export interface UseQuerySubscriptionOptions extends SubscriptionOptions {
    *
    * @example
    * ```ts
-   * // codeblock-meta title="Skip example"
+   * // codeblock-meta no-transpile title="Skip example"
    * const query$ = useGetPokemonByNameQuery(name, { skip: true });
    * ```
    */
@@ -312,7 +312,7 @@ export type UseQueryStateOptions<D extends QueryDefinition<any, any, any, any>, 
    *
    * @example
    * ```ts
-   * // codeblock-meta title="Skip example"
+   * // codeblock-meta no-transpile title="Skip example"
    * const query$ = useGetPokemonByNameQuery(name, { skip: true });
    * ```
    */

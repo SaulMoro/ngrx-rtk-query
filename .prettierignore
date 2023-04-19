@@ -1,5 +1,10 @@
-/.angular
-dist/
-coverage/
+/dist
+/coverage
+
+/node_modules
+.angular
+
+**/test-setup.ts
+
 CHANGELOG.md
 README.md
