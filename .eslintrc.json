@@ -20,10 +20,7 @@
       },
       "extends": [
         "plugin:@angular-eslint/recommended",
-        "plugin:@angular-eslint/recommended--extra",
-        "plugin:@angular-eslint/ng-cli-compat",
         "plugin:@angular-eslint/template/process-inline-templates",
-        "plugin:@angular-eslint/ng-cli-compat--formatting-add-on",
         "eslint:recommended",
         "plugin:@typescript-eslint/recommended",
         "plugin:prettier/recommended",

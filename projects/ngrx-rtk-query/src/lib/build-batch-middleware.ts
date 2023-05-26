@@ -41,7 +41,6 @@ export const buildBatchedActionsHandler: CustomInternalHandlerBuilder<
       const { queryCacheKey, requestId, options } = action.payload;
 
       if (mutableState?.[queryCacheKey]?.[requestId]) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         mutableState[queryCacheKey]![requestId] = options;
       }
       return true;
@@ -49,7 +48,6 @@ export const buildBatchedActionsHandler: CustomInternalHandlerBuilder<
     if (unsubscribeQueryResult.match(action)) {
       const { queryCacheKey, requestId } = action.payload;
       if (mutableState[queryCacheKey]) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         delete mutableState[queryCacheKey]![requestId];
       }
       return true;
@@ -88,6 +86,11 @@ export const buildBatchedActionsHandler: CustomInternalHandlerBuilder<
     if (!previousSubscriptions) {
       // Initialize it the first time this handler runs
       previousSubscriptions = JSON.parse(JSON.stringify(internalState.currentSubscriptions));
+    }
+
+    if (api.util.resetApiState.match(action)) {
+      previousSubscriptions = internalState.currentSubscriptions = {};
+      return [true, false];
     }
 
     // Intercept requests by hooks to see if they're subscribed
