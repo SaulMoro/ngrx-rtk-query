@@ -1,3 +1,15 @@
+# [4.2.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v4.1.2...v4.2.0) (2023-05-29)
+
+
+### Bug Fixes
+
+* **schematics:** default project name ([6bb374e](https://github.com/SaulMoro/ngrx-rtk-query/commit/6bb374ebd9a1044face5de54fdb617819a1240e7))
+
+
+### Features
+
+* update to angular 16 ([2d03f57](https://github.com/SaulMoro/ngrx-rtk-query/commit/2d03f572f90c739911cd89d425f40464a6770e03))
+
 # [4.2.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v4.1.2...v4.2.0-next.1) (2023-05-26)
 
 
