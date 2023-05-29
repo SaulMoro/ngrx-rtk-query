@@ -2,8 +2,6 @@ import { QueryStatus, skipToken } from '@reduxjs/toolkit/query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { rest } from 'msw';
-import { BehaviorSubject } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
 
 import { dispatch, getState } from '../src/lib/thunk.service';
 import { actionsReducer, expectExactType, setupApiStore, waitMs } from './helper';

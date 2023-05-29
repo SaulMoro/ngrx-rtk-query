@@ -1,5 +1,5 @@
-import { NgModule } from '@angular/core';
-import { StoreModule } from '@ngrx/store';
+import { EnvironmentProviders } from '@angular/core';
+import { provideState } from '@ngrx/store';
 import { createApi, fetchBaseQuery } from 'ngrx-rtk-query';
 
 export const pokemonApi = createApi({
@@ -15,11 +15,8 @@ export const pokemonApi = createApi({
   }),
 });
 
-@NgModule({
-  imports: [
-    StoreModule.forFeature(pokemonApi.reducerPath, pokemonApi.reducer, {
-      metaReducers: [pokemonApi.metareducer],
-    }),
-  ],
-})
-export class PokemonQueryModule {}
+export function providePokemonQuery(): EnvironmentProviders {
+  return provideState(pokemonApi.reducerPath, pokemonApi.reducer, {
+    metaReducers: [pokemonApi.metareducer],
+  });
+}

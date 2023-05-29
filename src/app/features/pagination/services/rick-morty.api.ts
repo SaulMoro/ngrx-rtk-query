@@ -1,5 +1,5 @@
-import { NgModule } from '@angular/core';
-import { StoreModule } from '@ngrx/store';
+import { EnvironmentProviders } from '@angular/core';
+import { provideState } from '@ngrx/store';
 import { createApi, fetchBaseQuery } from 'ngrx-rtk-query';
 import { Character, Episode } from '../models';
 
@@ -30,11 +30,8 @@ export const {
   endpoints: rickMortyApiEndpoints,
 } = rickMortyApi;
 
-@NgModule({
-  imports: [
-    StoreModule.forFeature(rickMortyApi.reducerPath, rickMortyApi.reducer, {
-      metaReducers: [rickMortyApi.metareducer],
-    }),
-  ],
-})
-export class RickMortyQueryModule {}
+export function provideRickMortyQuery(): EnvironmentProviders {
+  return provideState(rickMortyApi.reducerPath, rickMortyApi.reducer, {
+    metaReducers: [rickMortyApi.metareducer],
+  });
+}

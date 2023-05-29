@@ -5,7 +5,6 @@
   "peerDependencies": {
     "@angular/core": ">= 15.0.0 < 17",
     "@ngrx/store": ">= 15.0.0 < 17",
-    "rxjs": ">= 7.5 < 8",
     "@reduxjs/toolkit": "~1.9.5"
   },
   "dependencies": {
@@ -18,6 +17,8 @@
     "ngrx rtk query",
     "rtk-query",
     "ngrx",
+    "signals",
+    "query",
     "redux",
     "redux-toolkit"
   ],
@@ -33,12 +34,5 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/SaulMoro/ngrx-rtk-query"
-  },
-  "schematics": "./schematics/collection.json",
-  "scripts": {
-    "build": "tsc -p tsconfig.schematics.json",
-    "copy:schemas": "cpx schematics/ng-add ../../dist/ngrx-rtk-query/",
-    "copy:collection": "cpx schematics/collection.json ../../dist/ngrx-rtk-query/schematics/",
-    "postbuild": "npm run copy:schemas && npm run copy:collection"
   }
 }

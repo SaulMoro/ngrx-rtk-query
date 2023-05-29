@@ -1,12 +1,12 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { useGetPostsQuery } from '../services';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Post } from '../models';
+import { useGetPostsQuery } from '../services';
 
 @Component({
   selector: 'app-posts-list',
   template: `
-    <section *ngIf="postsQuery$ | async as postsQuery" class="space-y-4">
-      <ng-container *ngIf="postsQuery.data as posts; else loading">
+    <section class="space-y-4">
+      <ng-container *ngIf="postsQuery().data as posts; else loading">
         <div *ngIf="posts.length; else emptyPosts">
           <li *ngFor="let post of posts; trackBy: trackByFn">
             <a class="hover:underline" [routerLink]="['/posts', post.id]">{{ post.name }}</a>
@@ -26,7 +26,7 @@ import { Post } from '../models';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PostsListComponent {
-  postsQuery$ = useGetPostsQuery();
+  postsQuery = useGetPostsQuery();
 
   constructor() {}
 

@@ -1,11 +1,11 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Signal, inject } from '@angular/core';
 import { Action, Store } from '@ngrx/store';
 import { AnyAction, ThunkAction } from '@reduxjs/toolkit';
 import { InternalMiddlewareState } from '@reduxjs/toolkit/dist/query/core/buildMiddleware/types';
-import { Observable } from 'rxjs';
 
 let service: ThunkService;
 let delayedActions: Action[] = [];
+
 export const internalBatchState: InternalMiddlewareState = {
   currentSubscriptions: {},
 };
@@ -23,13 +23,8 @@ export function dispatch<R>(action: Action | ThunkAction<R, any, any, AnyAction>
     return hasSubscription;
   }
 
-  // Middleware dispatch actions before Store starts
   if (service && Object.keys(getState())?.length) {
-    Promise.resolve().then(() => {
-      delayedActions.map((delayedAction) => service.dispatch(delayedAction));
-      delayedActions = [];
-      service.dispatch(action);
-    });
+    service.dispatch(action);
   } else {
     delayedActions.push(action);
   }
@@ -37,28 +32,32 @@ export function dispatch<R>(action: Action | ThunkAction<R, any, any, AnyAction>
   return action;
 }
 
-export function getState(): any {
+export function getState() {
   return service?.getState();
 }
 
-export function select<K>(mapFn: (state: any) => K): Observable<K> {
+export function select<K>(mapFn: (state: any) => K): Signal<K> {
   return service?.select(mapFn);
 }
 
 @Injectable()
 export class ThunkService {
-  constructor(private readonly store: Store) {
+  readonly #store = inject(Store);
+
+  init() {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     service = this;
+    delayedActions.map((delayedAction) => this.dispatch(delayedAction));
+    delayedActions = [];
   }
 
-  getState = this.store.selectSignal((state) => state);
+  getState = this.#store.selectSignal((state) => state);
 
   dispatch(action: Action): void {
-    this.store.dispatch(action);
+    this.#store.dispatch(action);
   }
 
-  select<K>(mapFn: (state: any) => K): Observable<K> {
-    return this.store.select(mapFn);
+  select<K>(mapFn: (state: any) => K): Signal<K> {
+    return this.#store.selectSignal(mapFn);
   }
 }
