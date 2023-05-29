@@ -1,12 +1,12 @@
-import * as ts from 'typescript';
+import { Rule, SchematicContext, SchematicsException, Tree } from '@angular-devkit/schematics';
+import { NodePackageInstallTask } from '@angular-devkit/schematics/tasks';
 import { addImportToModule } from '@schematics/angular/utility/ast-utils';
 import { Change, InsertChange } from '@schematics/angular/utility/change';
 import { getAppModulePath } from '@schematics/angular/utility/ng-ast-utils';
-import { getProjectMainFile } from './project-main-file';
-import { NodePackageInstallTask } from '@angular-devkit/schematics/tasks';
-import { Rule, SchematicContext, SchematicsException, Tree } from '@angular-devkit/schematics';
 import { WorkspaceProject, WorkspaceSchema } from '@schematics/angular/utility/workspace-models';
 import { parse } from 'jsonc-parser';
+import * as ts from 'typescript';
+import { getProjectMainFile } from './project-main-file';
 
 export const installPackageJsonDependencies = (): Rule => (host: Tree, context: SchematicContext) => {
   context.addTask(new NodePackageInstallTask());
@@ -16,7 +16,7 @@ export const installPackageJsonDependencies = (): Rule => (host: Tree, context: 
 };
 
 export const getProjectFromWorkspace = (workspace: WorkspaceSchema, projectName?: string): WorkspaceProject => {
-  const finalProjectName = projectName || workspace.defaultProject;
+  const finalProjectName = projectName || 'defaultProject';
   if (finalProjectName) {
     const project = workspace.projects[finalProjectName];
     return project;

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, ChangeDetectionStrategy, NgModule, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, NgModule, ViewChild } from '@angular/core';
 import { SerializedError } from '@reduxjs/toolkit';
 import { SubscriptionOptions } from '@reduxjs/toolkit/dist/query/core/apiState';
 import { LazyQueryOptions } from 'ngrx-rtk-query';
@@ -7,7 +7,7 @@ import { BehaviorSubject } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 
 import { expectExactType, expectType, useRenderCounter } from '../helper';
-import { api, defaultApi, invalidationsApi, libPostsApi, mutationApi, Post } from '../helper-apis';
+import { Post, api, defaultApi, invalidationsApi, libPostsApi, mutationApi } from '../helper-apis';
 
 class BaseRenderCounterComponent {
   renderCounter = useRenderCounter();
@@ -307,9 +307,10 @@ export const HIGH_PRIORITY_USER_ID = 4;
 })
 export class PrefetchHighPriorityComponent {
   query$ = api.endpoints.getUser.useQuery(HIGH_PRIORITY_USER_ID);
+  #prefetchUser = api.usePrefetch('getUser', { force: true });
 
   prefetchUser(): void {
-    api.usePrefetch('getUser', { force: true })(HIGH_PRIORITY_USER_ID, { force: true });
+    this.#prefetchUser(HIGH_PRIORITY_USER_ID, { force: true });
   }
 }
 

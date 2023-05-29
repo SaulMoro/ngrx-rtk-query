@@ -3,7 +3,6 @@ import { Action, Store } from '@ngrx/store';
 import { AnyAction, ThunkAction } from '@reduxjs/toolkit';
 import { InternalMiddlewareState } from '@reduxjs/toolkit/dist/query/core/buildMiddleware/types';
 import { Observable } from 'rxjs';
-import { take } from 'rxjs/operators';
 
 let service: ThunkService;
 let delayedActions: Action[] = [];
@@ -26,9 +25,11 @@ export function dispatch<R>(action: Action | ThunkAction<R, any, any, AnyAction>
 
   // Middleware dispatch actions before Store starts
   if (service && Object.keys(getState())?.length) {
-    delayedActions.map((delayedAction) => service.dispatch(delayedAction));
-    delayedActions = [];
-    service.dispatch(action);
+    Promise.resolve().then(() => {
+      delayedActions.map((delayedAction) => service.dispatch(delayedAction));
+      delayedActions = [];
+      service.dispatch(action);
+    });
   } else {
     delayedActions.push(action);
   }
@@ -51,15 +52,10 @@ export class ThunkService {
     service = this;
   }
 
-  getState(): object {
-    let state: object = {};
-    // eslint-disable-next-line ngrx/no-store-subscription
-    this.store.pipe(take(1)).subscribe((res) => (state = res));
-    return state;
-  }
+  getState = this.store.selectSignal((state) => state);
 
   dispatch(action: Action): void {
-    this.store?.dispatch(action);
+    this.store.dispatch(action);
   }
 
   select<K>(mapFn: (state: any) => K): Observable<K> {

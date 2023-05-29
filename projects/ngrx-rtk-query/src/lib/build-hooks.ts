@@ -14,7 +14,7 @@ import type {
 } from '@reduxjs/toolkit/dist/query/core/module';
 import { SerializeQueryArgs } from '@reduxjs/toolkit/dist/query/defaultSerializeQueryArgs';
 import type { Api, EndpointDefinitions, MutationDefinition, QueryDefinition } from '@reduxjs/toolkit/query';
-import { defaultSerializeQueryArgs, QueryStatus, skipToken } from '@reduxjs/toolkit/query';
+import { QueryStatus, defaultSerializeQueryArgs, skipToken } from '@reduxjs/toolkit/query';
 import { BehaviorSubject, combineLatest, isObservable, of } from 'rxjs';
 import { distinctUntilChanged, finalize, map, shareReplay, switchMap, tap } from 'rxjs/operators';
 

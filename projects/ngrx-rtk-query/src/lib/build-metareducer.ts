@@ -1,9 +1,9 @@
-import type { ActionReducer, MetaReducer, Action } from '@ngrx/store';
-import type { Api } from '@reduxjs/toolkit/query';
+import type { Action, ActionReducer, MetaReducer } from '@ngrx/store';
 import type { CoreModule } from '@reduxjs/toolkit/dist/query/core/module';
+import type { Api } from '@reduxjs/toolkit/query';
 
-import type { AngularHooksModule, AngularHooksModuleOptions } from './module';
 import { buildBatchedActionsHandler } from './build-batch-middleware';
+import type { AngularHooksModule, AngularHooksModuleOptions } from './module';
 import { internalBatchState } from './thunk.service';
 
 export function buildMetaReducer({
