@@ -1,5 +1,3 @@
-import { EnvironmentProviders } from '@angular/core';
-import { provideState } from '@ngrx/store';
 import { retry } from '@reduxjs/toolkit/query';
 import { createApi, fetchBaseQuery } from 'ngrx-rtk-query';
 import { Post } from '../models';
@@ -68,9 +66,3 @@ export const postsApi = createApi({
 
 export const { useAddPostMutation, useDeletePostMutation, useGetPostQuery, useGetPostsQuery, useUpdatePostMutation } =
   postsApi;
-
-export function providePostsQuery(): EnvironmentProviders {
-  return provideState(postsApi.reducerPath, postsApi.reducer, {
-    metaReducers: [postsApi.metareducer],
-  });
-}

@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 
+import { provideStoreApi } from 'ngrx-rtk-query';
 import { PokemonComponent } from './pokemon/pokemon.component';
-import { providePokemonQuery } from './services';
+import { pokemonApi } from './services';
 import { SkipContainerComponent } from './skip-container/skip-container.component';
 import { SkipRoutingModule } from './skip-routing.module';
 
@@ -11,7 +12,7 @@ import { SkipRoutingModule } from './skip-routing.module';
   imports: [CommonModule, SkipRoutingModule],
   providers: [
     // Lazy RTK Query
-    providePokemonQuery(),
+    provideStoreApi(pokemonApi),
   ],
 })
 export class SkipModule {}

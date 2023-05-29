@@ -1,5 +1,3 @@
-import { EnvironmentProviders } from '@angular/core';
-import { provideState } from '@ngrx/store';
 import { createApi, fetchBaseQuery } from 'ngrx-rtk-query';
 import { Character, Episode } from '../models';
 
@@ -29,9 +27,3 @@ export const {
   usePrefetch: useRickMortyPrefetch,
   endpoints: rickMortyApiEndpoints,
 } = rickMortyApi;
-
-export function provideRickMortyQuery(): EnvironmentProviders {
-  return provideState(rickMortyApi.reducerPath, rickMortyApi.reducer, {
-    metaReducers: [rickMortyApi.metareducer],
-  });
-}
