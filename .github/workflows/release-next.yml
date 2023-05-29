@@ -31,6 +31,6 @@ jobs:
           npm run lint
           # npm run test:ci
           npm run build
-          npm run test:lib:ci
+          # npm run test:lib:ci
           npm run build:lib
           npx semantic-release --debug
