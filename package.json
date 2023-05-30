@@ -22,7 +22,6 @@
     "test:lib:watch": "npm run test:lib -- --watch",
     "test:lib:coverage": "npm run test:lib -- --coverage",
     "test:lib:ci": "npm run test:lib -- --ci --runInBand",
-    "postbuild:lib": "npm run build --prefix projects/ngrx-rtk-query",
     "semantic-release": "semantic-release",
     "update:msw": "npx msw init src --no-save",
     "prepare": "husky install"

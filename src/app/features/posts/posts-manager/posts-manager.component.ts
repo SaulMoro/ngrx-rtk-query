@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { UntypedFormControl, Validators } from '@angular/forms';
 import { useAddPostMutation } from '../services';
 
@@ -9,12 +9,11 @@ import { useAddPostMutation } from '../services';
       <div>
         <input id="name" placeholder="New post name" type="text" [formControl]="postNameFormControl" />
         <button
-          *ngIf="addPost.state$ | async as addPostState"
           class="btn btn-primary m-4"
-          [disabled]="postNameFormControl.invalid || addPostState.isLoading"
+          [disabled]="postNameFormControl.invalid || addPost.state().isLoading"
           (click)="addNewPost()"
         >
-          {{ addPostState.isLoading ? 'Adding...' : 'Add Post' }}
+          {{ addPost.state().isLoading ? 'Adding...' : 'Add Post' }}
         </button>
       </div>
 

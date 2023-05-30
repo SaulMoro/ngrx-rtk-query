@@ -15,12 +15,10 @@ import type {
 import { SerializeQueryArgs } from '@reduxjs/toolkit/dist/query/defaultSerializeQueryArgs';
 import type { Api, EndpointDefinitions, MutationDefinition, QueryDefinition } from '@reduxjs/toolkit/query';
 import { QueryStatus, defaultSerializeQueryArgs, skipToken } from '@reduxjs/toolkit/query';
-import { BehaviorSubject, combineLatest, isObservable, of } from 'rxjs';
-import { distinctUntilChanged, finalize, map, shareReplay, switchMap, tap } from 'rxjs/operators';
 
+import { DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { UNINITIALIZED_VALUE } from './constants';
 import type { AngularHooksModuleOptions } from './module';
-import { getState } from './thunk.service';
 import type {
   GenericPrefetchThunk,
   MutationHooks,
@@ -29,12 +27,8 @@ import type {
   QueryHooks,
   QuerySelector,
   QueryStateSelector,
-  UseLazyQuery,
-  UseLazyQueryLastPromiseInfo,
   UseLazyQuerySubscription,
-  UseLazyTrigger,
   UseMutation,
-  UseQuery,
   UseQueryState,
   UseQueryStateDefaultResult,
   UseQuerySubscription,
@@ -73,7 +67,7 @@ const noPendingQueryStateSelector: QueryStateSelector<any, any> = (selected) => 
  */
 export function buildHooks<Definitions extends EndpointDefinitions>({
   api,
-  moduleOptions: { useDispatch: dispatch, useSelector },
+  moduleOptions: { useDispatch: dispatch, useSelector, getState },
   serializeQueryArgs,
   context,
 }: {
@@ -149,15 +143,24 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
     >;
     type ApiRootState = Parameters<ReturnType<typeof select>>[0];
 
-    const useQuerySubscription: UseQuerySubscription<any> = (
-      arg: any,
-      { refetchOnReconnect, refetchOnFocus, refetchOnMountOrArgChange, skip = false, pollingInterval = 0 } = {},
-      promiseRef = {},
-      argCacheRef = {},
-      lastRenderHadSubscription = { current: false },
-    ) => {
+    const useQuerySubscription: UseQuerySubscription<any> = (arg: any, options = {}) => {
+      const subscriptionArg = computed(() => {
+        const subscriptionArg = typeof arg === 'function' ? arg() : arg;
+        return subscriptionOptions().skip ? skipToken : subscriptionArg;
+      });
+      const subscriptionOptions = computed(() => {
+        const {
+          refetchOnReconnect,
+          refetchOnFocus,
+          refetchOnMountOrArgChange,
+          skip = false,
+          pollingInterval = 0,
+        } = typeof options === 'function' ? options() : options;
+        return { refetchOnReconnect, refetchOnFocus, refetchOnMountOrArgChange, skip, pollingInterval };
+      });
+
       const stableArg = useStableQueryArgs(
-        skip ? skipToken : arg,
+        subscriptionArg,
         // Even if the user provided a per-endpoint `serializeQueryArgs` with
         // a consistent return value, _here_ we want to use the default behavior
         // so we can tell if _anything_ actually changed. Otherwise, we can end up
@@ -166,241 +169,228 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         defaultSerializeQueryArgs,
         context.endpointDefinitions[name],
         name,
-        argCacheRef,
       );
-      const subscriptionOptions = { refetchOnReconnect, refetchOnFocus, pollingInterval };
+      const stableSubscriptionOptions = computed(
+        () => {
+          const { refetchOnReconnect, refetchOnFocus, pollingInterval } = subscriptionOptions();
+          return { refetchOnReconnect, refetchOnFocus, pollingInterval };
+        },
+        { equal: shallowEqual },
+      );
 
-      const { queryCacheKey, requestId } = promiseRef.current || {};
+      let lastRenderHadSubscription = false;
 
-      // HACK Because the latest state is in the middleware, we actually
-      // dispatch an action that will be intercepted and returned.
-      let currentRenderHasSubscription = false;
-      if (queryCacheKey && requestId) {
-        // This _should_ return a boolean, even if the types don't line up
-        const returnedValue = dispatch(
-          api.internalActions.internal_probeSubscription({
-            queryCacheKey,
-            requestId,
-          }),
-        );
+      let promiseRef: QueryActionCreatorResult<any> | undefined;
 
-        if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test') {
-          if (typeof returnedValue !== 'boolean') {
-            throw new Error(
-              `Warning: Middleware for RTK-Query API at reducerPath "${api.reducerPath}" has not
-              been added to the store. You must add the middleware for RTK-Query to function correctly!`,
+      effect(
+        () => {
+          const { queryCacheKey, requestId } = promiseRef || {};
+
+          // HACK Because the latest state is in the middleware, we actually
+          // dispatch an action that will be intercepted and returned.
+          let currentRenderHasSubscription = false;
+          if (queryCacheKey && requestId) {
+            // This _should_ return a boolean, even if the types don't line up
+            const returnedValue = dispatch(
+              api.internalActions.internal_probeSubscription({
+                queryCacheKey,
+                requestId,
+              }),
             );
+
+            if (process.env.NODE_ENV !== 'production') {
+              if (typeof returnedValue !== 'boolean') {
+                throw new Error(
+                  `Warning: Middleware for RTK-Query API at reducerPath "${api.reducerPath}" has not
+              been added to the store. You must add the middleware for RTK-Query to function correctly!`,
+                );
+              }
+            }
+
+            currentRenderHasSubscription = !!returnedValue;
           }
-        }
 
-        currentRenderHasSubscription = !!returnedValue;
-      }
+          const subscriptionRemoved = !currentRenderHasSubscription && lastRenderHadSubscription;
 
-      const subscriptionRemoved = !currentRenderHasSubscription && lastRenderHadSubscription.current;
-      lastRenderHadSubscription.current = currentRenderHasSubscription;
-      if (subscriptionRemoved) {
-        promiseRef.current?.unsubscribe();
-        promiseRef.current = undefined;
-      }
+          lastRenderHadSubscription = currentRenderHasSubscription;
 
-      if (stableArg !== skipToken) {
-        const lastPromise = promiseRef?.current;
-        const lastSubscriptionOptions = promiseRef.current?.subscriptionOptions;
+          if (subscriptionRemoved) {
+            promiseRef = undefined;
+          }
 
-        if (!lastPromise || lastPromise.arg !== stableArg) {
-          lastPromise?.unsubscribe();
-          promiseRef.current = dispatch(
-            initiate(stableArg, { subscriptionOptions, forceRefetch: refetchOnMountOrArgChange }),
-          );
-        } else if (!shallowEqual(subscriptionOptions, lastSubscriptionOptions)) {
-          lastPromise.updateSubscriptionOptions(subscriptionOptions);
-        }
-      }
+          const lastPromise = promiseRef;
+
+          if (stableArg() === skipToken) {
+            lastPromise?.unsubscribe();
+            promiseRef = undefined;
+            return;
+          }
+
+          const lastSubscriptionOptions = promiseRef?.subscriptionOptions;
+
+          if (!lastPromise || lastPromise.arg !== stableArg()) {
+            lastPromise?.unsubscribe();
+            const promise = dispatch(
+              initiate(stableArg(), {
+                subscriptionOptions: stableSubscriptionOptions(),
+                forceRefetch: subscriptionOptions().refetchOnMountOrArgChange,
+              }),
+            );
+
+            promiseRef = promise;
+          } else if (stableSubscriptionOptions() !== lastSubscriptionOptions) {
+            lastPromise.updateSubscriptionOptions(stableSubscriptionOptions());
+          }
+        },
+        { allowSignalWrites: true },
+      );
+
+      inject(DestroyRef).onDestroy(() => {
+        promiseRef?.unsubscribe();
+        promiseRef = undefined;
+      });
 
       return {
         /**
          * A method to manually refetch data for the query
          */
         refetch: () => {
-          if (!promiseRef.current) throw new Error('Cannot refetch a query that has not been started yet.');
-          return promiseRef.current?.refetch();
+          if (!promiseRef) throw new Error('Cannot refetch a query that has not been started yet.');
+          return promiseRef.refetch();
         },
       };
     };
 
-    const useLazyQuerySubscription: UseLazyQuerySubscription<any> = (
-      { refetchOnReconnect, refetchOnFocus, pollingInterval = 0 } = {},
-      promiseRef = {},
-    ) => {
-      let argState: any = UNINITIALIZED_VALUE;
-      const subscriptionOptions = { refetchOnReconnect, refetchOnFocus, pollingInterval };
+    const useLazyQuerySubscription: UseLazyQuerySubscription<any> = (options = {}) => {
+      const subscriptionArg = signal<any>(UNINITIALIZED_VALUE);
+      let promiseRef: QueryActionCreatorResult<any> | undefined;
 
-      const lastSubscriptionOptions = promiseRef.current?.subscriptionOptions;
-      if (!shallowEqual(subscriptionOptions, lastSubscriptionOptions)) {
-        promiseRef.current?.updateSubscriptionOptions(subscriptionOptions);
-      }
+      const stableSubscriptionOptions = computed(
+        () => {
+          const {
+            refetchOnReconnect,
+            refetchOnFocus,
+            pollingInterval = 0,
+          } = typeof options === 'function' ? options() : options;
+          return { refetchOnReconnect, refetchOnFocus, pollingInterval };
+        },
+        { equal: shallowEqual },
+      );
 
-      const trigger: UseLazyTrigger<any> = (arg: any, { preferCacheValue = false } = {}) => {
-        promiseRef.current?.unsubscribe();
+      effect(
+        () => {
+          const lastSubscriptionOptions = promiseRef?.subscriptionOptions;
 
-        const promise = dispatch(initiate(arg, { subscriptionOptions, forceRefetch: !preferCacheValue }));
+          if (stableSubscriptionOptions() !== lastSubscriptionOptions) {
+            promiseRef?.updateSubscriptionOptions(stableSubscriptionOptions());
+          }
+        },
+        { allowSignalWrites: true },
+      );
 
-        promiseRef.current = promise;
-        argState = arg;
+      let subscriptionOptionsRef = stableSubscriptionOptions();
+      effect(() => {
+        subscriptionOptionsRef = stableSubscriptionOptions();
+      });
+
+      const trigger = (arg: any, { preferCacheValue = false } = {}) => {
+        promiseRef?.unsubscribe();
+
+        const promise = dispatch(
+          initiate(arg, { subscriptionOptions: subscriptionOptionsRef, forceRefetch: !preferCacheValue }),
+        );
+
+        promiseRef = promise;
+        subscriptionArg.set(arg);
 
         return promise;
       };
 
+      /* cleanup on unmount */
+      inject(DestroyRef).onDestroy(() => {
+        promiseRef?.unsubscribe();
+      });
+
       /* if "cleanup on unmount" was triggered from a fast refresh, we want to reinstate the query */
-      if (argState !== UNINITIALIZED_VALUE && !promiseRef.current) {
-        trigger(argState, { preferCacheValue: true });
-      }
+      effect(() => {
+        if (subscriptionArg() !== UNINITIALIZED_VALUE && !promiseRef) {
+          trigger(subscriptionArg(), { preferCacheValue: true });
+        }
+      });
 
-      return [trigger, argState] as const;
+      const lastArg = computed(() => (subscriptionArg() !== UNINITIALIZED_VALUE ? subscriptionArg() : skipToken), {
+        equal: shallowEqual,
+      });
+
+      return [trigger, lastArg] as const;
     };
 
-    const useQueryState: UseQueryState<any> = (
-      arg: any,
-      { skip = false, selectFromResult } = {},
-      lastValue = {},
-      argCacheRef = {},
-    ) => {
-      const arg$ = isObservable(arg) ? arg : of(arg);
-      return arg$.pipe(
-        map((currentArg) =>
-          useStableQueryArgs(
-            skip ? skipToken : currentArg,
-            serializeQueryArgs,
-            context.endpointDefinitions[name],
-            name,
-            argCacheRef,
-          ),
-        ),
-        distinctUntilChanged(shallowEqual),
-        switchMap((stableArg) => {
-          const selectDefaultResult = createSelectorFactory<ApiRootState, any>((projector) =>
-            defaultMemoize(projector, shallowEqual, shallowEqual),
-          )(select(stableArg), (subState: any) => queryStatePreSelector(subState, lastValue.current, stableArg));
+    const useQueryState: UseQueryState<any> = (arg: any, options = {}) => {
+      const subscriptionArg = computed(() => {
+        const subscriptionArg = typeof arg === 'function' ? arg() : arg;
+        return stateOptions().skip ? skipToken : subscriptionArg;
+      });
+      const stateOptions = computed(() => {
+        const { skip = false, selectFromResult } = typeof options === 'function' ? options() : options;
+        return { skip, selectFromResult };
+      });
 
-          const querySelector = selectFromResult
-            ? createSelectorFactory<ApiRootState, any>((projector) =>
-                defaultMemoize(projector, shallowEqual, shallowEqual),
-              )(selectDefaultResult, selectFromResult)
-            : selectDefaultResult;
-
-          return useSelector((state: RootState<Definitions, any, any>) => querySelector(state)).pipe(
-            tap(() => (lastValue.current = selectDefaultResult(getState()))),
-          );
-        }),
-        shareReplay({
-          bufferSize: 1,
-          refCount: true,
-        }),
-      );
-    };
-
-    const useQuery: UseQuery<any> = (arg, options) => {
-      // Refs
-      const promiseRef: { current?: QueryActionCreatorResult<any> } = {};
-      const lastValue: { current?: any } = {};
-      const argRef: { current?: any } = {};
-
-      const arg$ = isObservable(arg) ? arg : of(arg);
-      const options$ = isObservable(options) ? options : of(options);
-
-      return combineLatest([arg$, options$.pipe(distinctUntilChanged((prev, curr) => shallowEqual(prev, curr)))]).pipe(
-        switchMap(([currentArg, currentOptions]) => {
-          const querySubscriptionResults = useQuerySubscription(currentArg, currentOptions, promiseRef, argRef);
-          const queryStateResults$ = useQueryState(
-            currentArg,
-            {
-              selectFromResult:
-                currentArg === skipToken || currentOptions?.skip ? undefined : noPendingQueryStateSelector,
-              ...currentOptions,
-            },
-            lastValue,
-            argRef,
-          );
-          return queryStateResults$.pipe(map((queryState) => ({ ...queryState, ...querySubscriptionResults })));
-        }),
-        shareReplay({
-          bufferSize: 1,
-          refCount: true,
-        }),
-        finalize(() => {
-          void promiseRef.current?.unsubscribe();
-          promiseRef.current = undefined;
-        }),
-      );
-    };
-
-    const useLazyQuery: UseLazyQuery<any> = (options) => {
-      // Refs
-      const promiseRef: { current?: QueryActionCreatorResult<any> } = {};
-      const lastValue: { current?: any } = {};
-      const triggerRef: { current?: UseLazyTrigger<any> } = {};
-      const argRef: { current?: any } = {};
-
-      const infoSubject = new BehaviorSubject<UseLazyQueryLastPromiseInfo<any>>({ lastArg: UNINITIALIZED_VALUE });
-      const info$ = infoSubject.asObservable();
-      const options$ = isObservable(options) ? options : of(options);
-
-      const state$ = combineLatest([
-        options$.pipe(
-          distinctUntilChanged((prev, curr) => shallowEqual(prev, curr)),
-          tap((currentOptions) => {
-            const [trigger] = useLazyQuerySubscription(currentOptions, promiseRef);
-            triggerRef.current = trigger;
-          }),
-        ),
-        info$.pipe(
-          tap(({ lastArg, extra }) => {
-            if (lastArg !== UNINITIALIZED_VALUE) {
-              triggerRef.current?.(lastArg, extra);
-            }
-          }),
-          map(({ lastArg }) => lastArg),
-          distinctUntilChanged(shallowEqual),
-        ),
-      ]).pipe(
-        switchMap(([currentOptions, currentArg]) =>
-          useQueryState(
-            currentArg,
-            {
-              ...currentOptions,
-              skip: currentArg === UNINITIALIZED_VALUE,
-            },
-            lastValue,
-            argRef,
-          ),
-        ),
-        shareReplay({
-          bufferSize: 1,
-          refCount: true,
-        }),
-        finalize(() => {
-          void promiseRef.current?.unsubscribe();
-          promiseRef.current = undefined;
-        }),
+      const stableArg = useStableQueryArgs(
+        subscriptionArg,
+        serializeQueryArgs,
+        context.endpointDefinitions[name],
+        name,
       );
 
-      return {
-        fetch: (arg, extra) => {
-          infoSubject.next({ lastArg: arg, extra });
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          return promiseRef.current!;
-        },
-        state$,
-        lastArg$: info$.pipe(map(({ lastArg }) => (lastArg !== UNINITIALIZED_VALUE ? lastArg : skipToken))),
-      };
+      let lastValue: any;
+
+      const currentState = computed(() => {
+        const selectDefaultResult = createSelectorFactory<ApiRootState, any>((projector) =>
+          defaultMemoize(projector, shallowEqual, shallowEqual),
+        )(select(stableArg()), (subState: any) => queryStatePreSelector(subState, lastValue, stableArg()));
+
+        const { selectFromResult } = stateOptions();
+        const querySelector = selectFromResult
+          ? createSelectorFactory<ApiRootState, any>((projector) =>
+              defaultMemoize(projector, shallowEqual, shallowEqual),
+            )(selectDefaultResult, selectFromResult)
+          : selectDefaultResult;
+
+        const currentState = useSelector((state: RootState<Definitions, any, any>) => querySelector(state));
+
+        lastValue = selectDefaultResult(getState());
+        return currentState();
+      });
+
+      return currentState;
     };
 
     return {
       useQueryState,
       useQuerySubscription,
       useLazyQuerySubscription,
-      useLazyQuery,
-      useQuery,
+      useLazyQuery(options) {
+        const [trigger, arg] = useLazyQuerySubscription(options);
+        const subscriptionOptions = computed(() => ({
+          ...options,
+          skip: arg() === UNINITIALIZED_VALUE,
+        }));
+        const queryStateResults = useQueryState(arg, subscriptionOptions);
+
+        return { fetch: trigger, state: queryStateResults, lastArg: arg } as const;
+      },
+      useQuery(arg, options) {
+        const querySubscriptionResults = useQuerySubscription(arg, options);
+        const subscriptionOptions = computed(() => {
+          const subscriptionArg = typeof arg === 'function' ? arg() : arg;
+          const { skip } = typeof options === 'function' ? options() : options || {};
+          const selectFromResult = subscriptionArg === skipToken || skip ? undefined : noPendingQueryStateSelector;
+          return { selectFromResult, ...options };
+        });
+        const queryStateResults = useQueryState(arg, subscriptionOptions);
+
+        return computed(() => ({ ...queryStateResults(), ...querySubscriptionResults }));
+      },
       selector: select as QuerySelector<any>,
     };
   }
@@ -412,59 +402,50 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
     >;
 
     const useMutation: UseMutation<any> = ({ selectFromResult = defaultMutationStateSelector, fixedCacheKey } = {}) => {
-      const promiseRef: { current?: MutationActionCreatorResult<any> } = {};
-      const requestIdSubject = new BehaviorSubject<string | undefined>(undefined);
-      const requestId$ = requestIdSubject.asObservable();
+      const promiseRef = signal<MutationActionCreatorResult<any> | undefined>(undefined);
+
+      effect((onCleanup) => {
+        const currentPromise = promiseRef();
+        onCleanup(() => {
+          if (!currentPromise?.arg.fixedCacheKey) {
+            untracked(() => currentPromise?.reset());
+          }
+        });
+      });
 
       const triggerMutation = (arg: Parameters<typeof initiate>['0']) => {
         const promise = dispatch(initiate(arg, { fixedCacheKey }));
-        if (!promiseRef.current?.arg.fixedCacheKey) {
-          removePrevMutation();
-        }
-
-        promiseRef.current = promise;
-        requestIdSubject.next(promise.requestId);
-
+        promiseRef.set(promise);
         return promise;
       };
 
-      const reset = () => {
-        removePrevMutation();
-        requestIdSubject.next(undefined);
-      };
+      const requestId = computed(() => promiseRef()?.requestId);
 
-      const removePrevMutation = () => {
-        if (promiseRef.current) {
+      const currentState = computed(() => {
+        const mutationSelector = createSelectorFactory((projector) =>
+          defaultMemoize(projector, shallowEqual, shallowEqual),
+        )(select({ fixedCacheKey, requestId: requestId() }), (subState: any) => selectFromResult(subState));
+        return useSelector(mutationSelector)();
+      });
+      const originalArgs = computed(() => (fixedCacheKey == null ? promiseRef()?.arg.originalArgs : undefined));
+
+      const reset = () => {
+        if (promiseRef()) {
+          promiseRef.set(undefined);
+        }
+        if (fixedCacheKey) {
           dispatch(
-            api.internalActions.removeMutationResult({ requestId: promiseRef.current.requestId, fixedCacheKey }),
+            api.internalActions.removeMutationResult({
+              requestId: requestId(),
+              fixedCacheKey,
+            }),
           );
-          promiseRef.current = undefined;
         }
       };
 
-      const state$ = requestId$.pipe(
-        finalize(() => {
-          promiseRef.current?.reset();
-          promiseRef.current = undefined;
-        }),
-        distinctUntilChanged(shallowEqual),
-        switchMap((requestId) => {
-          const mutationSelector = createSelectorFactory((projector) =>
-            defaultMemoize(projector, shallowEqual, shallowEqual),
-          )(select(requestId ? { fixedCacheKey, requestId } : skipToken), (subState: any) =>
-            selectFromResult(subState),
-          );
-          const currentState = useSelector((state: RootState<Definitions, any, any>) => mutationSelector(state));
-          const originalArgs = fixedCacheKey == null ? promiseRef.current?.arg.originalArgs : undefined;
-          return currentState.pipe(map((mutationState) => ({ ...mutationState, originalArgs, reset })));
-        }),
-        shareReplay({
-          bufferSize: 1,
-          refCount: true,
-        }),
-      );
+      const finalState = computed(() => ({ ...currentState(), originalArgs: originalArgs(), reset }));
 
-      return { dispatch: triggerMutation, state$ } as const;
+      return { dispatch: triggerMutation, state: finalState } as const;
     };
 
     return {

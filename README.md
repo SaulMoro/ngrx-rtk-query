@@ -12,7 +12,7 @@
 [![ngneat-lib](https://img.shields.io/badge/made%20with-%40ngneat%2Flib-ad1fe3?logo=angular)](https://github.com/ngneat/lib)
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 
-**ngrx-rtk-query** is a plugin to make RTK Query (**including auto-generated hooks**) works in Angular applications with NgRx!! Mix the power of RTK Query + NgRx + RxJS to achieve the same functionality as in the [RTK Query guide with hooks](https://redux-toolkit.js.org/rtk-query/overview).
+**ngrx-rtk-query** is a plugin to make RTK Query (**including auto-generated hooks**) works in Angular applications with NgRx!! Mix the power of RTK Query + NgRx + **Signals** to achieve the same functionality as in the [RTK Query guide with hooks](https://redux-toolkit.js.org/rtk-query/overview).
 
 ## Table of Contents
 
@@ -27,45 +27,23 @@
 
 ### Versions
 
-|   Angular / NgRx   | ngrx-rtk-query | @reduxjs/toolkit |       Support       |
-| :----------------: | :------------: | :--------------: | :-----------------: |
-|        16.x        |   >=4.2.x      |     ~1.9.5       | Bugs / New Features |
-|        15.x        |     4.1.x      |      1.9.5       |        Bugs         |
-|    13.x - 14.x     |     3.5.x      |      1.9.1       |        None         |
-|    11.x - 12.x     |     2.3.0      |      1.6.2       |        None         |
+|   Angular / NgRx   |     ngrx-rtk-query     | @reduxjs/toolkit |       Support       |
+| :----------------: | :--------------------: | :--------------: | :-----------------: |
+|        16.x        |   >=16.x.x (signals)   |     ~1.9.5       | Bugs / New Features |
+|        16.x        |    >=4.2.x (rxjs)      |     ~1.9.5       |        Bugs         |
+|        15.x        |      4.1.x (rxjs)      |      1.9.5       |        Bugs         |
+|    13.x - 14.x     |      3.5.x (rxjs)      |      1.9.1       |        None         |
+|    11.x - 12.x     |      2.3.0 (rxjs)      |      1.6.2       |        None         |
 
 Only the latest version of Angular in the table above is actively supported. This is due to the fact that compilation of Angular libraries is [incompatible between major versions](https://angular.io/guide/creating-libraries#ensuring-library-version-compatibility).
 
-You can install it through **Angular CLI**:
-
-```bash
-ng add ngrx-rtk-query
-```
-
-or with **npm**:
+You can install it with **npm**:
 
 ```bash
 npm install ngrx-rtk-query
 ```
 
-When you install using **npm or yarn**, you will also need to import `StoreRtkQueryModule` in your `app.module`. You can also set setupListeners here.:
-
-```typescript
-import { StoreRtkQueryModule } from 'ngrx-rtk-query';
-
-@NgModule({
-  imports: [
-    ... // NgRx Modules here!!
-    StoreRtkQueryModule.forRoot({ 
-      setupListeners: true,
-      baseUrl: environment.baseAPI, // Optional environment baseUrl
-    })
-  ],
-})
-class AppModule {}
-```
-
-New **Standalone provider** install !!
+When you install using **npm or yarn**, you will also need to use the **Standalone provider** `provideStoreRtkQuery` in your `app`. You can also set setupListeners here:
 
 ```typescript
 import { provideStoreRtkQuery } from 'ngrx-rtk-query';
@@ -143,24 +121,6 @@ export const {
 
 Add the service to your store
 
-```ts
-export const reducers: ActionReducerMap<RootState> = {
-  [counterApi.reducerPath]: counterApi.reducer,
-};
-
-@NgModule({
-  imports: [
-    StoreModule.forRoot(reducers, {
-      metaReducers: [counterApi.metareducer],
-    }),
-    StoreRtkQueryModule.forRoot({ setupListeners: true }),
-
-    !environment.production ? StoreDevtoolsModule.instrument() : [],
-  ],
-})
-export class CoreStoreModule {}
-```
-
 New **Standalone Api provider** !!
 
 ```typescript
@@ -187,23 +147,21 @@ import { useDecrementCountMutation, useGetCountQuery, useIncrementCountMutation 
   template: `
     <section>
       <button
-        *ngIf="increment.state$ | async as incrementState"
-        [disabled]="incrementState.isLoading"
+        [disabled]="increment.state().isLoading"
         (click)="increment.dispatch(1)"
       > + </button>
 
-      <span *ngIf="countQuery$ | async as countQuery">{{ countQuery.data?.count || 0 }}</span>
+      <span *ngIf="countQuery()">{{ countQuery().data?.count || 0 }}</span>
 
       <button
-        *ngIf="decrement.state$ | async as decrementState"
-        [disabled]="decrementState.isLoading"
+        [disabled]="decrement.state().isLoading"
         (click)="decrement.dispatch(1)"
       > - </button>
     </section>
   `,
 })
 export class CounterManagerComponent {
-  countQuery$ = useGetCountQuery();
+  countQuery = useGetCountQuery();
   increment = useIncrementCountMutation();
   decrement = useDecrementCountMutation();
 }
@@ -214,7 +172,9 @@ export class CounterManagerComponent {
 
 ### **Use on code-splitted/feature/lazy modules**
 
-To introduce a lazy/feature/code-splitted query, you must export it through an angular module.
+**Important:** Only for cases with differents base API url. **With same base API url, it's preferable to use [code splitting](https://redux-toolkit.js.org/rtk-query/usage/code-splitting)**
+
+To introduce a lazy/feature/code-splitted query, you must export it through an angular mule.
 Import this module where needed. You can look at posts feature example from this repository.
 
 ```ts
@@ -231,10 +191,11 @@ export const postsApi = createApi({
 
 // ...
 
-@NgModule({
-  imports: [StoreModule.forFeature(postsApi.reducerPath, postsApi.reducer, { metaReducers: [postsApi.metareducer] })],
-})
-export class PostsQueryModule {}
+export function providePostsQuery(): EnvironmentProviders {
+  return provideState(postsApi.reducerPath, postsApi.reducer, {
+    metaReducers: [postsApi.metareducer],
+  });
+}
 
 //
 // OR 
@@ -257,32 +218,34 @@ import { provideStoreApi } from 'ngrx-rtk-query';
 
 The use of queries is a bit different compared to the original [Queries - RTK Query guide](https://redux-toolkit.js.org/rtk-query/usage/queries). You can look at the examples from this repository.
 
-The parameters and options of the Query can be static or Observables.
+The parameters and options of the Query can be **signals** or static. You can update the signal to change the parameter/option.
 
-The hook `useXXXQuery()` returns an observable with all the information indicated in the official documentation (including `refetch()` function). By subscribing to this query (with the `async pipe` or `subscribe()`), the query will start its request.
+The hook `useXXXQuery()` returns a signal with all the information indicated in the official documentation (including `refetch()` function).
 
 ```ts
 // Use query without params or options
-postsQuery$ = useGetPostsQuery();
+postsQuery = useGetPostsQuery();
 
 // Use query with static params or options
-postQuery$ = useGetPostsQuery(2, {
+postQuery = useGetPostsQuery(2, {
   selectFromResult: ({ data: post, isLoading }) => ({ post, isLoading }),
 });
 
-// Use query with Observables params or options (can be mixed with static)
-postQuery$ = useGetPostsQuery(id$, options$);
+// Use query with signals params or options (can be mixed with static)
+id = signal(2);
+options = signal(...);
+postQuery = useGetPostsQuery(id, options);
 ```
 
 ### **Lazy Queries**
 
-The use of lazy queries is a bit different compared to the original. As in the case of queries, the parameters and options of the Query can be static or Observables. You can look at lazy feature example from this repository.
+The use of lazy queries is a bit different compared to the original. As in the case of queries, the parameters and options of the Query can be signal or static. You can look at lazy feature example from this repository.
 
 Like in the original library, a lazy returns a object (not array) of 3 items, but the structure and naming of the items is different.
 
 - `fetch(arg)`: This function is the trigger to run the fetch action.
-- `state$`: Observable that returns an object with the query state.
-- `lastArg$`: Observable that returns the last argument.
+- `state`: Signal that returns an object with the query state.
+- `lastArg`: Signal that returns the last argument.
 
 ```ts
 // Use query without options
@@ -291,15 +254,16 @@ postsQuery = useLazyGetPostsQuery();
 postQuery = useLazyGetPostsQuery({
   selectFromResult: ({ data: post, isLoading }) => ({ post, isLoading }),
 });
-// Use query with Observable options
-postQuery = useLazyGetPostsQuery(options$);
+// Use query with signal options
+options = signal(...);
+postQuery = useLazyGetPostsQuery(options);
 ```
 
 Use when data needs to be loaded on demand
 
 ```ts
-<span *ngIf="xxxQuery.state$ | async as xxxQuery">{{ xxxQuery.data }}</span>
-<span>{{ xxxQuery.lastArg$ | async }}</span>
+<span>{{ xxxQuery.state().data }}</span>
+<span>{{ xxxQuery.lastArg() }}</span>
 
 //...
 
@@ -318,9 +282,7 @@ export class XxxComponent {
 Another good use case is to work with nested or relational data
 
 ```ts
-<ng-container *ngIf="locationQuery.state$ | async as locationQuery">
-//...
-</ng-container>
+<span>{{ locationQuery.state().data }}</span>
 
 export class CharacterCardComponent implements OnInit {
   @Input() character: Character;
@@ -344,7 +306,7 @@ The use of mutations is a bit different compared to the original [Mutations - RT
 Like in the original library, a mutation is a object (not array) of 2 items, but the structure and naming of the items is different.
 
 - `dispatch(params)`: This function is the trigger to run the mutation action.
-- `state$`: Observable that returns an object with the state, including the status flags and other info (see official docs).
+- `state`: Signal that returns an object with the state, including the status flags and other info (see official docs).
 
 ```ts
 // Use mutation hook
@@ -352,8 +314,8 @@ addPost = useAddPostMutation();
 
 // Mutation trigger
 addPost.dispatch({params});
-// Observable with the state of mutation
-addPost.state$
+// Signal with the state of mutation
+addPost.state
 ```
 
 <br />

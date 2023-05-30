@@ -1,22 +1,21 @@
-import { ChangeDetectionStrategy, Component, inject, OnDestroy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnDestroy, signal } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { nanoid } from '@reduxjs/toolkit';
-import { BehaviorSubject } from 'rxjs';
 
 @Component({
   selector: 'app-skip-container',
   template: `
     <section class="space-y-2">
       <button class="btn-outline btn-primary" (click)="setRunning()">
-        {{ running ? 'Unmount' : 'Mount' }}
+        {{ running() ? 'Unmount' : 'Mount' }}
       </button>
-      <ng-container *ngIf="name$ | async as name">
-        <app-pokemon *ngIf="running" [name]="name" />
+      <ng-container>
+        <app-pokemon *ngIf="running()" [name]="name()" />
       </ng-container>
 
-      <div *ngIf="subscriptions$ | async as subscriptions" class="space-y-4">
-        <h3>Subscriptions ({{ getSubscriptionsLength(subscriptions) }}):</h3>
-        <pre>{{ subscriptions | json }}</pre>
+      <div class="space-y-4">
+        <h3>Subscriptions ({{ getSubscriptionsLength(subscriptions()) }}):</h3>
+        <pre>{{ subscriptions() | json }}</pre>
       </div>
     </section>
   `,
@@ -25,11 +24,10 @@ import { BehaviorSubject } from 'rxjs';
 })
 export class SkipContainerComponent implements OnDestroy {
   private readonly store = inject(Store);
-  subscriptions$ = this.store.select((state) => state.pokemonApi?.subscriptions);
+  subscriptions = this.store.selectSignal((state) => state.pokemonApi?.subscriptions);
 
-  nameBehavior: BehaviorSubject<string> = new BehaviorSubject<string>(nanoid());
-  name$ = this.nameBehavior.asObservable();
-  running = false;
+  name = signal(nanoid());
+  running = signal(false);
 
   queryIntervalId: any;
 
@@ -38,11 +36,11 @@ export class SkipContainerComponent implements OnDestroy {
   }
 
   setRunning(): void {
-    this.running = !this.running;
+    this.running.update((running) => !running);
     if (!this.running) {
       clearInterval(this.queryIntervalId);
     } else {
-      this.queryIntervalId = setInterval(() => this.nameBehavior.next(nanoid()));
+      this.queryIntervalId = setInterval(() => this.name.set(nanoid()));
     }
   }
 

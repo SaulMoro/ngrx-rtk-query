@@ -1,21 +1,29 @@
-import { EndpointDefinition } from '@reduxjs/toolkit/query';
-import { SerializeQueryArgs } from '@reduxjs/toolkit/dist/query/defaultSerializeQueryArgs';
+import { Signal, computed, effect } from '@angular/core';
+import type { SerializeQueryArgs } from '@reduxjs/toolkit/dist/query/defaultSerializeQueryArgs';
+import type { EndpointDefinition } from '@reduxjs/toolkit/dist/query/endpointDefinitions';
 
 export function useStableQueryArgs<T>(
-  queryArgs: T,
+  queryArgs: Signal<T>,
   serialize: SerializeQueryArgs<any>,
   endpointDefinition: EndpointDefinition<any, any, any, any>,
   endpointName: string,
-  cacheRef: { current?: any } = {},
 ) {
-  const incoming = {
-    queryArgs,
-    serialized: typeof queryArgs == 'object' ? serialize({ queryArgs, endpointDefinition, endpointName }) : queryArgs,
-  };
+  const incoming = computed(() => {
+    const incomingArgs = queryArgs();
+    return {
+      queryArgs: incomingArgs,
+      serialized:
+        typeof incomingArgs == 'object'
+          ? serialize({ queryArgs: incomingArgs, endpointDefinition, endpointName })
+          : incomingArgs,
+    };
+  });
+  let cache = incoming();
+  effect(() => {
+    if (cache.serialized !== incoming().serialized) {
+      cache = incoming();
+    }
+  });
 
-  if (!cacheRef.current || cacheRef.current.serialized !== incoming.serialized) {
-    cacheRef.current = incoming;
-  }
-
-  return cacheRef.current.queryArgs;
+  return computed(() => (cache.serialized === incoming().serialized ? cache.queryArgs : queryArgs()));
 }

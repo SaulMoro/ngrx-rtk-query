@@ -1,17 +1,15 @@
 /*
  * Public API Surface of ngrx-rtk-query
  */
-export * from './lib/store-rtk-query.module';
-export * from './lib/provide-rtk-query';
-export { createApi, angularHooksModule } from './lib/module';
-export { ThunkService, dispatch } from './lib/thunk.service';
 export { fetchBaseQuery } from './lib/fetch-base-query';
-
+export { angularHooksModule, createApi } from './lib/module';
+export * from './lib/provide-rtk-query';
+export { ThunkService, dispatch } from './lib/thunk.service';
 export {
-  QueryOptions,
   LazyQueryOptions,
+  QueryOptions,
+  TypedUseMutationResult,
   TypedUseQueryHookResult,
   TypedUseQueryStateResult,
   TypedUseQuerySubscriptionResult,
-  TypedUseMutationResult,
 } from './lib/types';

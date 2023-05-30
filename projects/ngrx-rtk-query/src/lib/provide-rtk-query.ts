@@ -1,10 +1,29 @@
-import { EnvironmentProviders, importProvidersFrom } from '@angular/core';
+import { ENVIRONMENT_INITIALIZER, EnvironmentProviders, inject, makeEnvironmentProviders } from '@angular/core';
 import { provideState } from '@ngrx/store';
-import { StoreQueryConfig } from './store-rtk-query.config';
-import { StoreRtkQueryModule } from './store-rtk-query.module';
+import { setupListeners } from '@reduxjs/toolkit/query';
+import { STORE_RTK_QUERY_CONFIG, StoreQueryConfig, defaultConfig, setupConfig } from './store-rtk-query.config';
+import { ThunkService, dispatch } from './thunk.service';
 
 export function provideStoreRtkQuery(config?: Partial<StoreQueryConfig>): EnvironmentProviders {
-  return importProvidersFrom(StoreRtkQueryModule.forRoot(config));
+  const moduleConfig = { ...defaultConfig, ...config };
+
+  setupConfig(moduleConfig);
+
+  if (moduleConfig.setupListeners) {
+    setupListeners(dispatch, moduleConfig.setupListeners === true ? undefined : moduleConfig.setupListeners);
+  }
+
+  return makeEnvironmentProviders([
+    { provide: STORE_RTK_QUERY_CONFIG, useValue: moduleConfig },
+    ThunkService,
+    {
+      provide: ENVIRONMENT_INITIALIZER,
+      multi: true,
+      useValue() {
+        inject(ThunkService).init();
+      },
+    },
+  ]);
 }
 
 export function provideStoreApi(api: any): EnvironmentProviders {

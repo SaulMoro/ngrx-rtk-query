@@ -1,6 +1,6 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { nanoid } from '@reduxjs/toolkit';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { useDecrementCountMutation, useGetCountQuery, useIncrementCountMutation } from '@app/core/services';
+import { nanoid } from '@reduxjs/toolkit';
 
 @Component({
   selector: 'app-counter-manager',
@@ -11,22 +11,19 @@ import { useDecrementCountMutation, useGetCountQuery, useIncrementCountMutation 
         <div>
           <div class="flex items-center space-x-4">
             <button
-              *ngIf="increment.state$ | async as incrementState"
               class="btn-outline btn-primary"
-              [disabled]="incrementState.isLoading"
+              [disabled]="increment.state().isLoading"
               (click)="increment.dispatch(1)"
             >
               +
             </button>
-            <span *ngIf="countQuery$ | async as countQuery" class="text-3xl font-bold">{{
-              countQuery.data?.count || 0
-            }}</span>
+            <span class="text-3xl font-bold">{{ countQuery().data?.count || 0 }}</span>
             <button class="btn-outline btn-primary" (click)="decrement.dispatch(1)">-</button>
           </div>
           <small>Decrease is a optimistic update!</small>
 
           <p class="mt-6 bg-gray-200 text-xs">
-            <code>{{ countQuery$ | async | json }}</code>
+            <code>{{ countQuery() | json }}</code>
           </p>
         </div>
       </section>
@@ -47,7 +44,7 @@ import { useDecrementCountMutation, useGetCountQuery, useIncrementCountMutation 
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CounterManagerComponent {
-  countQuery$ = useGetCountQuery();
+  countQuery = useGetCountQuery();
   increment = useIncrementCountMutation();
   decrement = useDecrementCountMutation();
 

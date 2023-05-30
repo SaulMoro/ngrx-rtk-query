@@ -1,7 +1,5 @@
-import { Component, OnInit, ChangeDetectionStrategy, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnInit, computed, signal } from '@angular/core';
 import { LazyQueryOptions } from 'ngrx-rtk-query';
-import { BehaviorSubject } from 'rxjs';
-import { map } from 'rxjs/operators';
 
 import {
   useDecrementCountByIdMutation,
@@ -16,30 +14,17 @@ import { pollingOptions } from '../utils/polling-options';
     <section class="space-y-4">
       <h1 class="text-md font-medium">{{ id }}</h1>
       <div class="flex items-center space-x-4">
-        <button
-          *ngIf="increment.state$ | async as incrementState"
-          class="btn-outline btn-primary"
-          [disabled]="incrementState.isLoading"
-          (click)="incrementCounter()"
-        >
+        <button class="btn-outline btn-primary" [disabled]="increment.state().isLoading" (click)="incrementCounter()">
           +
         </button>
-        <span
-          *ngIf="countQuery.state$ | async as countQuery"
-          class="text-3xl font-bold"
-          [class.bg-green-100]="countQuery.isFetching"
-          >{{ countQuery.data?.count || 0 }}</span
-        >
-        <button
-          *ngIf="decrement.state$ | async as decrementState"
-          class="btn-outline btn-primary"
-          [disabled]="decrementState.isLoading"
-          (click)="decrementCounter()"
-        >
+        <span class="text-3xl font-bold" [class.bg-green-100]="countQuery.state().isFetching">{{
+          countQuery.state().data?.count || 0
+        }}</span>
+        <button class="btn-outline btn-primary" [disabled]="decrement.state().isLoading" (click)="decrementCounter()">
           -
         </button>
 
-        <select [ngModel]="pollingInterval$ | async" (ngModelChange)="changePollingInterval($event)">
+        <select [ngModel]="pollingInterval()" (ngModelChange)="changePollingInterval($event)">
           <option *ngFor="let pollingOption of pollingOptions" [value]="pollingOption.value">
             {{ pollingOption.label }}
           </option>
@@ -55,12 +40,11 @@ export class CounterComponent implements OnInit {
 
   // Polling
   pollingOptions = pollingOptions;
-  pollingInterval = new BehaviorSubject<number>(this.pollingOptions[0].value);
-  pollingInterval$ = this.pollingInterval.asObservable();
-  options$ = this.pollingInterval$.pipe(map((pollingInterval) => ({ pollingInterval } as LazyQueryOptions)));
+  pollingInterval = signal<number>(this.pollingOptions[0].value);
+  options = computed(() => ({ pollingInterval: this.pollingInterval() } as LazyQueryOptions));
 
   // Queries
-  countQuery = useLazyGetCountByIdQuery(this.options$);
+  countQuery = useLazyGetCountByIdQuery(this.options);
   increment = useIncrementCountByIdMutation();
   decrement = useDecrementCountByIdMutation();
 
@@ -71,7 +55,7 @@ export class CounterComponent implements OnInit {
   }
 
   changePollingInterval(interval: number): void {
-    this.pollingInterval.next(+interval);
+    this.pollingInterval.set(+interval);
   }
 
   incrementCounter(): void {

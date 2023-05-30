@@ -1,5 +1,3 @@
-import { NgModule } from '@angular/core';
-import { StoreModule } from '@ngrx/store';
 import { retry } from '@reduxjs/toolkit/query';
 import { createApi, fetchBaseQuery } from 'ngrx-rtk-query';
 import { Post } from '../models';
@@ -68,8 +66,3 @@ export const postsApi = createApi({
 
 export const { useAddPostMutation, useDeletePostMutation, useGetPostQuery, useGetPostsQuery, useUpdatePostMutation } =
   postsApi;
-
-@NgModule({
-  imports: [StoreModule.forFeature(postsApi.reducerPath, postsApi.reducer, { metaReducers: [postsApi.metareducer] })],
-})
-export class PostsQueryModule {}

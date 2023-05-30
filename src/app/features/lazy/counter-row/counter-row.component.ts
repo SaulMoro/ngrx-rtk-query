@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
 import { useDecrementCountByIdMutation, useIncrementCountByIdMutation } from '@app/core/services';
 
@@ -7,9 +7,8 @@ import { useDecrementCountByIdMutation, useIncrementCountByIdMutation } from '@a
   template: `
     <div class="mt-4 flex items-center space-x-4">
       <button
-        *ngIf="increment.state$ | async as incrementState"
         class="btn-outline btn-primary"
-        [disabled]="incrementState.isLoading || counterData?.isUninitialized"
+        [disabled]="increment.state().isLoading || counterData?.isUninitialized"
         (click)="incrementCounter()"
       >
         +
@@ -18,9 +17,8 @@ import { useDecrementCountByIdMutation, useIncrementCountByIdMutation } from '@a
         counterData?.data?.count || 0
       }}</span>
       <button
-        *ngIf="decrement.state$ | async as decrementState"
         class="btn-outline btn-primary"
-        [disabled]="decrementState.isLoading || counterData?.isUninitialized"
+        [disabled]="decrement.state().isLoading || counterData?.isUninitialized"
         (click)="decrementCounter()"
       >
         -
