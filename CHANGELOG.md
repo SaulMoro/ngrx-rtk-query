@@ -1,15 +1,3 @@
-# [4.3.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v4.2.0...v4.3.0) (2023-05-30)
-
-
-### Bug Fixes
-
-* **signal:** disable test cases ([693d5c3](https://github.com/SaulMoro/ngrx-rtk-query/commit/693d5c3930120b9ab66164b9dbb3e0e9437c1d2f))
-
-
-### Features
-
-* **signal:** first signals version ([d235099](https://github.com/SaulMoro/ngrx-rtk-query/commit/d235099e3b03dcda339bfad8fa644ad4c49bcdf6))
-
 # [16.0.0-preview.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v16.0.0-preview...v16.0.0-preview.0) (2023-05-29)
 
 
