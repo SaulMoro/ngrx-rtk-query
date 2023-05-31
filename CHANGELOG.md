@@ -1,3 +1,10 @@
+# [16.0.0-preview.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v16.0.0-preview.0...v16.0.0-preview.1) (2023-05-31)
+
+
+### Features
+
+* new signals preview version ([dabc020](https://github.com/SaulMoro/ngrx-rtk-query/commit/dabc02013c79b47e07908f42ebbca5ee4a42399e))
+
 # [16.0.0-preview.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v16.0.0-preview...v16.0.0-preview.0) (2023-05-29)
 
 

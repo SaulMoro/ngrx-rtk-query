@@ -170,50 +170,6 @@ export class CounterManagerComponent {
 
 ## Usage
 
-### **Use on code-splitted/feature/lazy modules**
-
-**Important:** Only for cases with differents base API url. **With same base API url, it's preferable to use [code splitting](https://redux-toolkit.js.org/rtk-query/usage/code-splitting)**
-
-To introduce a lazy/feature/code-splitted query, you must export it through an angular mule.
-Import this module where needed. You can look at posts feature example from this repository.
-
-```ts
-// ...
-
-export const postsApi = createApi({
-  reducerPath: 'postsApi',
-  baseQuery: baseQueryWithRetry,
-  tagTypes: ['Posts'],
-  endpoints: (build) => ({
-    // ...
-  }),
-});
-
-// ...
-
-export function providePostsQuery(): EnvironmentProviders {
-  return provideState(postsApi.reducerPath, postsApi.reducer, {
-    metaReducers: [postsApi.metareducer],
-  });
-}
-
-//
-// OR 
-// New Standalone Provider Api
-
-import { provideStoreApi } from 'ngrx-rtk-query';
-
-...
-  providers: [
-    ...
-
-    provideStoreApi(postsApi),
-
-    ...
-  ],
-...
-```
-
 ### **Queries**
 
 The use of queries is a bit different compared to the original [Queries - RTK Query guide](https://redux-toolkit.js.org/rtk-query/usage/queries). You can look at the examples from this repository.
@@ -316,6 +272,50 @@ addPost = useAddPostMutation();
 addPost.dispatch({params});
 // Signal with the state of mutation
 addPost.state
+```
+
+### **Code-splitted/Lazy feature/Lazy modules**
+
+**Important:** Only for cases with differents base API url. **With same base API url, it's preferable to use [code splitting](https://redux-toolkit.js.org/rtk-query/usage/code-splitting)**
+
+To introduce a lazy/feature/code-splitted query, you must export it through an angular mule.
+Import this module where needed. You can look at posts feature example from this repository.
+
+```ts
+// ...
+
+export const postsApi = createApi({
+  reducerPath: 'postsApi',
+  baseQuery: baseQueryWithRetry,
+  tagTypes: ['Posts'],
+  endpoints: (build) => ({
+    // ...
+  }),
+});
+
+// ...
+
+export function providePostsQuery(): EnvironmentProviders {
+  return provideState(postsApi.reducerPath, postsApi.reducer, {
+    metaReducers: [postsApi.metareducer],
+  });
+}
+
+//
+// OR 
+// New Standalone Provider Api
+
+import { provideStoreApi } from 'ngrx-rtk-query';
+
+...
+  providers: [
+    ...
+
+    provideStoreApi(postsApi),
+
+    ...
+  ],
+...
 ```
 
 <br />
