@@ -12,6 +12,9 @@
         "@typescript-eslint/no-explicit-any": "off",
         "@typescript-eslint/explicit-function-return-type": "off",
         "@typescript-eslint/ban-types": "off",
+        // Taken care of by TypeScript's `noUnusedLocals` / `noUnusedParameters`
+        "no-unused-vars": "off",
+        "@typescript-eslint/no-unused-vars": "off",
         "prefer-arrow/prefer-arrow-functions": "off",
         "ngrx/prefix-selectors-with-select": "off",
         "@angular-eslint/directive-selector": [
