@@ -1,3 +1,11 @@
+# [16.0.0-preview.2](https://github.com/SaulMoro/ngrx-rtk-query/compare/v16.0.0-preview.1...v16.0.0-preview.2) (2023-06-02)
+
+
+### Bug Fixes
+
+* export toolkit query utils ([2b17dc6](https://github.com/SaulMoro/ngrx-rtk-query/commit/2b17dc69641e16edb7113f8a3390e676ff61b17c))
+* export toolkit query utils ([9926081](https://github.com/SaulMoro/ngrx-rtk-query/commit/9926081808f7a5c8bd8b9338a17acbbfccc15d5a))
+
 # [16.0.0-preview.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v16.0.0-preview.0...v16.0.0-preview.1) (2023-06-02)
 
 
