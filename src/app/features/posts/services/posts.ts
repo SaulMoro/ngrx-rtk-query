@@ -1,5 +1,4 @@
-import { retry } from '@reduxjs/toolkit/query';
-import { createApi, fetchBaseQuery } from 'ngrx-rtk-query';
+import { createApi, fetchBaseQuery, retry } from 'ngrx-rtk-query';
 import { Post } from '../models';
 
 type PostsResponse = Post[];
