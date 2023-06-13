@@ -116,5 +116,3 @@ export const angularHooksModule = ({
     };
   },
 });
-
-export const createApi = /* @__PURE__ */ buildCreateApi(coreModule(), angularHooksModule());

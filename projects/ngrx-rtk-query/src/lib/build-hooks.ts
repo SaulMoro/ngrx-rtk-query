@@ -1,3 +1,4 @@
+import { DestroyRef, computed, effect, inject, isDevMode, signal, untracked } from '@angular/core';
 import { createSelectorFactory, defaultMemoize } from '@ngrx/store';
 import { ApiContext } from '@reduxjs/toolkit/dist/query/apiTypes';
 import type { QueryKeys, RootState } from '@reduxjs/toolkit/dist/query/core/apiState';
@@ -16,7 +17,6 @@ import { SerializeQueryArgs } from '@reduxjs/toolkit/dist/query/defaultSerialize
 import type { Api, EndpointDefinitions, MutationDefinition, QueryDefinition } from '@reduxjs/toolkit/query';
 import { QueryStatus, defaultSerializeQueryArgs, skipToken } from '@reduxjs/toolkit/query';
 
-import { DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { UNINITIALIZED_VALUE } from './constants';
 import type { AngularHooksModuleOptions } from './module';
 import type {
@@ -198,7 +198,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
               }),
             );
 
-            if (process.env.NODE_ENV !== 'production') {
+            if (isDevMode()) {
               if (typeof returnedValue !== 'boolean') {
                 throw new Error(
                   `Warning: Middleware for RTK-Query API at reducerPath "${api.reducerPath}" has not
@@ -421,12 +421,13 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
 
       const requestId = computed(() => promiseRef()?.requestId);
 
-      const currentState = computed(() => {
-        const mutationSelector = createSelectorFactory((projector) =>
-          defaultMemoize(projector, shallowEqual, shallowEqual),
-        )(select({ fixedCacheKey, requestId: requestId() }), (subState: any) => selectFromResult(subState));
-        return useSelector(mutationSelector)();
-      });
+      const mutationSelector = (requestId?: string) =>
+        createSelectorFactory((projector) => defaultMemoize(projector, shallowEqual, shallowEqual))(
+          select({ fixedCacheKey, requestId }),
+          selectFromResult,
+        );
+
+      const currentState = computed(() => useSelector(mutationSelector(requestId())));
       const originalArgs = computed(() => (fixedCacheKey == null ? promiseRef()?.arg.originalArgs : undefined));
 
       const reset = () => {
@@ -443,7 +444,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         }
       };
 
-      const finalState = computed(() => ({ ...currentState(), originalArgs: originalArgs(), reset }));
+      const finalState = computed(() => ({ ...currentState()(), originalArgs: originalArgs(), reset }));
 
       return { dispatch: triggerMutation, state: finalState } as const;
     };

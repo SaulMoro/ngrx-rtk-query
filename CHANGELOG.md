@@ -1,3 +1,23 @@
+# [16.0.0-preview.2](https://github.com/SaulMoro/ngrx-rtk-query/compare/v16.0.0-preview.1...v16.0.0-preview.2) (2023-06-02)
+
+
+### Bug Fixes
+
+* export toolkit query utils ([2b17dc6](https://github.com/SaulMoro/ngrx-rtk-query/commit/2b17dc69641e16edb7113f8a3390e676ff61b17c))
+* export toolkit query utils ([9926081](https://github.com/SaulMoro/ngrx-rtk-query/commit/9926081808f7a5c8bd8b9338a17acbbfccc15d5a))
+
+# [16.0.0-preview.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v16.0.0-preview.0...v16.0.0-preview.1) (2023-06-02)
+
+
+### Bug Fixes
+
+* **lib:** fixed mutation signal subscription when used before app starts ([16abbbe](https://github.com/SaulMoro/ngrx-rtk-query/commit/16abbbe3d0a98882a7fcf475969b9c8562fe50e9))
+
+
+### Features
+
+* new signals preview version ([dabc020](https://github.com/SaulMoro/ngrx-rtk-query/commit/dabc02013c79b47e07908f42ebbca5ee4a42399e))
+
 # [16.0.0-preview.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v16.0.0-preview.0...v16.0.0-preview.1) (2023-05-31)
 
 
