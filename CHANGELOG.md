@@ -1,3 +1,11 @@
+# [16.2.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v16.1.0...v16.2.0-next.1) (2023-10-09)
+
+
+### Features
+
+* **lib:** update to rtk 1.9.7 ([b891e00](https://github.com/SaulMoro/ngrx-rtk-query/commit/b891e00b7375ad7a1f2960bf14d124b824447115))
+* **lib:** update to rtk 1.9.7 ([edb86d5](https://github.com/SaulMoro/ngrx-rtk-query/commit/edb86d57e805a3eeffdfd98ad04598b10c0f60d2))
+
 # [16.1.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v16.0.0...v16.1.0) (2023-06-13)
 
 
