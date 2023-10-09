@@ -15,5 +15,6 @@
     "$ANGULAR_INPUT",
     "$ANGULAR_TWO_WAY_BINDING",
     "$ANGULAR_OUTPUT"
-  ]
+  ],
+  "plugins": ["prettier-plugin-organize-attributes", "prettier-plugin-tailwindcss"]
 }

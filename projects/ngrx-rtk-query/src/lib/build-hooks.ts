@@ -1,20 +1,22 @@
 import { DestroyRef, computed, effect, inject, isDevMode, signal, untracked } from '@angular/core';
 import { createSelectorFactory, defaultMemoize } from '@ngrx/store';
-import { ApiContext } from '@reduxjs/toolkit/dist/query/apiTypes';
-import type { QueryKeys, RootState } from '@reduxjs/toolkit/dist/query/core/apiState';
 import type {
-  MutationActionCreatorResult,
-  QueryActionCreatorResult,
-} from '@reduxjs/toolkit/dist/query/core/buildInitiate';
-import type { QueryResultSelectorResult } from '@reduxjs/toolkit/dist/query/core/buildSelectors';
-import type {
+  Api,
+  ApiContext,
   ApiEndpointMutation,
   ApiEndpointQuery,
   CoreModule,
+  EndpointDefinitions,
+  MutationActionCreatorResult,
+  MutationDefinition,
   PrefetchOptions,
-} from '@reduxjs/toolkit/dist/query/core/module';
-import { SerializeQueryArgs } from '@reduxjs/toolkit/dist/query/defaultSerializeQueryArgs';
-import type { Api, EndpointDefinitions, MutationDefinition, QueryDefinition } from '@reduxjs/toolkit/query';
+  QueryActionCreatorResult,
+  QueryDefinition,
+  QueryKeys,
+  QueryResultSelectorResult,
+  RootState,
+  SerializeQueryArgs,
+} from '@reduxjs/toolkit/query';
 import { QueryStatus, defaultSerializeQueryArgs, skipToken } from '@reduxjs/toolkit/query';
 
 import { UNINITIALIZED_VALUE } from './constants';
