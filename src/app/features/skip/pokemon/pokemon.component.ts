@@ -15,7 +15,7 @@ export class PokemonComponent implements OnInit, OnDestroy {
   #name = signal(this.name);
 
   #skip = signal(false);
-  #options = computed(() => ({ skip: this.#skip() } as QueryOptions));
+  #options = computed(() => ({ skip: this.#skip() }) as QueryOptions);
 
   query = pokemonApi.endpoints.getPokemonByName.useQuery(this.#name, this.#options);
 

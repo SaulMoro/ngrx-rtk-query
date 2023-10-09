@@ -1,25 +1,25 @@
 import type { Signal } from '@angular/core';
 import type { MemoizedSelector } from '@ngrx/store';
 import type { AnyAction, ThunkAction } from '@reduxjs/toolkit';
-import type { QuerySubState, SubscriptionOptions } from '@reduxjs/toolkit/dist/query/core/apiState';
-import type {
-  MutationActionCreatorResult,
-  QueryActionCreatorResult,
-} from '@reduxjs/toolkit/dist/query/core/buildInitiate';
-import type {
-  MutationResultSelectorResult,
-  QueryResultSelectorResult,
-} from '@reduxjs/toolkit/dist/query/core/buildSelectors';
-import type { PrefetchOptions } from '@reduxjs/toolkit/dist/query/core/module';
-import type { QueryArgFrom, ResultTypeFrom } from '@reduxjs/toolkit/dist/query/endpointDefinitions';
-import type { Id, NoInfer, Override } from '@reduxjs/toolkit/dist/query/tsHelpers';
 import type {
   BaseQueryFn,
   EndpointDefinition,
+  MutationActionCreatorResult,
   MutationDefinition,
+  MutationResultSelectorResult,
+  PrefetchOptions,
+  QueryActionCreatorResult,
+  QueryArgFrom,
   QueryDefinition,
+  QueryResultSelectorResult,
   QueryStatus,
+  QuerySubState,
+  ResultTypeFrom,
   SkipToken,
+  SubscriptionOptions,
+  TSHelpersId,
+  TSHelpersNoInfer,
+  TSHelpersOverride,
 } from '@reduxjs/toolkit/query';
 import type { UninitializedValue } from '../constants';
 
@@ -301,7 +301,7 @@ export type UseQueryStateOptions<D extends QueryDefinition<any, any, any, any>, 
    *
    * @example
    * ```ts
-   * // codeblock-meta title="Skip example"
+   * // codeblock-meta no-transpile title="Skip example"
    *  const query = useGetPokemonByNameQuery(name, { skip: true });
    * ```
    */
@@ -325,7 +325,7 @@ export type UseQueryStateOptions<D extends QueryDefinition<any, any, any, any>, 
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export type UseQueryStateResult<_ extends QueryDefinition<any, any, any, any>, R> = NoInfer<R>;
+export type UseQueryStateResult<_ extends QueryDefinition<any, any, any, any>, R> = TSHelpersNoInfer<R>;
 
 /**
  * Helper type to manually type the result
@@ -336,7 +336,7 @@ export type TypedUseQueryStateResult<
   QueryArg,
   BaseQuery extends BaseQueryFn,
   R = UseQueryStateDefaultResult<QueryDefinition<QueryArg, BaseQuery, string, ResultType, string>>,
-> = NoInfer<R>;
+> = TSHelpersNoInfer<R>;
 
 type UseQueryStateBaseResult<D extends QueryDefinition<any, any, any, any>> = QuerySubState<D> & {
   /**
@@ -367,9 +367,12 @@ type UseQueryStateBaseResult<D extends QueryDefinition<any, any, any, any>> = Qu
   isError: false;
 };
 
-export type UseQueryStateDefaultResult<D extends QueryDefinition<any, any, any, any>> = Id<
-  | Override<Extract<UseQueryStateBaseResult<D>, { status: QueryStatus.uninitialized }>, { isUninitialized: true }>
-  | Override<
+export type UseQueryStateDefaultResult<D extends QueryDefinition<any, any, any, any>> = TSHelpersId<
+  | TSHelpersOverride<
+      Extract<UseQueryStateBaseResult<D>, { status: QueryStatus.uninitialized }>,
+      { isUninitialized: true }
+    >
+  | TSHelpersOverride<
       UseQueryStateBaseResult<D>,
       | { isLoading: true; isFetching: boolean; data: undefined }
       | ({
@@ -402,7 +405,7 @@ export type UseMutationStateOptions<D extends MutationDefinition<any, any, any, 
   fixedCacheKey?: string;
 };
 
-export type UseMutationStateResult<D extends MutationDefinition<any, any, any, any>, R> = NoInfer<R> & {
+export type UseMutationStateResult<D extends MutationDefinition<any, any, any, any>, R> = TSHelpersNoInfer<R> & {
   originalArgs?: QueryArgFrom<D>;
   /**
    * Resets the hook state to it's initial `uninitialized` state.

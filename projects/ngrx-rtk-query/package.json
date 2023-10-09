@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "description": "Make RTK Query works in Angular Applications",
   "peerDependencies": {
-    "@angular/core": ">= 15.0.0 < 17",
-    "@ngrx/store": ">= 15.0.0 < 17",
-    "@reduxjs/toolkit": "~1.9.5"
+    "@angular/core": ">= 16.1.0 < 17",
+    "@ngrx/store": ">= 16.0.0 < 17",
+    "@reduxjs/toolkit": "~1.9.7"
   },
   "dependencies": {
     "tslib": "^2.0.0"

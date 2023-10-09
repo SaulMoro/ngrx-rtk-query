@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, NgModule, ViewChild } from '@angular/core';
 import { SerializedError } from '@reduxjs/toolkit';
-import { SubscriptionOptions } from '@reduxjs/toolkit/dist/query/core/apiState';
+import { SubscriptionOptions } from '@reduxjs/toolkit/query';
 import { LazyQueryOptions } from 'ngrx-rtk-query';
 import { BehaviorSubject } from 'rxjs';
 import { map, tap } from 'rxjs/operators';

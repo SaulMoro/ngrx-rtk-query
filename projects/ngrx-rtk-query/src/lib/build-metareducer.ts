@@ -1,6 +1,5 @@
 import type { Action, ActionReducer, MetaReducer } from '@ngrx/store';
-import type { CoreModule } from '@reduxjs/toolkit/dist/query/core/module';
-import type { Api } from '@reduxjs/toolkit/query';
+import type { Api, CoreModule } from '@reduxjs/toolkit/query';
 
 import { buildBatchedActionsHandler } from './build-batch-middleware';
 import type { AngularHooksModule, AngularHooksModuleOptions } from './module';

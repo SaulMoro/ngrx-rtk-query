@@ -41,7 +41,7 @@ export class CounterComponent implements OnInit {
   // Polling
   pollingOptions = pollingOptions;
   pollingInterval = signal<number>(this.pollingOptions[0].value);
-  options = computed(() => ({ pollingInterval: this.pollingInterval() } as LazyQueryOptions));
+  options = computed(() => ({ pollingInterval: this.pollingInterval() }) as LazyQueryOptions);
 
   // Queries
   countQuery = useLazyGetCountByIdQuery(this.options);

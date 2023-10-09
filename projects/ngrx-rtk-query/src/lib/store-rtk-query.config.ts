@@ -1,5 +1,5 @@
 import { InjectionToken } from '@angular/core';
-import { setupListeners } from '@reduxjs/toolkit/dist/query/core/setupListeners';
+import { setupListeners } from '@reduxjs/toolkit/query';
 
 export interface StoreQueryConfig {
   setupListeners: boolean | Parameters<typeof setupListeners>[1];

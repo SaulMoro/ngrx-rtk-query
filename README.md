@@ -29,7 +29,7 @@
 
 |   Angular / NgRx   |     ngrx-rtk-query     | @reduxjs/toolkit |       Support       |
 | :----------------: | :--------------------: | :--------------: | :-----------------: |
-|        16.x        |   >=16.x.x (signals)   |     ~1.9.5       | Bugs / New Features |
+|        16.x        |   >=16.x.x (signals)   |     ~1.9.7       | Bugs / New Features |
 |        16.x        |    >=4.2.x (rxjs)      |     ~1.9.5       |        Bugs         |
 |        15.x        |      4.1.x (rxjs)      |      1.9.5       |        Bugs         |
 |    13.x - 14.x     |      3.5.x (rxjs)      |      1.9.1       |        None         |
@@ -69,6 +69,7 @@ You can follow the official [RTK Query guide with hooks](https://redux-toolkit.j
 You can see the application of this repository for more examples.
 
 First, you need to install redux-toolkit:
+
 ```bash
 npm install @reduxjs/toolkit
 ```
@@ -166,6 +167,7 @@ export class CounterManagerComponent {
   decrement = useDecrementCountMutation();
 }
 ```
+
 <br/>
 
 ## Usage

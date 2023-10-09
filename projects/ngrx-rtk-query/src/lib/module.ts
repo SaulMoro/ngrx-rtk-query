@@ -1,16 +1,15 @@
 import type { MetaReducer } from '@ngrx/store';
-import type { QueryKeys } from '@reduxjs/toolkit/dist/query/core/apiState';
-import type { PrefetchOptions } from '@reduxjs/toolkit/dist/query/core/module';
-import type { QueryArgFrom } from '@reduxjs/toolkit/dist/query/endpointDefinitions';
 import type {
   Api,
   BaseQueryFn,
   EndpointDefinitions,
   Module,
   MutationDefinition,
+  PrefetchOptions,
+  QueryArgFrom,
   QueryDefinition,
+  QueryKeys,
 } from '@reduxjs/toolkit/query';
-import { buildCreateApi, coreModule } from '@reduxjs/toolkit/query';
 
 import { buildHooks } from './build-hooks';
 import { buildMetaReducer } from './build-metareducer';

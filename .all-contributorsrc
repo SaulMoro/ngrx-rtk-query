@@ -3,9 +3,7 @@
   "projectOwner": "SaulMoro",
   "repoType": "github",
   "repoHost": "https://github.com",
-  "files": [
-    "README.md"
-  ],
+  "files": ["README.md"],
   "imageSize": 100,
   "commit": true,
   "commitConvention": "angular",
@@ -37,17 +35,7 @@
       "name": "adrian-pena-castro",
       "avatar_url": "https://avatars.githubusercontent.com/u/80181162?v=4",
       "profile": "https://github.com/adrian-pena-castro",
-      "contributions": [
-        "bug",
-        "code",
-        "content",
-        "doc",
-        "example",
-        "ideas",
-        "maintenance",
-        "translation",
-        "tutorial"
-      ]
+      "contributions": ["bug", "code", "content", "doc", "example", "ideas", "maintenance", "translation", "tutorial"]
     }
   ],
   "contributorsPerLine": 7
