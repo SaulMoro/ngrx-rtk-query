@@ -68,7 +68,10 @@ export class PostDetailComponent {
   postFormControl = new UntypedFormControl('');
   isEditing = signal(false);
 
-  constructor(private route: ActivatedRoute, private router: Router) {}
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+  ) {}
 
   updatePost(): void {
     this.updatePostMutation

@@ -27,7 +27,7 @@ export const postsApi = createApi({
       query: () => ({ url: 'posts' }),
       providesTags: (result) =>
         result
-          ? [...result.map(({ id }) => ({ type: 'Posts', id } as const)), { type: 'Posts', id: 'LIST' }]
+          ? [...result.map(({ id }) => ({ type: 'Posts', id }) as const), { type: 'Posts', id: 'LIST' }]
           : [{ type: 'Posts', id: 'LIST' }],
     }),
     addPost: build.mutation<Post, Partial<Post>>({

@@ -16,7 +16,7 @@ export const libPostsApi = createApi({
   endpoints: (build) => ({
     getPosts: build.query<PostsResponse, void>({
       query: () => ({ url: 'posts' }),
-      providesTags: (result) => (result ? [...result.map(({ id }) => ({ type: 'Posts', id } as const))] : []),
+      providesTags: (result) => (result ? [...result.map(({ id }) => ({ type: 'Posts', id }) as const)] : []),
     }),
     updatePost: build.mutation<Post, Partial<Post>>({
       query: ({ id, ...body }) => ({
