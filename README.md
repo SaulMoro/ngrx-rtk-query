@@ -52,10 +52,7 @@ bootstrapApplication(AppComponent, {
   providers: [
     ...
 
-    provideStoreRtkQuery({ 
-      setupListeners: true,
-      baseUrl: environment.baseAPI, // Optional environment baseUrl
-    }),
+    provideStoreRtkQuery({ setupListeners: true }),
 
     ...
   ],
@@ -304,7 +301,7 @@ export function providePostsQuery(): EnvironmentProviders {
 }
 
 //
-// OR 
+// OR
 // New Standalone Provider Api
 
 import { provideStoreApi } from 'ngrx-rtk-query';
