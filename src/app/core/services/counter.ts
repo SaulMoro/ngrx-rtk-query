@@ -1,3 +1,5 @@
+import { inject } from '@angular/core';
+import { Store } from '@ngrx/store';
 import { createApi, fetchBaseQuery } from 'ngrx-rtk-query';
 
 export interface CountResponse {
@@ -6,7 +8,11 @@ export interface CountResponse {
 
 export const counterApi = createApi({
   reducerPath: 'counterApi',
-  baseQuery: fetchBaseQuery({ baseUrl: '/' }),
+  // Example of overriding the default fetchBaseQuery with injectable
+  baseQuery: fetchBaseQuery((store = inject(Store)) => {
+    console.log('store', store);
+    return fetchBaseQuery({ baseUrl: '/' });
+  }),
   tagTypes: ['Counter'],
   endpoints: (build) => ({
     getCount: build.query<CountResponse, void>({

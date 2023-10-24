@@ -1,9 +1,10 @@
-import { Injectable, Signal, inject } from '@angular/core';
+import { Injectable, Injector, Signal, inject } from '@angular/core';
 import { Action, Store } from '@ngrx/store';
 import { AnyAction, ThunkAction } from '@reduxjs/toolkit';
 import { InternalMiddlewareState } from '@reduxjs/toolkit/dist/query/core/buildMiddleware/types';
 
 let service: ThunkService;
+export let injector: Injector;
 let delayedActions: Action[] = [];
 
 export const internalBatchState: InternalMiddlewareState = {
@@ -40,14 +41,16 @@ export function select<K>(mapFn: (state: any) => K): Signal<K> {
   return service?.select(mapFn);
 }
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class ThunkService {
+  readonly #injector = inject(Injector);
   readonly #store = inject(Store);
 
   init() {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     service = this;
-    delayedActions.map((delayedAction) => this.dispatch(delayedAction));
+    injector = this.#injector;
+    delayedActions.forEach((delayedAction) => this.dispatch(delayedAction));
     delayedActions = [];
   }
 
