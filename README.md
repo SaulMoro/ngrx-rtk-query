@@ -16,10 +16,18 @@
 
 ## Table of Contents
 
+- [Table of Contents](#table-of-contents)
 - [Installation](#installation)
+  - [Versions](#versions)
 - [Basic Usage](#basic-usage)
+- [Usage with HttpClient or injectable service](#usage-with-httpclient-or-injectable-service)
 - [Usage](#usage)
+  - [**Queries**](#queries)
+  - [**Lazy Queries**](#lazy-queries)
+  - [**Mutations**](#mutations)
+  - [**Code-splitted/Lazy feature/Lazy modules**](#code-splittedlazy-featurelazy-modules)
 - [FAQ](#faq)
+- [Contributors ✨](#contributors-)
 
 ## Installation
 
@@ -64,12 +72,6 @@ bootstrapApplication(AppComponent, {
 You can follow the official [RTK Query guide with hooks](https://redux-toolkit.js.org/rtk-query/overview), with slight variations.
 
 You can see the application of this repository for more examples.
-
-First, you need to install redux-toolkit:
-
-```bash
-npm install @reduxjs/toolkit
-```
 
 We'll create a service definition that queries the publicly available
 
@@ -163,6 +165,41 @@ export class CounterManagerComponent {
   increment = useIncrementCountMutation();
   decrement = useDecrementCountMutation();
 }
+```
+
+<br/>
+
+## Usage with HttpClient or injectable service
+
+You can use the `fetchBaseQuery` function to create a base query that uses the Angular `HttpClient` to make requests or any injectable service. Example:
+
+```ts
+
+const httpClientBaseQuery = fetchBaseQuery((http = inject(HttpClient), enviroment = inject(ENVIRONMENT)) => {
+  return async (args, { signal }) => {
+    const {
+      url,
+      method = 'get',
+      body = undefined,
+      params = undefined,
+    } = typeof args === 'string' ? { url: args } : args;
+    const fullUrl = `${enviroment.baseAPI}${url}`;
+
+    const request$ = http.request(method, fullUrl, { body, params });
+    try {
+      const data = await lastValueFrom(request$);
+      return { data };
+    } catch (error) {
+      return { error: { status: (error as HttpErrorResponse).status, data: (error as HttpErrorResponse).message } };
+    }
+  };
+});
+
+export const api = createApi({
+  reducerPath: 'api',
+  baseQuery: httpClientBaseQuery,
+//...
+
 ```
 
 <br/>
@@ -293,16 +330,6 @@ export const postsApi = createApi({
 });
 
 // ...
-
-export function providePostsQuery(): EnvironmentProviders {
-  return provideState(postsApi.reducerPath, postsApi.reducer, {
-    metaReducers: [postsApi.metareducer],
-  });
-}
-
-//
-// OR
-// New Standalone Provider Api
 
 import { provideStoreApi } from 'ngrx-rtk-query';
 

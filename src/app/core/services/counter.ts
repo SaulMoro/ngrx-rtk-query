@@ -8,7 +8,7 @@ export interface CountResponse {
 
 export const counterApi = createApi({
   reducerPath: 'counterApi',
-  // Example of overriding the default fetchBaseQuery with injectable
+  // Example of overriding the default fetchBaseQuery with injectable services
   baseQuery: fetchBaseQuery((store = inject(Store)) => {
     console.log('store', store);
     return fetchBaseQuery({ baseUrl: '/' });
