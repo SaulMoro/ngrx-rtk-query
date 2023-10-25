@@ -1,3 +1,10 @@
+# [16.3.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v16.2.0...v16.3.0) (2023-10-24)
+
+
+### Features
+
+* **lib:** remove baseUrl and add injectable fetchBaseQuery ([911d51e](https://github.com/SaulMoro/ngrx-rtk-query/commit/911d51e53f650338c175a4ed4c486869049b663c))
+
 # [16.3.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v16.2.0...v16.3.0-next.1) (2023-10-24)
 
 
