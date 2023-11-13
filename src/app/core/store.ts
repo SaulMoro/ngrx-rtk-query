@@ -15,6 +15,7 @@ import { counterApi } from '@app/core/services';
 export type RootState = {
   [DEFAULT_ROUTER_FEATURENAME]: RouterReducerState;
   [counterApi.reducerPath]: ReturnType<typeof counterApi.reducer>;
+  //
   // Rest of Queries are lazy / code splitted
 };
 
