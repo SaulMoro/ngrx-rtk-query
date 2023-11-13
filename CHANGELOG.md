@@ -1,3 +1,10 @@
+# [17.0.0-next.2](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.0.0-next.1...v17.0.0-next.2) (2023-11-13)
+
+
+### Bug Fixes
+
+* version ([2fd0211](https://github.com/SaulMoro/ngrx-rtk-query/commit/2fd021182b9e0b11a5c727b394d4e6c4a3a6eb2d))
+
 # [16.4.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v16.3.0...v16.4.0-next.1) (2023-11-13)
 
 
