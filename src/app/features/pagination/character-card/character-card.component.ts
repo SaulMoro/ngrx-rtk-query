@@ -23,8 +23,8 @@ import { useLazyGetEpisodeQuery } from '../services';
             character.status.toLowerCase() === statusTypes.dead
               ? 'bg-red-400'
               : character.status.toLowerCase() === statusTypes.alive
-              ? 'bg-green-400'
-              : 'bg-gray-400'
+                ? 'bg-green-400'
+                : 'bg-gray-400'
           "
         ></span>
         <h6 class="text-sm font-medium">{{ character.status }}</h6>
