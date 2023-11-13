@@ -1,3 +1,10 @@
+# [16.4.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v16.3.0...v16.4.0-next.1) (2023-11-13)
+
+
+### Features
+
+* **lib:** support to ng17 and ngrx17 ([66aa1b9](https://github.com/SaulMoro/ngrx-rtk-query/commit/66aa1b9339a4354db9896a6b6d4841158549a10c))
+
 # [16.3.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v16.2.0...v16.3.0) (2023-10-24)
 
 
