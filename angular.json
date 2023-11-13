@@ -76,10 +76,10 @@
           "options": {},
           "configurations": {
             "production": {
-              "browserTarget": "ngrx-rtk-query-app:build:production"
+              "buildTarget": "ngrx-rtk-query-app:build:production"
             },
             "development": {
-              "browserTarget": "ngrx-rtk-query-app:build:development"
+              "buildTarget": "ngrx-rtk-query-app:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -87,7 +87,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "ngrx-rtk-query-app:build"
+            "buildTarget": "ngrx-rtk-query-app:build"
           }
         },
         "test": {
