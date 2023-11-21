@@ -638,7 +638,6 @@ describe.skip('hooks tests', () => {
 
       await screen.findByText(/isUninitialized/i);
       expect(screen.queryByText('Yay')).not.toBeInTheDocument();
-
       expect(Object.keys(getState().api.mutations)).toHaveLength(0);
     });
   });
