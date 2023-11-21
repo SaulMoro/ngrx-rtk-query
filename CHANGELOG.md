@@ -1,3 +1,10 @@
+## [17.0.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.0.0...v17.0.1) (2023-11-21)
+
+
+### Bug Fixes
+
+* release 17.0.1 ([7db01e9](https://github.com/SaulMoro/ngrx-rtk-query/commit/7db01e97d3fecdd9de357bd48e41060301bcc2cb))
+
 # [16.4.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v16.3.0...v16.4.0) (2023-11-21)
 
 
