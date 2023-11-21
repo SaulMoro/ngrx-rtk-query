@@ -31,17 +31,14 @@
 
 ## Installation
 
-> ⚠️  ngrx-rtk-query library requires TypeScript 4.1 or higher.
-
 ### Versions
 
 |   Angular / NgRx   |     ngrx-rtk-query     | @reduxjs/toolkit |       Support       |
 | :----------------: | :--------------------: | :--------------: | :-----------------: |
-|        16.x        |   >=16.x.x (signals)   |     ~1.9.7       | Bugs / New Features |
-|        16.x        |    >=4.2.x (rxjs)      |     ~1.9.5       |        Bugs         |
-|        15.x        |      4.1.x (rxjs)      |      1.9.5       |        Bugs         |
-|    13.x - 14.x     |      3.5.x (rxjs)      |      1.9.1       |        None         |
-|    11.x - 12.x     |      2.3.0 (rxjs)      |      1.6.2       |        None         |
+|        17.x        |   >=17.x.x (signals)   |     ~1.9.7       | Bugs / New Features |
+|        16.x        |   >=16.x.x (signals)   |     ~1.9.7       |        Bugs         |
+|        16.x        |    >=4.2.x (rxjs)      |     ~1.9.5       |    Critical bugs    |
+|        15.x        |      4.1.x (rxjs)      |      1.9.5       |        None         |
 
 Only the latest version of Angular in the table above is actively supported. This is due to the fact that compilation of Angular libraries is [incompatible between major versions](https://angular.io/guide/creating-libraries#ensuring-library-version-compatibility).
 

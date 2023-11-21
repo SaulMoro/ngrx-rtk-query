@@ -38,8 +38,8 @@ declare module '@reduxjs/toolkit/query' {
         [K in keyof Definitions]: Definitions[K] extends QueryDefinition<any, any, any, any, any>
           ? QueryHooks<Definitions[K]>
           : Definitions[K] extends MutationDefinition<any, any, any, any, any>
-          ? MutationHooks<Definitions[K]>
-          : never;
+            ? MutationHooks<Definitions[K]>
+            : never;
       };
       /**
        * A hook that accepts a string endpoint name, and provides a callback that when called,

@@ -627,14 +627,14 @@ describe.skip('hooks tests', () => {
 
       expect(Object.keys(getState().api.mutations)).toHaveLength(0);
 
-      userEvent.click(screen.getByRole('button', { name: 'trigger' }));
+      await userEvent.click(screen.getByRole('button', { name: 'trigger' }));
 
       await screen.findByText(/isSuccess/i);
       expect(screen.getByText('Yay')).toBeInTheDocument();
 
       expect(Object.keys(getState().api.mutations)).toHaveLength(1);
 
-      userEvent.click(screen.getByRole('button', { name: 'reset' }));
+      await userEvent.click(screen.getByRole('button', { name: 'reset' }));
 
       await screen.findByText(/isUninitialized/i);
       expect(screen.queryByText('Yay')).not.toBeInTheDocument();

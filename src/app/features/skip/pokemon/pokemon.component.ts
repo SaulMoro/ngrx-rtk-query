@@ -19,6 +19,7 @@ export class PokemonComponent implements OnInit, OnDestroy {
 
   query = pokemonApi.endpoints.getPokemonByName.useQuery(this.#name, this.#options);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   intervalId: any;
 
   ngOnInit(): void {

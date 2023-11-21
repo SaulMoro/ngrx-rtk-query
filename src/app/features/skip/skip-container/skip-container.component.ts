@@ -29,6 +29,7 @@ export class SkipContainerComponent implements OnDestroy {
   name = signal(nanoid());
   running = signal(false);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   queryIntervalId: any;
 
   getSubscriptionsLength(subscriptions: object): number {
