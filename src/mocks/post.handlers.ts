@@ -1,6 +1,6 @@
-import { rest } from 'msw';
-import { createEntityAdapter } from '@reduxjs/toolkit';
 import { Post } from '@app/features/posts/models';
+import { createEntityAdapter } from '@reduxjs/toolkit';
+import { rest } from 'msw';
 
 // high tech in-memory storage
 let startingId = 3; // Just a silly counter for usage when adding new posts
@@ -28,23 +28,23 @@ export const postHandlers = [
 
   rest.get('/posts/:id', (req, res, ctx) => {
     const { id } = req.params as { id: string };
-    state = adapter.updateOne(state, { id, changes: { fetched_at: new Date().toUTCString() } });
-    return res(ctx.json(state.entities[id]), ctx.delay(400));
+    state = adapter.updateOne(state, { id: +id, changes: { fetched_at: new Date().toUTCString() } });
+    return res(ctx.json(state.entities[+id]), ctx.delay(400));
   }),
 
   rest.put('/posts/:id', (req, res, ctx) => {
     const { id } = req.params as { id: string };
     const changes = req.body as Partial<Post>;
 
-    state = adapter.updateOne(state, { id, changes });
+    state = adapter.updateOne(state, { id: +id, changes });
 
-    return res(ctx.json(state.entities[id]), ctx.delay(400));
+    return res(ctx.json(state.entities[+id]), ctx.delay(400));
   }),
 
   rest.delete('/posts/:id', (req, res, ctx) => {
     const { id } = req.params as { id: string };
 
-    state = adapter.removeOne(state, id);
+    state = adapter.removeOne(state, +id);
 
     return res(
       ctx.json({

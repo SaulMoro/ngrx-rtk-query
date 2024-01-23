@@ -19,15 +19,15 @@
     "paths": {
       "ngrx-rtk-query": ["projects/ngrx-rtk-query/src/public-api.ts"],
       "@app/*": ["src/app/*"],
-      "@environments/*": ["src/environments/*"]
+      "@environments/*": ["src/environments/*"],
     },
-    "useDefineForClassFields": false
+    "useDefineForClassFields": false,
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
-    "strictTemplates": true
+    "strictTemplates": true,
   },
-  "exclude": ["node_modules", "**/node_modules/*", "tmp"]
+  "exclude": ["node_modules", "**/node_modules/*", "tmp"],
 }

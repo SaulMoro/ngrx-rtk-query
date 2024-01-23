@@ -1,20 +1,19 @@
-import { ENVIRONMENT_INITIALIZER, EnvironmentProviders, inject, makeEnvironmentProviders } from '@angular/core';
+import { ENVIRONMENT_INITIALIZER, inject, makeEnvironmentProviders, type EnvironmentProviders } from '@angular/core';
 import { provideState } from '@ngrx/store';
-import { Api, setupListeners } from '@reduxjs/toolkit/query';
-import { STORE_RTK_QUERY_CONFIG, StoreQueryConfig, defaultConfig, setupConfig } from './store-rtk-query.config';
-import { ThunkService, dispatch } from './thunk.service';
+import { setupListeners as setupListenersFn, type Api } from '@reduxjs/toolkit/query';
+import { ThunkService } from './thunk.service';
 
-export function provideStoreRtkQuery(config?: Partial<StoreQueryConfig>): EnvironmentProviders {
-  const moduleConfig = { ...defaultConfig, ...config };
+export interface StoreQueryConfig {
+  setupListeners?: Parameters<typeof setupListenersFn>[1] | false;
+}
 
-  setupConfig(moduleConfig);
-
-  if (moduleConfig.setupListeners) {
-    setupListeners(dispatch, moduleConfig.setupListeners === true ? undefined : moduleConfig.setupListeners);
-  }
+export function provideStoreApi(
+  api: Api<any, Record<string, any>, string, string, any>,
+  { setupListeners }: StoreQueryConfig = {},
+): EnvironmentProviders {
+  setupListeners === false ? undefined : setupListenersFn(api.dispatch, setupListeners);
 
   return makeEnvironmentProviders([
-    { provide: STORE_RTK_QUERY_CONFIG, useValue: moduleConfig },
     {
       provide: ENVIRONMENT_INITIALIZER,
       multi: true,
@@ -22,9 +21,6 @@ export function provideStoreRtkQuery(config?: Partial<StoreQueryConfig>): Enviro
         inject(ThunkService).init();
       },
     },
+    provideState(api.reducerPath, api.reducer),
   ]);
-}
-
-export function provideStoreApi(api: Api<any, Record<string, any>, string, string, any>): EnvironmentProviders {
-  return provideState(api.reducerPath, api.reducer, { metaReducers: [api.metareducer] });
 }
