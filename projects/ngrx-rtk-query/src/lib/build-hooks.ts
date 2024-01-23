@@ -1,5 +1,6 @@
 import { DestroyRef, computed, effect, inject, isDevMode, signal, untracked } from '@angular/core';
-import { createSelectorFactory, defaultMemoize } from '@ngrx/store';
+import type { Action } from '@ngrx/store';
+import type { SubscriptionSelectors } from '@reduxjs/toolkit/dist/query/core/buildMiddleware/types';
 import type {
   Api,
   ApiContext,
@@ -25,7 +26,6 @@ import type {
   GenericPrefetchThunk,
   MutationHooks,
   MutationSelector,
-  MutationStateSelector,
   QueryHooks,
   QuerySelector,
   QueryStateSelector,
@@ -39,7 +39,7 @@ import { useStableQueryArgs } from './useSerializedStableValue';
 import { shallowEqual } from './utils';
 
 // const defaultQueryStateSelector: QueryStateSelector<any, any> = (x) => x;
-const defaultMutationStateSelector: MutationStateSelector<any, any> = (x) => x;
+//const defaultMutationStateSelector: MutationStateSelector<any, any> = (x) => x;
 
 /**
  * Wrapper around `defaultQueryStateSelector` to be used in `useQuery`.
@@ -63,13 +63,17 @@ const noPendingQueryStateSelector: QueryStateSelector<any, any> = (selected) => 
 /**
  *
  * @param opts.api - An API with defined endpoints to create hooks for
- * @param opts.moduleOptions.useDispatch - The version of the `useDispatch` hook to be used
+ * @param opts.moduleOptions.dispatch - The version of the `dispatch` to be used
  * @param opts.moduleOptions.useSelector - The version of the `useSelector` hook to be used
+ * @param opts.moduleOptions.getState - The version of the `getState` to be used
  * @returns An object containing functions to generate hooks based on an endpoint
  */
 export function buildHooks<Definitions extends EndpointDefinitions>({
   api,
-  moduleOptions: { useDispatch: dispatch, useSelector, getState },
+  moduleOptions: {
+    hooks: { dispatch, useSelector, getState },
+    createSelector,
+  },
   serializeQueryArgs,
   context,
 }: {
@@ -143,13 +147,8 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       QueryDefinition<any, any, any, any, any>,
       Definitions
     >;
-    type ApiRootState = Parameters<ReturnType<typeof select>>[0];
 
     const useQuerySubscription: UseQuerySubscription<any> = (arg: any, options = {}) => {
-      const subscriptionArg = computed(() => {
-        const subscriptionArg = typeof arg === 'function' ? arg() : arg;
-        return subscriptionOptions().skip ? skipToken : subscriptionArg;
-      });
       const subscriptionOptions = computed(() => {
         const {
           refetchOnReconnect,
@@ -159,6 +158,10 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
           pollingInterval = 0,
         } = typeof options === 'function' ? options() : options;
         return { refetchOnReconnect, refetchOnFocus, refetchOnMountOrArgChange, skip, pollingInterval };
+      });
+      const subscriptionArg = computed(() => {
+        const subscriptionArg = typeof arg === 'function' ? arg() : arg;
+        return subscriptionOptions().skip ? skipToken : subscriptionArg;
       });
 
       const stableArg = useStableQueryArgs(
@@ -180,6 +183,21 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         { equal: shallowEqual },
       );
 
+      let subscriptionSelectorsRef: SubscriptionSelectors | undefined;
+      if (!subscriptionSelectorsRef) {
+        const returnedValue = dispatch(api.internalActions.internal_getRTKQSubscriptions());
+        if (isDevMode()) {
+          if (typeof returnedValue !== 'object' || typeof (returnedValue as Action)?.type === 'string') {
+            throw new Error(
+              `Warning: Middleware for RTK-Query API at reducerPath "${api.reducerPath}" has not been added
+              to the store. You must add the middleware for RTK-Query to function correctly!`,
+            );
+          }
+        }
+
+        subscriptionSelectorsRef = returnedValue as unknown as SubscriptionSelectors;
+      }
+
       let lastRenderHadSubscription = false;
 
       let promiseRef: QueryActionCreatorResult<any> | undefined;
@@ -188,28 +206,11 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         () => {
           const { queryCacheKey, requestId } = promiseRef || {};
 
-          // HACK Because the latest state is in the middleware, we actually
-          // dispatch an action that will be intercepted and returned.
+          // HACK We've saved the middleware subscription lookup callbacks into a ref,
+          // so we can directly check here if the subscription exists for this query.
           let currentRenderHasSubscription = false;
           if (queryCacheKey && requestId) {
-            // This _should_ return a boolean, even if the types don't line up
-            const returnedValue = dispatch(
-              api.internalActions.internal_probeSubscription({
-                queryCacheKey,
-                requestId,
-              }),
-            );
-
-            if (isDevMode()) {
-              if (typeof returnedValue !== 'boolean') {
-                throw new Error(
-                  `Warning: Middleware for RTK-Query API at reducerPath "${api.reducerPath}" has not
-              been added to the store. You must add the middleware for RTK-Query to function correctly!`,
-                );
-              }
-            }
-
-            currentRenderHasSubscription = !!returnedValue;
+            currentRenderHasSubscription = !!subscriptionSelectorsRef?.isRequestSubscribed(queryCacheKey, requestId);
           }
 
           const subscriptionRemoved = !currentRenderHasSubscription && lastRenderHadSubscription;
@@ -296,13 +297,13 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       });
 
       const trigger = (arg: any, { preferCacheValue = false } = {}) => {
-        promiseRef?.unsubscribe();
+        let promise: QueryActionCreatorResult<any>;
 
-        const promise = dispatch(
+        promiseRef?.unsubscribe();
+        promiseRef = promise = dispatch(
           initiate(arg, { subscriptionOptions: subscriptionOptionsRef, forceRefetch: !preferCacheValue }),
         );
 
-        promiseRef = promise;
         subscriptionArg.set(arg);
 
         return promise;
@@ -328,13 +329,13 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
     };
 
     const useQueryState: UseQueryState<any> = (arg: any, options = {}) => {
-      const subscriptionArg = computed(() => {
-        const subscriptionArg = typeof arg === 'function' ? arg() : arg;
-        return stateOptions().skip ? skipToken : subscriptionArg;
-      });
       const stateOptions = computed(() => {
         const { skip = false, selectFromResult } = typeof options === 'function' ? options() : options;
         return { skip, selectFromResult };
+      });
+      const subscriptionArg = computed(() => {
+        const subscriptionArg = typeof arg === 'function' ? arg() : arg;
+        return stateOptions().skip ? skipToken : subscriptionArg;
       });
 
       const stableArg = useStableQueryArgs(
@@ -347,18 +348,18 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       let lastValue: any;
 
       const currentState = computed(() => {
-        const selectDefaultResult = createSelectorFactory<ApiRootState, any>((projector) =>
-          defaultMemoize(projector, shallowEqual, shallowEqual),
-        )(select(stableArg()), (subState: any) => queryStatePreSelector(subState, lastValue, stableArg()));
-
+        const selectDefaultResult = createSelector(select(stableArg()), (subState: any) =>
+          queryStatePreSelector(subState, lastValue, stableArg()),
+        );
         const { selectFromResult } = stateOptions();
+
         const querySelector = selectFromResult
-          ? createSelectorFactory<ApiRootState, any>((projector) =>
-              defaultMemoize(projector, shallowEqual, shallowEqual),
-            )(selectDefaultResult, selectFromResult)
+          ? createSelector(selectDefaultResult, selectFromResult)
           : selectDefaultResult;
 
-        const currentState = useSelector((state: RootState<Definitions, any, any>) => querySelector(state));
+        const currentState = useSelector((state: RootState<Definitions, any, any>) => querySelector(state), {
+          equal: shallowEqual,
+        });
 
         lastValue = selectDefaultResult(getState());
         return currentState();
@@ -403,7 +404,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       Definitions
     >;
 
-    const useMutation: UseMutation<any> = ({ selectFromResult = defaultMutationStateSelector, fixedCacheKey } = {}) => {
+    const useMutation: UseMutation<any> = ({ selectFromResult, fixedCacheKey } = {}) => {
       const promiseRef = signal<MutationActionCreatorResult<any> | undefined>(undefined);
 
       effect((onCleanup) => {
@@ -422,16 +423,14 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       };
 
       const requestId = computed(() => promiseRef()?.requestId);
-
+      const selectDefaultResult = (requestId?: string) => select({ fixedCacheKey, requestId });
       const mutationSelector = (requestId?: string) =>
-        createSelectorFactory((projector) => defaultMemoize(projector, shallowEqual, shallowEqual))(
-          select({ fixedCacheKey, requestId }),
-          selectFromResult,
-        );
+        selectFromResult
+          ? createSelector(selectDefaultResult(requestId), selectFromResult)
+          : selectDefaultResult(requestId);
 
-      const currentState = computed(() => useSelector(mutationSelector(requestId())));
+      const currentState = computed(() => useSelector(mutationSelector(requestId()), { equal: shallowEqual }));
       const originalArgs = computed(() => (fixedCacheKey == null ? promiseRef()?.arg.originalArgs : undefined));
-
       const reset = () => {
         if (promiseRef()) {
           promiseRef.set(undefined);

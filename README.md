@@ -35,7 +35,8 @@
 
 |   Angular / NgRx   |     ngrx-rtk-query     | @reduxjs/toolkit |       Support       |
 | :----------------: | :--------------------: | :--------------: | :-----------------: |
-|        17.x        |   >=17.x.x (signals)   |     ~1.9.7       | Bugs / New Features |
+|        17.x        |   >=17.1.x (signals)   |     ~2.0.1       | Bugs / New Features |
+|        17.x        |   >=17.0.x (signals)   |     ~1.9.7       |        Bugs         |
 |        16.x        |   >=16.x.x (signals)   |     ~1.9.7       |        Bugs         |
 |        16.x        |    >=4.2.x (rxjs)      |     ~1.9.5       |    Critical bugs    |
 |        15.x        |      4.1.x (rxjs)      |      1.9.5       |        None         |
@@ -48,16 +49,19 @@ You can install it with **npm**:
 npm install ngrx-rtk-query
 ```
 
-When you install using **npm or yarn**, you will also need to use the **Standalone provider** `provideStoreRtkQuery` in your `app`. You can also set setupListeners here:
+When you install using **npm or yarn**, you will also need to use the **Standalone provider** `provideStoreApi` in your `app` or in a `lazy route`. You can also set setupListeners here:
 
 ```typescript
-import { provideStoreRtkQuery } from 'ngrx-rtk-query';
+import { provideStoreApi } from 'ngrx-rtk-query';
+import { api } from './route/to/api.ts';
 
 bootstrapApplication(AppComponent, {
   providers: [
     ...
 
-    provideStoreRtkQuery({ setupListeners: true }),
+    provideStoreApi(api),
+    // Or to disable setupListeners:
+    // provideStoreApi(api, { setupListeners: false })
 
     ...
   ],
@@ -67,10 +71,9 @@ bootstrapApplication(AppComponent, {
 ## Basic Usage
 
 You can follow the official [RTK Query guide with hooks](https://redux-toolkit.js.org/rtk-query/overview), with slight variations.
-
 You can see the application of this repository for more examples.
 
-We'll create a service definition that queries the publicly available
+Start by importing createApi and defining an "API slice" that lists the server's base URL and which endpoints we want to interact with:
 
 ```ts
 import { createApi, fetchBaseQuery } from 'ngrx-rtk-query';
@@ -116,9 +119,7 @@ export const {
 } = counterApi;
 ```
 
-Add the service to your store
-
-New **Standalone Api provider** !!
+Add the api to your store
 
 ```typescript
 import { provideStoreApi } from 'ngrx-rtk-query';
@@ -137,7 +138,7 @@ import { provideStoreApi } from 'ngrx-rtk-query';
 Use the query in a component
 
 ```ts
-import { useDecrementCountMutation, useGetCountQuery, useIncrementCountMutation } from '@app/core/services';
+import { useDecrementCountMutation, useGetCountQuery, useIncrementCountMutation } from '@app/core/api';
 
 @Component({
   selector: 'app-counter-manager',
@@ -226,6 +227,18 @@ options = signal(...);
 postQuery = useGetPostsQuery(id, options);
 ```
 
+Another good use case is with signals inputs and skipToken
+
+```ts
+<span>{{ locationQuery().data }}</span>
+
+export class CharacterCardComponent implements OnInit {
+  readonly character = input<Character | undefined>(undefined);
+  readonly locationQuery = useGetLocationQuery(computed(() => this.character()?.currentLocation ?? skipToken));
+
+// ...
+```
+
 ### **Lazy Queries**
 
 The use of lazy queries is a bit different compared to the original. As in the case of queries, the parameters and options of the Query can be signal or static. You can look at lazy feature example from this repository.
@@ -262,7 +275,7 @@ export class XxxComponent {
 // ...
 
   xxx(id: string) {
-    this.xxxQuery.fetch(id);
+    this.xxxQuery.fetch(id).unwrap();
   }
 
 // ...
@@ -304,7 +317,7 @@ addPost = useAddPostMutation();
 // Mutation trigger
 addPost.dispatch({params});
 // Signal with the state of mutation
-addPost.state
+addPost.state()
 ```
 
 ### **Code-splitted/Lazy feature/Lazy modules**

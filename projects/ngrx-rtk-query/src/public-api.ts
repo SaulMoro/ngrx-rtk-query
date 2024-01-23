@@ -1,12 +1,10 @@
-import { buildCreateApi, coreModule } from '@reduxjs/toolkit/query';
 import { angularHooksModule, angularHooksModuleName } from './lib/module';
 
 export * from '@reduxjs/toolkit/query';
 export { fetchBaseQuery } from './lib/fetch-base-query';
-export { provideStoreApi, provideStoreRtkQuery } from './lib/provide-rtk-query';
-export { ThunkService, dispatch } from './lib/thunk.service';
+export { provideStoreApi } from './lib/provide-rtk-query';
 
-const createApi = /* @__PURE__ */ buildCreateApi(coreModule(), angularHooksModule());
+export { createApi } from './lib/create-api';
 
 export {
   LazyQueryOptions,
@@ -16,4 +14,4 @@ export {
   TypedUseQueryStateResult,
   TypedUseQuerySubscriptionResult,
 } from './lib/types';
-export { angularHooksModule, angularHooksModuleName, createApi };
+export { angularHooksModule, angularHooksModuleName };

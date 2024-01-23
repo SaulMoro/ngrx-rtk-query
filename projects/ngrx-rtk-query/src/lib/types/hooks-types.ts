@@ -1,6 +1,6 @@
 import type { Signal } from '@angular/core';
 import type { MemoizedSelector } from '@ngrx/store';
-import type { AnyAction, ThunkAction } from '@reduxjs/toolkit';
+import type { ThunkAction, UnknownAction } from '@reduxjs/toolkit';
 import type {
   BaseQueryFn,
   EndpointDefinition,
@@ -324,7 +324,6 @@ export type UseQueryStateOptions<D extends QueryDefinition<any, any, any, any>, 
   selectFromResult?: QueryStateSelector<R, D>;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export type UseQueryStateResult<_ extends QueryDefinition<any, any, any, any>, R> = TSHelpersNoInfer<R>;
 
 /**
@@ -389,8 +388,8 @@ export type UseQueryStateDefaultResult<D extends QueryDefinition<any, any, any, 
     >
 > & {
   /**
-   * @deprecated will be removed in the next version
-   * please use the `isLoading`, `isFetching`, `isSuccess`, `isError`
+   * @deprecated Included for completeness, but discouraged.
+   * Please use the `isLoading`, `isFetching`, `isSuccess`, `isError`
    * and `isUninitialized` flags instead
    */
   status: QueryStatus;
@@ -479,7 +478,7 @@ export type GenericPrefetchThunk = (
   endpointName: any,
   arg: any,
   options: PrefetchOptions,
-) => ThunkAction<void, any, any, AnyAction>;
+) => ThunkAction<void, any, any, UnknownAction>;
 
 export function isQueryDefinition(e: EndpointDefinition<any, any, any, any>): e is QueryDefinition<any, any, any, any> {
   return e.type === 'query';

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ActionReducer, INIT, MetaReducer, StoreModule } from '@ngrx/store';
 import type { AnyAction } from '@reduxjs/toolkit';
-import { dispatch, StoreRtkQueryModule } from 'ngrx-rtk-query';
+import { StoreRtkQueryModule, dispatch } from 'ngrx-rtk-query';
 
 export const DEFAULT_DELAY_MS = 200;
 
@@ -78,7 +78,7 @@ export function setupApiStore<
     StoreModule.forRoot(
       { [api.reducerPath]: api.reducer, ...extraReducers },
       {
-        metaReducers: [...(metareducer?.prepend ?? []), api.metareducer, ...(metareducer?.concat ?? [])],
+        //metaReducers: [...(metareducer?.prepend ?? []), api.metareducer, ...(metareducer?.concat ?? [])],
         runtimeChecks: { strictStateSerializability: true, strictStateImmutability: true },
       },
     );
