@@ -1,3 +1,10 @@
+## [17.1.1-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.1.0...v17.1.1-next.1) (2024-01-24)
+
+
+### Bug Fixes
+
+* minor issue when tab is unfocused ([2fe5dfa](https://github.com/SaulMoro/ngrx-rtk-query/commit/2fe5dfabd188c391ee8bec756ff345a012332432))
+
 # [17.1.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.0.1...v17.1.0) (2024-01-23)
 
 
