@@ -15,7 +15,7 @@ export const createApi: CreateApi<typeof coreModuleName | typeof angularHooksMod
   const reducerPath = options.reducerPath as string;
   const getState = () => {
     const storeState = _getState();
-    return storeState[reducerPath]
+    return storeState?.[reducerPath]
       ? storeState
       : // Query inside forFeature (Code splitting)
         { [reducerPath]: storeState };
