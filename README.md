@@ -35,7 +35,7 @@
 
 |   Angular / NgRx   |     ngrx-rtk-query     | @reduxjs/toolkit |       Support       |
 | :----------------: | :--------------------: | :--------------: | :-----------------: |
-|        17.x        |   >=17.1.x (signals)   |     ~2.0.1       | Bugs / New Features |
+|        17.x        |   >=17.1.x (signals)   |     ~2.2.1       | Bugs / New Features |
 |        17.x        |   >=17.0.x (signals)   |     ~1.9.7       |        Bugs         |
 |        16.x        |   >=16.x.x (signals)   |     ~1.9.7       |        Bugs         |
 |        16.x        |    >=4.2.x (rxjs)      |     ~1.9.5       |    Critical bugs    |
