@@ -154,7 +154,7 @@ export const angularHooksModule = ({
   return {
     name: angularHooksModuleName,
     init(api, { serializeQueryArgs }, context) {
-      const anyApi = api as any as Api<any, Record<string, any>, string, string, AngularHooksModule>;
+      const anyApi = api as any as Api<any, Record<string, any>, any, any, AngularHooksModule>;
       const { buildQueryHooks, buildMutationHook, usePrefetch } = buildHooks({
         api,
         moduleOptions: { hooks, createSelector },

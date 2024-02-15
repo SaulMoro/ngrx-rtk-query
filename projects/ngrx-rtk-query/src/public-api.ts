@@ -9,9 +9,17 @@ export { createApi } from './lib/create-api';
 export {
   LazyQueryOptions,
   QueryOptions,
+  TypedLazyQueryTrigger,
+  TypedMutationTrigger,
+  TypedUseLazyQuery,
+  TypedUseLazyQuerySubscription,
+  TypedUseMutation,
   TypedUseMutationResult,
+  TypedUseQuery,
   TypedUseQueryHookResult,
+  TypedUseQueryState,
   TypedUseQueryStateResult,
+  TypedUseQuerySubscription,
   TypedUseQuerySubscriptionResult,
 } from './lib/types';
 export { angularHooksModule, angularHooksModuleName };
