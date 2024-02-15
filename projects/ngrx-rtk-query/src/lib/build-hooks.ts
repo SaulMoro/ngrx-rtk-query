@@ -1,5 +1,5 @@
 import { DestroyRef, computed, effect, inject, isDevMode, signal, untracked } from '@angular/core';
-import type { Action } from '@ngrx/store';
+import type { Action, DefaultProjectorFn, MemoizedSelector } from '@ngrx/store';
 import type { SubscriptionSelectors } from '@reduxjs/toolkit/dist/query/core/buildMiddleware/types';
 import type {
   Api,
@@ -156,8 +156,16 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
           refetchOnMountOrArgChange,
           skip = false,
           pollingInterval = 0,
+          skipPollingIfUnfocused = false,
         } = typeof options === 'function' ? options() : options;
-        return { refetchOnReconnect, refetchOnFocus, refetchOnMountOrArgChange, skip, pollingInterval };
+        return {
+          refetchOnReconnect,
+          refetchOnFocus,
+          refetchOnMountOrArgChange,
+          skip,
+          pollingInterval,
+          skipPollingIfUnfocused,
+        };
       });
       const subscriptionArg = computed(() => {
         const subscriptionArg = typeof arg === 'function' ? arg() : arg;
@@ -177,8 +185,8 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       );
       const stableSubscriptionOptions = computed(
         () => {
-          const { refetchOnReconnect, refetchOnFocus, pollingInterval } = subscriptionOptions();
-          return { refetchOnReconnect, refetchOnFocus, pollingInterval };
+          const { refetchOnReconnect, refetchOnFocus, pollingInterval, skipPollingIfUnfocused } = subscriptionOptions();
+          return { refetchOnReconnect, refetchOnFocus, pollingInterval, skipPollingIfUnfocused };
         },
         { equal: shallowEqual },
       );
@@ -274,8 +282,9 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
             refetchOnReconnect,
             refetchOnFocus,
             pollingInterval = 0,
+            skipPollingIfUnfocused = false,
           } = typeof options === 'function' ? options() : options;
-          return { refetchOnReconnect, refetchOnFocus, pollingInterval };
+          return { refetchOnReconnect, refetchOnFocus, pollingInterval, skipPollingIfUnfocused };
         },
         { equal: shallowEqual },
       );
@@ -424,10 +433,16 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
 
       const requestId = computed(() => promiseRef()?.requestId);
       const selectDefaultResult = (requestId?: string) => select({ fixedCacheKey, requestId });
-      const mutationSelector = (requestId?: string) =>
+      const mutationSelector = (
+        requestId?: string,
+      ): MemoizedSelector<RootState<Definitions, any, any>, any, DefaultProjectorFn<any>> =>
         selectFromResult
           ? createSelector(selectDefaultResult(requestId), selectFromResult)
-          : selectDefaultResult(requestId);
+          : (selectDefaultResult(requestId) as MemoizedSelector<
+              RootState<Definitions, any, any>,
+              any,
+              DefaultProjectorFn<any>
+            >);
 
       const currentState = computed(() => useSelector(mutationSelector(requestId()), { equal: shallowEqual }));
       const originalArgs = computed(() => (fixedCacheKey == null ? promiseRef()?.arg.originalArgs : undefined));
