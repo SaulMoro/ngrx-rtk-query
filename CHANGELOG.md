@@ -1,3 +1,10 @@
+# [17.2.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.1.1...v17.2.0) (2024-02-15)
+
+
+### Features
+
+* **lib:** update to rtk 2.2.1 ([f2d81fb](https://github.com/SaulMoro/ngrx-rtk-query/commit/f2d81fbd2c1e144efa18725ece978ca19f9e6484))
+
 # [17.2.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.1.1...v17.2.0-next.1) (2024-02-15)
 
 
