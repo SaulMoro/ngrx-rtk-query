@@ -5,10 +5,6 @@ import type { SelectSignalOptions } from '@ngrx/store/src/models';
 let service: ThunkService;
 export let injector: Injector;
 
-/* export const internalBatchState: InternalMiddlewareState = {
-  currentSubscriptions: {},
-}; */
-
 export function dispatch(action: Action) {
   service?.dispatch(action);
   return action;
@@ -28,11 +24,9 @@ export class ThunkService {
   readonly #store = inject(Store);
 
   init() {
-    if (!service) {
-      // eslint-disable-next-line @typescript-eslint/no-this-alias
-      service = this;
-      injector = this.#injector;
-    }
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    service = this;
+    injector = this.#injector;
   }
 
   getState = this.#store.selectSignal((state) => state);
