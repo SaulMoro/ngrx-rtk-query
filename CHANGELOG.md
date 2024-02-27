@@ -1,3 +1,11 @@
+## [17.2.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.2.0...v17.2.1) (2024-02-27)
+
+
+### Bug Fixes
+
+* avoid testing cleanup issue ([8111ff5](https://github.com/SaulMoro/ngrx-rtk-query/commit/8111ff50bee7f5d228d45cc45ccced7c8f3f85eb))
+* avoid testing cleanup issue ([c5e312d](https://github.com/SaulMoro/ngrx-rtk-query/commit/c5e312dfb6d41044934af3938509d533ae2e5517))
+
 ## [17.2.1-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.2.0...v17.2.1-next.1) (2024-02-27)
 
 
