@@ -38,9 +38,6 @@ import type {
 import { useStableQueryArgs } from './useSerializedStableValue';
 import { shallowEqual } from './utils';
 
-// const defaultQueryStateSelector: QueryStateSelector<any, any> = (x) => x;
-//const defaultMutationStateSelector: MutationStateSelector<any, any> = (x) => x;
-
 /**
  * Wrapper around `defaultQueryStateSelector` to be used in `useQuery`.
  * We want the initial render to already come back with
