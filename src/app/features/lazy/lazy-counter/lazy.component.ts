@@ -13,12 +13,8 @@ const { getCountById } = counterApiEndpoints;
         <h1 class="text-xl font-semibold">Start Lazy Counter</h1>
         <div>
           <input type="text" placeholder="Type counter id" formControlName="id" />
-          <button
-            class="btn btn-primary m-4"
-            type="submit"
-            [disabled]="form.invalid || countLazyQuery.state().isLoading"
-          >
-            {{ countLazyQuery.state().isLoading ? 'Starting...' : 'Start Counter' }}
+          <button class="btn btn-primary m-4" type="submit" [disabled]="form.invalid || countLazyQuery.isLoading()">
+            {{ countLazyQuery.isLoading() ? 'Starting...' : 'Start Counter' }}
           </button>
           <label class="space-x-2 text-sm" for="preferCacheValue">
             <input id="preferCacheValue" type="checkbox" formControlName="preferCacheValue" />
@@ -28,8 +24,8 @@ const { getCountById } = counterApiEndpoints;
       </form>
 
       <section class="space-y-4">
-        <h1 class="text-md font-medium">Current id: {{ countLazyQuery.state().originalArgs || 'Not Started' }}</h1>
-        <app-counter-row [counterData]="countLazyQuery.state()"></app-counter-row>
+        <h1 class="text-md font-medium">Current id: {{ countLazyQuery().originalArgs || 'Not Started' }}</h1>
+        <app-counter-row [counterData]="countLazyQuery()"></app-counter-row>
       </section>
     </div>
 
@@ -37,7 +33,7 @@ const { getCountById } = counterApiEndpoints;
       <section class="space-y-4">
         <h1 class="text-md font-medium">Duplicate state (Share state, subscription & selectFromResult)</h1>
         <h1 class="text-sm">Use in same component (not subscripted by self)</h1>
-        <app-counter-row [counterData]="countLazyQuery.state()"></app-counter-row>
+        <app-counter-row [counterData]="countLazyQuery()"></app-counter-row>
       </section>
 
       <section class="space-y-4">

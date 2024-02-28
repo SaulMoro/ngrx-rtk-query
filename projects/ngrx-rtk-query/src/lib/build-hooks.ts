@@ -36,7 +36,7 @@ import type {
   UseQuerySubscription,
 } from './types';
 import { useStableQueryArgs } from './useSerializedStableValue';
-import { shallowEqual } from './utils';
+import { shallowEqual, toDeepSignal } from './utils';
 
 /**
  * Wrapper around `defaultQueryStateSelector` to be used in `useQuery`.
@@ -385,8 +385,11 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
           skip: arg() === UNINITIALIZED_VALUE,
         }));
         const queryStateResults = useQueryState(arg, subscriptionOptions);
+        const queryState = computed(() => ({ ...queryStateResults(), lastArg: arg() }));
+        const deepSignal = toDeepSignal(queryState);
+        Object.assign(deepSignal, { fetch: trigger });
 
-        return { fetch: trigger, state: queryStateResults, lastArg: arg } as const;
+        return deepSignal as any;
       },
       useQuery(arg, options) {
         const querySubscriptionResults = useQuerySubscription(arg, options);
@@ -397,8 +400,10 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
           return { selectFromResult, ...options };
         });
         const queryStateResults = useQueryState(arg, subscriptionOptions);
+        const queryState = computed(() => ({ ...queryStateResults(), ...querySubscriptionResults }));
+        const deepSignal = toDeepSignal(queryState);
 
-        return computed(() => ({ ...queryStateResults(), ...querySubscriptionResults }));
+        return deepSignal as any;
       },
       selector: select as QuerySelector<any>,
     };
@@ -458,8 +463,10 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       };
 
       const finalState = computed(() => ({ ...currentState()(), originalArgs: originalArgs(), reset }));
+      const deepSignal = toDeepSignal(finalState);
+      Object.assign(deepSignal, { dispatch: triggerMutation });
 
-      return { dispatch: triggerMutation, state: finalState } as const;
+      return deepSignal as any;
     };
 
     return {

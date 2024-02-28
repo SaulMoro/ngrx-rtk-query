@@ -10,11 +10,7 @@ import { nanoid } from '@reduxjs/toolkit';
         <h1 class="text-xl font-semibold">Main Counter</h1>
         <div>
           <div class="flex items-center space-x-4">
-            <button
-              class="btn-outline btn-primary"
-              [disabled]="increment.state().isLoading"
-              (click)="increment.dispatch(1)"
-            >
+            <button class="btn-outline btn-primary" [disabled]="increment.isLoading()" (click)="increment.dispatch(1)">
               +
             </button>
             <span class="text-3xl font-bold">{{ countQuery().data?.count || 0 }}</span>

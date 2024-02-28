@@ -8,7 +8,7 @@ import { useDecrementCountByIdMutation, useIncrementCountByIdMutation } from '@a
     <div class="mt-4 flex items-center space-x-4">
       <button
         class="btn-outline btn-primary"
-        [disabled]="increment.state().isLoading || counterData?.isUninitialized"
+        [disabled]="increment.isLoading() || counterData?.isUninitialized"
         (click)="incrementCounter()"
       >
         +
@@ -18,7 +18,7 @@ import { useDecrementCountByIdMutation, useIncrementCountByIdMutation } from '@a
       }}</span>
       <button
         class="btn-outline btn-primary"
-        [disabled]="decrement.state().isLoading || counterData?.isUninitialized"
+        [disabled]="decrement.isLoading() || counterData?.isUninitialized"
         (click)="decrementCounter()"
       >
         -

@@ -37,12 +37,12 @@ import { useLazyGetEpisodeQuery } from '../services';
       <div class="mt-3 self-start text-xs text-gray-500 dark:text-gray-400">
         First seen:
         <div
-          *ngIf="episodeQuery.state().isLoading; else episodeName"
+          *ngIf="episodeQuery.isLoading(); else episodeName"
           class="ml-1 inline-block h-4 w-32 animate-pulse rounded bg-indigo-200"
         ></div>
         <ng-template #episodeName>
           <span class="inline-block text-indigo-700 hover:text-indigo-800">
-            {{ episodeQuery.state().data?.name }}
+            {{ episodeQuery().data?.name }}
           </span>
         </ng-template>
       </div>

@@ -14,13 +14,13 @@ import { pollingOptions } from '../utils/polling-options';
     <section class="space-y-4">
       <h1 class="text-md font-medium">{{ id }}</h1>
       <div class="flex items-center space-x-4">
-        <button class="btn-outline btn-primary" [disabled]="increment.state().isLoading" (click)="incrementCounter()">
+        <button class="btn-outline btn-primary" [disabled]="increment.isLoading()" (click)="incrementCounter()">
           +
         </button>
-        <span class="text-3xl font-bold" [class.bg-green-100]="countQuery.state().isFetching">{{
-          countQuery.state().data?.count || 0
+        <span class="text-3xl font-bold" [class.bg-green-100]="countQuery.isFetching()">{{
+          countQuery().data?.count || 0
         }}</span>
-        <button class="btn-outline btn-primary" [disabled]="decrement.state().isLoading" (click)="decrementCounter()">
+        <button class="btn-outline btn-primary" [disabled]="decrement.isLoading()" (click)="decrementCounter()">
           -
         </button>
 

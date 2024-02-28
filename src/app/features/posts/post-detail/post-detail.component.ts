@@ -17,19 +17,17 @@ import { useDeletePostMutation, useGetPostQuery, useUpdatePostMutation } from '.
         <div class="flex items-center space-x-4">
           <button
             class="btn-outline btn-primary"
-            [disabled]="
-              postQuery().isLoading || deletePostMutation.state().isLoading || updatePostMutation.state().isLoading
-            "
+            [disabled]="postQuery().isLoading || deletePostMutation.isLoading() || updatePostMutation.isLoading()"
             (click)="toggleEdit()"
           >
-            {{ updatePostMutation.state().isLoading ? 'Updating...' : 'Edit' }}
+            {{ updatePostMutation.isLoading() ? 'Updating...' : 'Edit' }}
           </button>
           <button
             class="btn-outline btn-primary"
-            [disabled]="postQuery().isLoading || deletePostMutation.state().isLoading"
+            [disabled]="postQuery().isLoading || deletePostMutation.isLoading()"
             (click)="deletePost()"
           >
-            {{ deletePostMutation.state().isLoading ? 'Deleting...' : 'Delete' }}
+            {{ deletePostMutation.isLoading() ? 'Deleting...' : 'Delete' }}
           </button>
           <button class="btn-outline btn-primary" [disabled]="postQuery().isFetching" (click)="postQuery().refetch()">
             {{ postQuery().isFetching ? 'Fetching...' : 'Refresh' }}
@@ -39,10 +37,10 @@ import { useDeletePostMutation, useGetPostQuery, useUpdatePostMutation } from '.
       <ng-template #editionSection>
         <div class="space-x-4">
           <input type="text" [formControl]="postFormControl" />
-          <button class="btn btn-primary" [disabled]="updatePostMutation.state().isLoading" (click)="updatePost()">
-            {{ updatePostMutation.state().isLoading ? 'Updating...' : 'Update' }}
+          <button class="btn btn-primary" [disabled]="updatePostMutation.isLoading()" (click)="updatePost()">
+            {{ updatePostMutation.isLoading() ? 'Updating...' : 'Update' }}
           </button>
-          <button class="btn btn-primary" [disabled]="updatePostMutation.state().isLoading" (click)="toggleEdit()">
+          <button class="btn btn-primary" [disabled]="updatePostMutation.isLoading()" (click)="toggleEdit()">
             Cancel
           </button>
         </div>

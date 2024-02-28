@@ -28,8 +28,6 @@ import { useGetPostsQuery } from '../services';
 export class PostsListComponent {
   postsQuery = useGetPostsQuery();
 
-  constructor() {}
-
   trackByFn(_index: number, post: Post): number {
     return post.id;
   }

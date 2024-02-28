@@ -22,6 +22,7 @@ import type {
   TSHelpersOverride,
 } from '@reduxjs/toolkit/query';
 import type { UninitializedValue } from '../constants';
+import { DeepSignal } from '../utils';
 
 export interface QueryHooks<Definition extends QueryDefinition<any, any, any, any, any>> {
   useQuery: UseQuery<Definition>;
@@ -69,7 +70,7 @@ export type UseQuery<D extends QueryDefinition<any, any, any, any>> = <
 >(
   arg: Signal<QueryArgFrom<D> | SkipToken> | QueryArgFrom<D> | SkipToken,
   options?: UseQueryOptions<D, R> | Signal<UseQueryOptions<D, R>>,
-) => Signal<UseQueryHookResult<D, R>>;
+) => DeepSignal<UseQueryHookResult<D, R>>;
 
 export type TypedUseQuery<ResultType, QueryArg, BaseQuery extends BaseQueryFn> = UseQuery<
   QueryDefinition<QueryArg, BaseQuery, string, ResultType, string>
@@ -237,10 +238,8 @@ export type UseLazyQuery<D extends QueryDefinition<any, any, any, any>> = <
   R extends Record<string, any> = UseQueryStateDefaultResult<D>,
 >(
   options?: UseLazyQueryOptions<D, R> | Signal<UseLazyQueryOptions<D, R>>,
-) => {
+) => DeepSignal<UseQueryStateResult<D, R> & { lastArg: QueryArgFrom<D> }> & {
   fetch: LazyQueryTrigger<D>;
-  state: Signal<UseQueryStateResult<D, R>>;
-  lastArg: Signal<QueryArgFrom<D>>;
 };
 
 export type TypedUseLazyQuery<ResultType, QueryArg, BaseQuery extends BaseQueryFn> = UseLazyQuery<
@@ -465,10 +464,7 @@ export type UseMutation<D extends MutationDefinition<any, any, any, any>> = <
   R extends Record<string, any> = MutationResultSelectorResult<D>,
 >(
   options?: UseMutationStateOptions<D, R>,
-) => {
-  dispatch: MutationTrigger<D>;
-  state: Signal<UseMutationStateResult<D, R>>;
-};
+) => DeepSignal<UseMutationStateResult<D, R>> & { dispatch: MutationTrigger<D> };
 
 export type TypedUseMutation<ResultType, QueryArg, BaseQuery extends BaseQueryFn> = UseMutation<
   MutationDefinition<QueryArg, BaseQuery, string, ResultType, string>
