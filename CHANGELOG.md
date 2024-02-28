@@ -1,3 +1,10 @@
+# [17.3.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.2.1...v17.3.0-next.1) (2024-02-28)
+
+
+### Features
+
+* **lib:** add deep signals and refactor mutations and lazy ([c7f3ca0](https://github.com/SaulMoro/ngrx-rtk-query/commit/c7f3ca091155cf09b120b29b3e515426a5294049))
+
 ## [17.2.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.2.0...v17.2.1) (2024-02-27)
 
 
