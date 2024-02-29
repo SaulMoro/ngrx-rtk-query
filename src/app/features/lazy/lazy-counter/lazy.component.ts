@@ -24,7 +24,7 @@ const { getCountById } = counterApiEndpoints;
       </form>
 
       <section class="space-y-4">
-        <h1 class="text-md font-medium">Current id: {{ countLazyQuery().originalArgs || 'Not Started' }}</h1>
+        <h1 class="text-md font-medium">Current id: {{ countLazyQuery.originalArgs() || 'Not Started' }}</h1>
         <app-counter-row [counterData]="countLazyQuery()"></app-counter-row>
       </section>
     </div>

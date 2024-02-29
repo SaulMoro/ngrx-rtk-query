@@ -70,7 +70,7 @@ export type UseQuery<D extends QueryDefinition<any, any, any, any>> = <
 >(
   arg: Signal<QueryArgFrom<D> | SkipToken> | QueryArgFrom<D> | SkipToken,
   options?: UseQueryOptions<D, R> | Signal<UseQueryOptions<D, R>>,
-) => DeepSignal<UseQueryHookResult<D, R>>;
+) => UseQueryHookResult<D, R>;
 
 export type TypedUseQuery<ResultType, QueryArg, BaseQuery extends BaseQueryFn> = UseQuery<
   QueryDefinition<QueryArg, BaseQuery, string, ResultType, string>
@@ -238,8 +238,9 @@ export type UseLazyQuery<D extends QueryDefinition<any, any, any, any>> = <
   R extends Record<string, any> = UseQueryStateDefaultResult<D>,
 >(
   options?: UseLazyQueryOptions<D, R> | Signal<UseLazyQueryOptions<D, R>>,
-) => DeepSignal<UseQueryStateResult<D, R> & { lastArg: QueryArgFrom<D> }> & {
+) => UseQueryStateResult<D, R> & {
   fetch: LazyQueryTrigger<D>;
+  lastArg: Signal<QueryArgFrom<D>>;
 };
 
 export type TypedUseLazyQuery<ResultType, QueryArg, BaseQuery extends BaseQueryFn> = UseLazyQuery<
@@ -304,7 +305,7 @@ export type UseQueryState<D extends QueryDefinition<any, any, any, any>> = <
 >(
   arg: Signal<QueryArgFrom<D> | SkipToken> | QueryArgFrom<D> | SkipToken,
   options?: UseQueryStateOptions<D, R> | Signal<UseQueryStateOptions<D, R>>,
-) => Signal<UseQueryStateResult<D, R>>;
+) => UseQueryStateResult<D, R>;
 
 export type UseQueryStateOptions<D extends QueryDefinition<any, any, any, any>, R extends Record<string, any>> = {
   /**
@@ -349,7 +350,7 @@ export type UseQueryStateOptions<D extends QueryDefinition<any, any, any, any>, 
   selectFromResult?: QueryStateSelector<R, D>;
 };
 
-export type UseQueryStateResult<_ extends QueryDefinition<any, any, any, any>, R> = TSHelpersNoInfer<R>;
+export type UseQueryStateResult<_ extends QueryDefinition<any, any, any, any>, R> = DeepSignal<TSHelpersNoInfer<R>>;
 
 /**
  * Helper type to manually type the result
@@ -360,7 +361,7 @@ export type TypedUseQueryStateResult<
   QueryArg,
   BaseQuery extends BaseQueryFn,
   R = UseQueryStateDefaultResult<QueryDefinition<QueryArg, BaseQuery, string, ResultType, string>>,
-> = TSHelpersNoInfer<R>;
+> = DeepSignal<TSHelpersNoInfer<R>>;
 
 type UseQueryStateBaseResult<D extends QueryDefinition<any, any, any, any>> = QuerySubState<D> & {
   /**
@@ -429,8 +430,10 @@ export type UseMutationStateOptions<D extends MutationDefinition<any, any, any, 
   fixedCacheKey?: string;
 };
 
-export type UseMutationStateResult<D extends MutationDefinition<any, any, any, any>, R> = TSHelpersNoInfer<R> & {
-  originalArgs?: QueryArgFrom<D>;
+export type UseMutationStateResult<D extends MutationDefinition<any, any, any, any>, R> = DeepSignal<
+  TSHelpersNoInfer<R>
+> & {
+  originalArgs: Signal<QueryArgFrom<D> | undefined>;
   /**
    * Resets the hook state to it's initial `uninitialized` state.
    * This will also remove the last result from the cache.
@@ -464,7 +467,7 @@ export type UseMutation<D extends MutationDefinition<any, any, any, any>> = <
   R extends Record<string, any> = MutationResultSelectorResult<D>,
 >(
   options?: UseMutationStateOptions<D, R>,
-) => DeepSignal<UseMutationStateResult<D, R>> & { dispatch: MutationTrigger<D> };
+) => UseMutationStateResult<D, R> & { dispatch: MutationTrigger<D> };
 
 export type TypedUseMutation<ResultType, QueryArg, BaseQuery extends BaseQueryFn> = UseMutation<
   MutationDefinition<QueryArg, BaseQuery, string, ResultType, string>

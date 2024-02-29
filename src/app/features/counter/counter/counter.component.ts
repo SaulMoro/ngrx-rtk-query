@@ -18,7 +18,7 @@ import { pollingOptions } from '../utils/polling-options';
           +
         </button>
         <span class="text-3xl font-bold" [class.bg-green-100]="countQuery.isFetching()">{{
-          countQuery().data?.count || 0
+          countQuery.data()?.count || 0
         }}</span>
         <button class="btn-outline btn-primary" [disabled]="decrement.isLoading()" (click)="decrementCounter()">
           -

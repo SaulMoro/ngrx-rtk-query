@@ -9,28 +9,28 @@ import { useDeletePostMutation, useGetPostQuery, useUpdatePostMutation } from '.
   template: `
     <section class="space-y-4">
       <div>
-        <h1 class="text-xl font-semibold">{{ postQuery().data?.name }}</h1>
-        <small *ngIf="postQuery().isFetching">Loading...</small>
+        <h1 class="text-xl font-semibold">{{ postQuery.data()?.name }}</h1>
+        <small *ngIf="postQuery.isFetching()">Loading...</small>
       </div>
 
       <ng-container *ngIf="!isEditing(); else editionSection">
         <div class="flex items-center space-x-4">
           <button
             class="btn-outline btn-primary"
-            [disabled]="postQuery().isLoading || deletePostMutation.isLoading() || updatePostMutation.isLoading()"
+            [disabled]="postQuery.isLoading() || deletePostMutation.isLoading() || updatePostMutation.isLoading()"
             (click)="toggleEdit()"
           >
             {{ updatePostMutation.isLoading() ? 'Updating...' : 'Edit' }}
           </button>
           <button
             class="btn-outline btn-primary"
-            [disabled]="postQuery().isLoading || deletePostMutation.isLoading()"
+            [disabled]="postQuery.isLoading() || deletePostMutation.isLoading()"
             (click)="deletePost()"
           >
             {{ deletePostMutation.isLoading() ? 'Deleting...' : 'Delete' }}
           </button>
-          <button class="btn-outline btn-primary" [disabled]="postQuery().isFetching" (click)="postQuery().refetch()">
-            {{ postQuery().isFetching ? 'Fetching...' : 'Refresh' }}
+          <button class="btn-outline btn-primary" [disabled]="postQuery.isFetching()" (click)="postQuery.refetch()">
+            {{ postQuery.isFetching() ? 'Fetching...' : 'Refresh' }}
           </button>
         </div>
       </ng-container>
@@ -46,7 +46,7 @@ import { useDeletePostMutation, useGetPostQuery, useUpdatePostMutation } from '.
         </div>
       </ng-template>
 
-      <pre class="bg-gray-200">{{ postQuery().data | json }}</pre>
+      <pre class="bg-gray-200">{{ postQuery.data() | json }}</pre>
     </section>
   `,
   styles: [],

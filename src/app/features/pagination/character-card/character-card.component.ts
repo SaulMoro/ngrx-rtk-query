@@ -42,7 +42,7 @@ import { useLazyGetEpisodeQuery } from '../services';
         ></div>
         <ng-template #episodeName>
           <span class="inline-block text-indigo-700 hover:text-indigo-800">
-            {{ episodeQuery().data?.name }}
+            {{ episodeQuery.data()?.name }}
           </span>
         </ng-template>
       </div>

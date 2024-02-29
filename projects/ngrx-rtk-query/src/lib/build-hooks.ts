@@ -128,6 +128,13 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       isFetching,
       isLoading,
       isSuccess,
+      // Deep signals required init in undefined atleast
+      endpointName: currentState.endpointName,
+      error: currentState.error,
+      fulfilledTimeStamp: currentState.fulfilledTimeStamp,
+      originalArgs: currentState.originalArgs,
+      requestId: currentState.requestId,
+      startedTimeStamp: currentState.startedTimeStamp,
     } as UseQueryStateDefaultResult<any>;
   }
 
@@ -370,8 +377,9 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         lastValue = selectDefaultResult(getState());
         return currentState();
       });
+      const deepSignal = toDeepSignal(currentState);
 
-      return currentState;
+      return deepSignal as any;
     };
 
     return {
@@ -385,11 +393,10 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
           skip: arg() === UNINITIALIZED_VALUE,
         }));
         const queryStateResults = useQueryState(arg, subscriptionOptions);
-        const queryState = computed(() => ({ ...queryStateResults(), lastArg: arg() }));
-        const deepSignal = toDeepSignal(queryState);
-        Object.assign(deepSignal, { fetch: trigger });
+        Object.assign(queryStateResults, { fetch: trigger });
+        Object.assign(queryStateResults, { lastArg: arg });
 
-        return deepSignal as any;
+        return queryStateResults as any;
       },
       useQuery(arg, options) {
         const querySubscriptionResults = useQuerySubscription(arg, options);
@@ -400,10 +407,9 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
           return { selectFromResult, ...options };
         });
         const queryStateResults = useQueryState(arg, subscriptionOptions);
-        const queryState = computed(() => ({ ...queryStateResults(), ...querySubscriptionResults }));
-        const deepSignal = toDeepSignal(queryState);
+        Object.assign(queryStateResults, querySubscriptionResults);
 
-        return deepSignal as any;
+        return queryStateResults as any;
       },
       selector: select as QuerySelector<any>,
     };
@@ -433,8 +439,22 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         return promise;
       };
 
+      const fixedSelect: typeof select = (args) => (state) => {
+        const currentState = select(args)(state);
+        return {
+          ...currentState,
+          // Deep signals required init in undefined atleast
+          data: currentState.data,
+          endpointName: currentState.endpointName,
+          error: currentState.error,
+          fulfilledTimeStamp: currentState.fulfilledTimeStamp,
+          requestId: currentState.requestId,
+          startedTimeStamp: currentState.startedTimeStamp,
+        } as any;
+      };
+
       const requestId = computed(() => promiseRef()?.requestId);
-      const selectDefaultResult = (requestId?: string) => select({ fixedCacheKey, requestId });
+      const selectDefaultResult = (requestId?: string) => fixedSelect({ fixedCacheKey, requestId });
       const mutationSelector = (
         requestId?: string,
       ): MemoizedSelector<RootState<Definitions, any, any>, any, DefaultProjectorFn<any>> =>
@@ -462,9 +482,11 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         }
       };
 
-      const finalState = computed(() => ({ ...currentState()(), originalArgs: originalArgs(), reset }));
+      const finalState = computed(() => currentState()());
       const deepSignal = toDeepSignal(finalState);
       Object.assign(deepSignal, { dispatch: triggerMutation });
+      Object.assign(deepSignal, { originalArgs });
+      Object.assign(deepSignal, { reset });
 
       return deepSignal as any;
     };

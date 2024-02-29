@@ -13,7 +13,7 @@ import { nanoid } from '@reduxjs/toolkit';
             <button class="btn-outline btn-primary" [disabled]="increment.isLoading()" (click)="increment.dispatch(1)">
               +
             </button>
-            <span class="text-3xl font-bold">{{ countQuery().data?.count || 0 }}</span>
+            <span class="text-3xl font-bold">{{ countQuery.data()?.count || 0 }}</span>
             <button class="btn-outline btn-primary" (click)="decrement.dispatch(1)">-</button>
           </div>
           <small>Decrease is a optimistic update!</small>

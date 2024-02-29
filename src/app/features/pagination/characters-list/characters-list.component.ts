@@ -12,21 +12,21 @@ import { useGetCharactersQuery } from '../services';
       <div class="flex items-center justify-between">
         <button
           class="btn-outline btn-primary w-32"
-          [disabled]="charactersQuery().isFetching"
-          (click)="charactersQuery().refetch()"
+          [disabled]="charactersQuery.isFetching()"
+          (click)="charactersQuery.refetch()"
         >
-          {{ charactersQuery().isFetching ? 'Fetching...' : 'Refresh' }}
+          {{ charactersQuery.isFetching() ? 'Fetching...' : 'Refresh' }}
         </button>
         <div>
           <app-paginator
-            [currentPage]="charactersQuery().originalArgs || 1"
-            [pages]="charactersQuery().data?.info?.pages"
+            [currentPage]="charactersQuery.originalArgs() || 1"
+            [pages]="charactersQuery.data()?.info?.pages"
           ></app-paginator>
         </div>
         <button
           class="btn-outline btn-primary"
           queryParamsHandling="merge"
-          [disabled]="charactersQuery().isLoading"
+          [disabled]="charactersQuery.isLoading()"
           [routerLink]="['./']"
           [queryParams]="{ page: 999 }"
         >
@@ -34,9 +34,9 @@ import { useGetCharactersQuery } from '../services';
         </button>
       </div>
 
-      <pre *ngIf="charactersQuery().isError">{{ charactersQuery().error | json }}</pre>
+      <pre *ngIf="charactersQuery.isError()">{{ charactersQuery.error() | json }}</pre>
 
-      <div *ngIf="charactersQuery().data?.results as characters" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div *ngIf="charactersQuery.data()?.results as characters" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <app-character-card
           *ngFor="let character of characters; trackBy: trackByFn"
           [character]="character"
