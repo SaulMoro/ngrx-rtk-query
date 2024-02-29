@@ -1,3 +1,10 @@
+# [17.3.0-next.2](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.0-next.1...v17.3.0-next.2) (2024-02-29)
+
+
+### Bug Fixes
+
+* new query deep signals ([87b4b45](https://github.com/SaulMoro/ngrx-rtk-query/commit/87b4b45e64275d74d71aa672e75a25eaddc8a792))
+
 # [17.3.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.2.1...v17.3.0-next.1) (2024-02-28)
 
 
