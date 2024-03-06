@@ -69,7 +69,9 @@ export class PostDetailComponent {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-  ) {}
+  ) {
+    this.updatePostMutation.fulfilledTimeStamp();
+  }
 
   updatePost(): void {
     this.updatePostMutation({ id: +this.route.snapshot.params.id, name: this.postFormControl.value })

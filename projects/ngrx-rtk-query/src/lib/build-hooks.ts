@@ -36,7 +36,7 @@ import type {
   UseQuerySubscription,
 } from './types';
 import { useStableQueryArgs } from './useSerializedStableValue';
-import { shallowEqual, toDeepSignal, toSignalsMap } from './utils';
+import { shallowEqual, signalProxy, toDeepSignal } from './utils';
 
 /**
  * Wrapper around `defaultQueryStateSelector` to be used in `useQuery`.
@@ -393,7 +393,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
           skip: arg() === UNINITIALIZED_VALUE,
         }));
         const queryStateResults = useQueryState(arg, subscriptionOptions);
-        const signalsMap = toSignalsMap(queryStateResults);
+        const signalsMap = signalProxy(queryStateResults);
         Object.assign(trigger, { lastArg: arg });
         Object.assign(trigger, signalsMap);
 
@@ -484,7 +484,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       };
 
       const finalState = computed(() => currentState()());
-      const signalsMap = toSignalsMap(finalState);
+      const signalsMap = signalProxy(finalState);
       Object.assign(triggerMutation, { originalArgs });
       Object.assign(triggerMutation, { reset });
       Object.assign(triggerMutation, signalsMap);
