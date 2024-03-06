@@ -494,8 +494,7 @@ export type MutationTrigger<D extends MutationDefinition<any, any, any, any>> = 
    * @example
    * ```ts
    * // codeblock-meta title="Using .unwrap with async await"
-   * this.deletePostMutation
-(+this.route.snapshot.params.id)
+   * this.deletePostMutation(+this.route.snapshot.params.id)
    *    .unwrap()
    *    .then(() => this.router.navigate(['/posts']))
    *    .catch(() => console.error('Error deleting Post'));
