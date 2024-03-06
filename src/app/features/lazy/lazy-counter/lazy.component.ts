@@ -25,7 +25,12 @@ const { getCountById } = counterApiEndpoints;
 
       <section class="space-y-4">
         <h1 class="text-md font-medium">Current id: {{ countLazyQuery.originalArgs() || 'Not Started' }}</h1>
-        <app-counter-row [counterData]="countLazyQuery()"></app-counter-row>
+        <app-counter-row
+          [originalArgs]="countLazyQuery.originalArgs()"
+          [data]="countLazyQuery.data()"
+          [isFetching]="countLazyQuery.isFetching()"
+          [isUninitialized]="countLazyQuery.isUninitialized()"
+        ></app-counter-row>
       </section>
     </div>
 
@@ -33,13 +38,32 @@ const { getCountById } = counterApiEndpoints;
       <section class="space-y-4">
         <h1 class="text-md font-medium">Duplicate state (Share state, subscription & selectFromResult)</h1>
         <h1 class="text-sm">Use in same component (not subscripted by self)</h1>
-        <app-counter-row [counterData]="countLazyQuery()"></app-counter-row>
+        <app-counter-row
+          [originalArgs]="countLazyQuery.originalArgs()"
+          [data]="countLazyQuery.data()"
+          [isFetching]="countLazyQuery.isFetching()"
+          [isUninitialized]="countLazyQuery.isUninitialized()"
+        ></app-counter-row>
       </section>
 
       <section class="space-y-4">
         <h1 class="text-md font-medium">Select from state (Share state & subscription, another selectFromResult)</h1>
         <h1 class="text-sm">Use in same component or child components (not subscripted by self)</h1>
-        <app-counter-row [counterData]="selectFromState()"></app-counter-row>
+        <app-counter-row
+          [originalArgs]="selectFromState.originalArgs()"
+          [data]="selectFromState.data()"
+          [isFetching]="selectFromState.isFetching()"
+          [isUninitialized]="selectFromState.isUninitialized()"
+        ></app-counter-row>
+      </section>
+      <section class="space-y-4">
+        <h1 class="text-md font-medium">Select from state parent signal</h1>
+        <app-counter-row
+          [originalArgs]="selectFromState().originalArgs"
+          [data]="selectFromState().data"
+          [isFetching]="selectFromState().isFetching"
+          [isUninitialized]="selectFromState().isUninitialized"
+        ></app-counter-row>
       </section>
 
       <section class="space-y-4">
@@ -47,7 +71,12 @@ const { getCountById } = counterApiEndpoints;
           Related Query (Share cache data / another subscription & selectFromResult or Options)
         </h1>
         <h1 class="text-sm">Use anywhere (subscripted by self), skip subscribe with uninitialized value</h1>
-        <app-counter-row [counterData]="countQuery()"></app-counter-row>
+        <app-counter-row
+          [originalArgs]="countQuery.originalArgs()"
+          [data]="countQuery.data()"
+          [isFetching]="countQuery.isFetching()"
+          [isUninitialized]="countQuery.isUninitialized()"
+        ></app-counter-row>
       </section>
     </div>
   `,
@@ -69,8 +98,7 @@ export class LazyComponent {
   constructor(private formBuilder: UntypedFormBuilder) {}
 
   async startCounterById({ id, preferCacheValue }: { id: string; preferCacheValue: boolean }): Promise<void> {
-    this.countLazyQuery
-      .fetch(id, { preferCacheValue })
+    this.countLazyQuery(id, { preferCacheValue })
       .unwrap()
       .then((result) => {
         console.log('result method 1', result);
@@ -79,7 +107,7 @@ export class LazyComponent {
       .catch(console.error);
 
     try {
-      const result = await this.countLazyQuery.fetch(id, { preferCacheValue }).unwrap();
+      const result = await this.countLazyQuery(id, { preferCacheValue }).unwrap();
       console.log('result method 2', result);
       this.form.reset();
     } catch (error) {

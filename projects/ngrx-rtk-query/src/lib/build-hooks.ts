@@ -36,7 +36,7 @@ import type {
   UseQuerySubscription,
 } from './types';
 import { useStableQueryArgs } from './useSerializedStableValue';
-import { shallowEqual, toDeepSignal } from './utils';
+import { shallowEqual, toDeepSignal, toSignalsMap } from './utils';
 
 /**
  * Wrapper around `defaultQueryStateSelector` to be used in `useQuery`.
@@ -393,10 +393,11 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
           skip: arg() === UNINITIALIZED_VALUE,
         }));
         const queryStateResults = useQueryState(arg, subscriptionOptions);
-        Object.assign(queryStateResults, { fetch: trigger });
-        Object.assign(queryStateResults, { lastArg: arg });
+        const signalsMap = toSignalsMap(queryStateResults);
+        Object.assign(trigger, { lastArg: arg });
+        Object.assign(trigger, signalsMap);
 
-        return queryStateResults as any;
+        return trigger as any;
       },
       useQuery(arg, options) {
         const querySubscriptionResults = useQuerySubscription(arg, options);
@@ -483,12 +484,12 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       };
 
       const finalState = computed(() => currentState()());
-      const deepSignal = toDeepSignal(finalState);
-      Object.assign(deepSignal, { dispatch: triggerMutation });
-      Object.assign(deepSignal, { originalArgs });
-      Object.assign(deepSignal, { reset });
+      const signalsMap = toSignalsMap(finalState);
+      Object.assign(triggerMutation, { originalArgs });
+      Object.assign(triggerMutation, { reset });
+      Object.assign(triggerMutation, signalsMap);
 
-      return deepSignal as any;
+      return triggerMutation as any;
     };
 
     return {

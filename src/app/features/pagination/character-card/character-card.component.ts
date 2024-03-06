@@ -37,12 +37,12 @@ import { useLazyGetEpisodeQuery } from '../services';
       <div class="mt-3 self-start text-xs text-gray-500 dark:text-gray-400">
         First seen:
         <div
-          *ngIf="episodeQuery.isLoading(); else episodeName"
+          *ngIf="episodeLazyQuery.isLoading(); else episodeName"
           class="ml-1 inline-block h-4 w-32 animate-pulse rounded bg-indigo-200"
         ></div>
         <ng-template #episodeName>
           <span class="inline-block text-indigo-700 hover:text-indigo-800">
-            {{ episodeQuery.data()?.name }}
+            {{ episodeLazyQuery.data()?.name }}
           </span>
         </ng-template>
       </div>
@@ -54,12 +54,10 @@ import { useLazyGetEpisodeQuery } from '../services';
 export class CharacterCardComponent implements OnInit {
   @Input() character!: Character;
 
-  episodeQuery = useLazyGetEpisodeQuery();
+  episodeLazyQuery = useLazyGetEpisodeQuery();
   statusTypes = CharacterStatus;
 
-  constructor() {}
-
   ngOnInit(): void {
-    this.episodeQuery.fetch(+this.character.episode[0].split('episode/')[1], { preferCacheValue: true });
+    this.episodeLazyQuery(+this.character.episode[0].split('episode/')[1], { preferCacheValue: true });
   }
 }

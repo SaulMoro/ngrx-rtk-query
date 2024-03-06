@@ -16,12 +16,13 @@ export interface Signal<T> extends NgSignal<T> {
   length: unknown;
 }
 
-export type DeepSignal<T> = Signal<T> &
-  Readonly<
-    Required<{
-      [K in keyof T]: IsKnownRecord<T[K]> extends true ? DeepSignal<T[K]> : Signal<T[K]>;
-    }>
-  >;
+export type SignalsMap<T> = Readonly<
+  Required<{
+    [K in keyof T]: IsKnownRecord<T[K]> extends true ? DeepSignal<T[K]> : Signal<T[K]>;
+  }>
+>;
+
+export type DeepSignal<T> = Signal<T> & SignalsMap<T>;
 
 export function toDeepSignal<T>(signal: Signal<T>): DeepSignal<T> {
   const value = untracked(() => signal());
@@ -43,6 +44,38 @@ export function toDeepSignal<T>(signal: Signal<T>): DeepSignal<T> {
       }
 
       return toDeepSignal(target[prop]);
+    },
+  });
+}
+
+export function toSignalsMap<TInput extends Record<string | symbol, any>>(inputSignal: Signal<TInput>) {
+  const internalState = {} as SignalsMap<TInput>;
+
+  return new Proxy<SignalsMap<TInput>>(internalState, {
+    get(target, prop) {
+      // first check if we have it in our internal state and return it
+      const computedField = target[prop];
+      if (computedField) return computedField;
+
+      // then, check if it's a function on the resultState and return it
+      const targetField = untracked(inputSignal)[prop];
+      if (typeof targetField === 'function') return targetField;
+
+      // finally, create a computed field, store it and return it
+      // @ts-expect-error bypass
+      return (target[prop] = computed(() => inputSignal()[prop]));
+    },
+    has(_, prop) {
+      return !!untracked(inputSignal)[prop];
+    },
+    ownKeys() {
+      return Reflect.ownKeys(untracked(inputSignal));
+    },
+    getOwnPropertyDescriptor() {
+      return {
+        enumerable: true,
+        configurable: true,
+      };
     },
   });
 }

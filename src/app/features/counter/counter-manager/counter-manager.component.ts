@@ -10,11 +10,9 @@ import { nanoid } from '@reduxjs/toolkit';
         <h1 class="text-xl font-semibold">Main Counter</h1>
         <div>
           <div class="flex items-center space-x-4">
-            <button class="btn-outline btn-primary" [disabled]="increment.isLoading()" (click)="increment.dispatch(1)">
-              +
-            </button>
+            <button class="btn-outline btn-primary" [disabled]="increment.isLoading()" (click)="increment(1)">+</button>
             <span class="text-3xl font-bold">{{ countQuery.data()?.count || 0 }}</span>
-            <button class="btn-outline btn-primary" (click)="decrement.dispatch(1)">-</button>
+            <button class="btn-outline btn-primary" (click)="decrement(1)">-</button>
           </div>
           <small>Decrease is a optimistic update!</small>
 
@@ -31,7 +29,7 @@ import { nanoid } from '@reduxjs/toolkit';
           <button class="btn btn-primary" (click)="addCounter()">Add individual counter</button>
         </div>
         <div *ngFor="let counter of counters; trackBy: trackByFn" class="mt-6 w-full">
-          <app-counter [id]="counter"></app-counter>
+          <app-counter [counterId]="counter"></app-counter>
         </div>
       </section>
     </div>
@@ -45,8 +43,6 @@ export class CounterManagerComponent {
   decrement = useDecrementCountMutation();
 
   counters: string[] = [];
-
-  constructor() {}
 
   addCounter(): void {
     this.counters = [...this.counters, nanoid()];

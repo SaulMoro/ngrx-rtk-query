@@ -72,15 +72,13 @@ export class PostDetailComponent {
   ) {}
 
   updatePost(): void {
-    this.updatePostMutation
-      .dispatch({ id: +this.route.snapshot.params.id, name: this.postFormControl.value })
+    this.updatePostMutation({ id: +this.route.snapshot.params.id, name: this.postFormControl.value })
       .unwrap()
       .then(() => this.toggleEdit());
   }
 
   deletePost(): void {
-    this.deletePostMutation
-      .dispatch(+this.route.snapshot.params.id)
+    this.deletePostMutation(+this.route.snapshot.params.id)
       .unwrap()
       .then(() => this.router.navigate(['/posts']))
       .catch(() => console.error('Error deleting Post'));
