@@ -1,3 +1,11 @@
+# [17.3.0-next.4](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.0-next.3...v17.3.0-next.4) (2024-03-07)
+
+
+### Bug Fixes
+
+* better serializable stable value ([fdb5316](https://github.com/SaulMoro/ngrx-rtk-query/commit/fdb5316e1cf9989eb391460cdfc5479a34da5d6f))
+* new signal proxy ([f6f7147](https://github.com/SaulMoro/ngrx-rtk-query/commit/f6f7147726a40904858c4c7ec221174440c058ab))
+
 # [17.3.0-next.3](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.0-next.2...v17.3.0-next.3) (2024-03-06)
 
 
