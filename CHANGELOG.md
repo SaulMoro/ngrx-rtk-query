@@ -1,3 +1,10 @@
+# [17.3.0-next.3](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.0-next.2...v17.3.0-next.3) (2024-03-06)
+
+
+### Features
+
+* **lib:** remove dispatch and fetch functions ([6f441fb](https://github.com/SaulMoro/ngrx-rtk-query/commit/6f441fb0bc23fa0ca237e1ec5bc1e8a46bad6c43))
+
 # [17.3.0-next.2](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.0-next.1...v17.3.0-next.2) (2024-02-29)
 
 
