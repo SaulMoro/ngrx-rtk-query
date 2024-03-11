@@ -1,3 +1,10 @@
+# [17.3.0-next.5](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.0-next.4...v17.3.0-next.5) (2024-03-11)
+
+
+### Bug Fixes
+
+* **lib:** select from result when options is signal or function ([e2007cf](https://github.com/SaulMoro/ngrx-rtk-query/commit/e2007cf3072fff7c0c2f6b15995c9a5b0284e210))
+
 # [17.3.0-next.4](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.0-next.3...v17.3.0-next.4) (2024-03-07)
 
 
