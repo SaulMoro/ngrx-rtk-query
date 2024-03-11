@@ -1,3 +1,10 @@
+# [17.3.0-next.7](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.0-next.6...v17.3.0-next.7) (2024-03-11)
+
+
+### Bug Fixes
+
+* required signal inputs errors v2 ([1960a40](https://github.com/SaulMoro/ngrx-rtk-query/commit/1960a404d5708b06c1195937cd2c77b6d2254f22))
+
 # [17.3.0-next.6](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.0-next.5...v17.3.0-next.6) (2024-03-11)
 
 
