@@ -403,9 +403,12 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         const querySubscriptionResults = useQuerySubscription(arg, options);
         const subscriptionOptions = computed(() => {
           const subscriptionArg = typeof arg === 'function' ? arg() : arg;
-          const { skip } = typeof options === 'function' ? options() : options || {};
-          const selectFromResult = subscriptionArg === skipToken || skip ? undefined : noPendingQueryStateSelector;
-          return { selectFromResult, ...options };
+          const subscriptionOptions = typeof options === 'function' ? options() : options;
+          return {
+            selectFromResult:
+              subscriptionArg === skipToken || subscriptionOptions?.skip ? undefined : noPendingQueryStateSelector,
+            ...subscriptionOptions,
+          };
         });
         const queryStateResults = useQueryState(arg, subscriptionOptions);
         Object.assign(queryStateResults, querySubscriptionResults);
