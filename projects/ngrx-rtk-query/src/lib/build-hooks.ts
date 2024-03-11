@@ -402,8 +402,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       useQuery(arg, options) {
         const querySubscriptionResults = useQuerySubscription(arg, options);
         // We need to use `toLazySignal` here to prevent 'signal required inputs' errors
-        const lazyArg =
-          typeof arg === 'function' ? toLazySignal<unknown>(arg as any, { initialValue: skipToken }) : () => arg;
+        const lazyArg = typeof arg === 'function' ? toLazySignal<unknown>(arg as any) : () => arg;
         const subscriptionOptions = computed(() => {
           const subscriptionArg = lazyArg();
           const subscriptionOptions = typeof options === 'function' ? options() : options;
