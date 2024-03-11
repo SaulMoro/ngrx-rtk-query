@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
-import { skipToken } from 'ngrx-rtk-query';
 
 import { useDecrementCountByIdMutation, useGetCountByIdQuery, useIncrementCountByIdMutation } from '@app/core/services';
 import { pollingOptions } from '../utils/polling-options';
@@ -44,17 +43,14 @@ import { pollingOptions } from '../utils/polling-options';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CounterComponent {
-  readonly counterId = input<string>();
+  readonly counterId = input.required<string>();
 
   // Polling
   pollingOptions = pollingOptions;
   pollingInterval = signal<number>(this.pollingOptions[0].value);
 
   // Queries
-  countQuery = useGetCountByIdQuery(
-    () => this.counterId() ?? skipToken,
-    () => ({ pollingInterval: this.pollingInterval() }),
-  );
+  countQuery = useGetCountByIdQuery(this.counterId, () => ({ pollingInterval: this.pollingInterval() }));
   increment = useIncrementCountByIdMutation();
   decrement = useDecrementCountByIdMutation();
 }

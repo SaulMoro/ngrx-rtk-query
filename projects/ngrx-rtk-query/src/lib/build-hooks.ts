@@ -36,7 +36,7 @@ import type {
   UseQuerySubscription,
 } from './types';
 import { useStableQueryArgs } from './useSerializedStableValue';
-import { shallowEqual, signalProxy, toDeepSignal } from './utils';
+import { shallowEqual, signalProxy, toDeepSignal, toLazySignal } from './utils';
 
 /**
  * Wrapper around `defaultQueryStateSelector` to be used in `useQuery`.
@@ -401,8 +401,11 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       },
       useQuery(arg, options) {
         const querySubscriptionResults = useQuerySubscription(arg, options);
+        // We need to use `toLazySignal` here to prevent 'signal required inputs' errors
+        const lazyArg =
+          typeof arg === 'function' ? toLazySignal<unknown>(arg as any, { initialValue: skipToken }) : () => arg;
         const subscriptionOptions = computed(() => {
-          const subscriptionArg = typeof arg === 'function' ? arg() : arg;
+          const subscriptionArg = lazyArg();
           const subscriptionOptions = typeof options === 'function' ? options() : options;
           return {
             selectFromResult:
@@ -410,7 +413,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
             ...subscriptionOptions,
           };
         });
-        const queryStateResults = useQueryState(arg, subscriptionOptions);
+        const queryStateResults = useQueryState(lazyArg, subscriptionOptions);
         Object.assign(queryStateResults, querySubscriptionResults);
 
         return queryStateResults as any;
