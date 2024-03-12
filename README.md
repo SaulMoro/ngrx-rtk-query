@@ -31,6 +31,10 @@
 
 ## Installation
 
+```bash
+npm install ngrx-rtk-query
+```
+
 ### Versions
 
 |   Angular / NgRx   |     ngrx-rtk-query     | @reduxjs/toolkit |       Support       |
@@ -41,31 +45,6 @@
 |        15.x        |      4.1.x (rxjs)      |      1.9.5       |        None         |
 
 Only the latest version of Angular in the table above is actively supported. This is due to the fact that compilation of Angular libraries is [incompatible between major versions](https://angular.io/guide/creating-libraries#ensuring-library-version-compatibility).
-
-You can install it with **npm**:
-
-```bash
-npm install ngrx-rtk-query
-```
-
-When you install using **npm or yarn**, you will also need to use the **Standalone provider** `provideStoreApi` in your `app` or in a `lazy route`. You can also set setupListeners here:
-
-```typescript
-import { provideStoreApi } from 'ngrx-rtk-query';
-import { api } from './route/to/api.ts';
-
-bootstrapApplication(AppComponent, {
-  providers: [
-    ...
-
-    provideStoreApi(api),
-    // Or to disable setupListeners:
-    // provideStoreApi(api, { setupListeners: false })
-
-    ...
-  ],
-}).catch((err) => console.error(err));
-```
 
 ## Basic Usage
 
