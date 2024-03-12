@@ -1,3 +1,10 @@
+## [17.3.1-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.0...v17.3.1-next.1) (2024-03-12)
+
+
+### Bug Fixes
+
+* problem with lazy signal in edge cases ([5d3324f](https://github.com/SaulMoro/ngrx-rtk-query/commit/5d3324ff60900ec7b9442ced35ef44531b444d6d))
+
 # [17.3.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.2.1...v17.3.0) (2024-03-12)
 
 
