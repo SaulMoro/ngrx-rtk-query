@@ -41,8 +41,8 @@ npm install ngrx-rtk-query
 | :----------------: | :--------------------: | :--------------: | :-----------------: |
 |        17.x        |   >=17.3.x (signals)   |     ~2.2.1       | Bugs / New Features |
 |        17.x        |   >=17.1.x (signals)   |     ~2.2.1       |        Bugs         |
-|        16.x        |    >=4.2.x (rxjs)      |     ~1.9.5       |    Critical bugs    |
-|        15.x        |      4.1.x (rxjs)      |      1.9.5       |        None         |
+|        16.x        |    >=4.2.x (rxjs)      |     ~1.9.3       |    Critical bugs    |
+|        15.x        |      4.1.x (rxjs)      |      1.9.3       |        None         |
 
 Only the latest version of Angular in the table above is actively supported. This is due to the fact that compilation of Angular libraries is [incompatible between major versions](https://angular.io/guide/creating-libraries#ensuring-library-version-compatibility).
 
