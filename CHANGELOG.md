@@ -1,3 +1,10 @@
+# [17.3.0-next.8](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.0-next.7...v17.3.0-next.8) (2024-03-12)
+
+
+### Bug Fixes
+
+* move lazy signal to useQueryState and add to options ([d884770](https://github.com/SaulMoro/ngrx-rtk-query/commit/d88477096dfe4fa3e9d5e5e23c5c2cf3c0de209d))
+
 # [17.3.0-next.7](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.0-next.6...v17.3.0-next.7) (2024-03-11)
 
 
