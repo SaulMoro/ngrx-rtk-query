@@ -6,7 +6,7 @@ import { useGetPostsQuery } from '../services';
   selector: 'app-posts-list',
   template: `
     <section class="space-y-4">
-      <ng-container *ngIf="postsQuery().data as posts; else loading">
+      <ng-container *ngIf="postsQuery.data() as posts; else loading">
         <div *ngIf="posts.length; else emptyPosts">
           <li *ngFor="let post of posts; trackBy: trackByFn">
             <a class="hover:underline" [routerLink]="['/posts', post.id]">{{ post.name }}</a>
@@ -27,8 +27,6 @@ import { useGetPostsQuery } from '../services';
 })
 export class PostsListComponent {
   postsQuery = useGetPostsQuery();
-
-  constructor() {}
 
   trackByFn(_index: number, post: Post): number {
     return post.id;

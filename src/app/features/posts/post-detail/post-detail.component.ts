@@ -9,46 +9,44 @@ import { useDeletePostMutation, useGetPostQuery, useUpdatePostMutation } from '.
   template: `
     <section class="space-y-4">
       <div>
-        <h1 class="text-xl font-semibold">{{ postQuery().data?.name }}</h1>
-        <small *ngIf="postQuery().isFetching">Loading...</small>
+        <h1 class="text-xl font-semibold">{{ postQuery.data()?.name }}</h1>
+        <small *ngIf="postQuery.isFetching()">Loading...</small>
       </div>
 
       <ng-container *ngIf="!isEditing(); else editionSection">
         <div class="flex items-center space-x-4">
           <button
             class="btn-outline btn-primary"
-            [disabled]="
-              postQuery().isLoading || deletePostMutation.state().isLoading || updatePostMutation.state().isLoading
-            "
+            [disabled]="postQuery.isLoading() || deletePostMutation.isLoading() || updatePostMutation.isLoading()"
             (click)="toggleEdit()"
           >
-            {{ updatePostMutation.state().isLoading ? 'Updating...' : 'Edit' }}
+            {{ updatePostMutation.isLoading() ? 'Updating...' : 'Edit' }}
           </button>
           <button
             class="btn-outline btn-primary"
-            [disabled]="postQuery().isLoading || deletePostMutation.state().isLoading"
+            [disabled]="postQuery.isLoading() || deletePostMutation.isLoading()"
             (click)="deletePost()"
           >
-            {{ deletePostMutation.state().isLoading ? 'Deleting...' : 'Delete' }}
+            {{ deletePostMutation.isLoading() ? 'Deleting...' : 'Delete' }}
           </button>
-          <button class="btn-outline btn-primary" [disabled]="postQuery().isFetching" (click)="postQuery().refetch()">
-            {{ postQuery().isFetching ? 'Fetching...' : 'Refresh' }}
+          <button class="btn-outline btn-primary" [disabled]="postQuery.isFetching()" (click)="postQuery.refetch()">
+            {{ postQuery.isFetching() ? 'Fetching...' : 'Refresh' }}
           </button>
         </div>
       </ng-container>
       <ng-template #editionSection>
         <div class="space-x-4">
           <input type="text" [formControl]="postFormControl" />
-          <button class="btn btn-primary" [disabled]="updatePostMutation.state().isLoading" (click)="updatePost()">
-            {{ updatePostMutation.state().isLoading ? 'Updating...' : 'Update' }}
+          <button class="btn btn-primary" [disabled]="updatePostMutation.isLoading()" (click)="updatePost()">
+            {{ updatePostMutation.isLoading() ? 'Updating...' : 'Update' }}
           </button>
-          <button class="btn btn-primary" [disabled]="updatePostMutation.state().isLoading" (click)="toggleEdit()">
+          <button class="btn btn-primary" [disabled]="updatePostMutation.isLoading()" (click)="toggleEdit()">
             Cancel
           </button>
         </div>
       </ng-template>
 
-      <pre class="bg-gray-200">{{ postQuery().data | json }}</pre>
+      <pre class="bg-gray-200">{{ postQuery.data() | json }}</pre>
     </section>
   `,
   styles: [],
@@ -74,15 +72,13 @@ export class PostDetailComponent {
   ) {}
 
   updatePost(): void {
-    this.updatePostMutation
-      .dispatch({ id: +this.route.snapshot.params.id, name: this.postFormControl.value })
+    this.updatePostMutation({ id: +this.route.snapshot.params.id, name: this.postFormControl.value })
       .unwrap()
       .then(() => this.toggleEdit());
   }
 
   deletePost(): void {
-    this.deletePostMutation
-      .dispatch(+this.route.snapshot.params.id)
+    this.deletePostMutation(+this.route.snapshot.params.id)
       .unwrap()
       .then(() => this.router.navigate(['/posts']))
       .catch(() => console.error('Error deleting Post'));

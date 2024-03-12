@@ -22,6 +22,7 @@ import type {
   TSHelpersOverride,
 } from '@reduxjs/toolkit/query';
 import type { UninitializedValue } from '../constants';
+import { DeepSignal, SignalsMap } from '../utils';
 
 export interface QueryHooks<Definition extends QueryDefinition<any, any, any, any, any>> {
   useQuery: UseQuery<Definition>;
@@ -67,9 +68,9 @@ export type MutationSelector<Definition extends MutationDefinition<any, any, any
 export type UseQuery<D extends QueryDefinition<any, any, any, any>> = <
   R extends Record<string, any> = UseQueryStateDefaultResult<D>,
 >(
-  arg: Signal<QueryArgFrom<D> | SkipToken> | QueryArgFrom<D> | SkipToken,
-  options?: UseQueryOptions<D, R> | Signal<UseQueryOptions<D, R>>,
-) => Signal<UseQueryHookResult<D, R>>;
+  arg: Signal<QueryArgFrom<D> | SkipToken> | (() => QueryArgFrom<D> | SkipToken) | QueryArgFrom<D> | SkipToken,
+  options?: UseQueryOptions<D, R> | Signal<UseQueryOptions<D, R>> | (() => UseQueryOptions<D, R>),
+) => UseQueryHookResult<D, R>;
 
 export type TypedUseQuery<ResultType, QueryArg, BaseQuery extends BaseQueryFn> = UseQuery<
   QueryDefinition<QueryArg, BaseQuery, string, ResultType, string>
@@ -156,8 +157,8 @@ interface UseQuerySubscriptionOptions extends SubscriptionOptions {
  * - Accepts polling/re-fetching options to trigger automatic re-fetches when the corresponding criteria is met
  */
 export type UseQuerySubscription<D extends QueryDefinition<any, any, any, any>> = (
-  arg: Signal<QueryArgFrom<D> | SkipToken> | QueryArgFrom<D> | SkipToken,
-  options?: UseQuerySubscriptionOptions | Signal<UseQuerySubscriptionOptions>,
+  arg: Signal<QueryArgFrom<D> | SkipToken> | (() => QueryArgFrom<D> | SkipToken) | QueryArgFrom<D> | SkipToken,
+  options?: UseQuerySubscriptionOptions | Signal<UseQuerySubscriptionOptions> | (() => UseQuerySubscriptionOptions),
 ) => UseQuerySubscriptionResult<D>;
 
 export type TypedUseQuerySubscription<ResultType, QueryArg, BaseQuery extends BaseQueryFn> = UseQuerySubscription<
@@ -194,7 +195,7 @@ export type LazyQueryTrigger<D extends QueryDefinition<any, any, any, any>> = {
    * ```ts
    * // codeblock-meta title="Using .unwrap with async await"
    * try {
-   *   const payload = await xxxLazyQuery.fetch(1).unwrap();
+   *   const payload = await xxxLazyQuery(1).unwrap();
    *   console.log('fulfilled', payload)
    * } catch (error) {
    *   console.error('rejected', error);
@@ -236,12 +237,11 @@ export type UseLazyQueryLastPromiseInfo<D extends QueryDefinition<any, any, any,
 export type UseLazyQuery<D extends QueryDefinition<any, any, any, any>> = <
   R extends Record<string, any> = UseQueryStateDefaultResult<D>,
 >(
-  options?: UseLazyQueryOptions<D, R> | Signal<UseLazyQueryOptions<D, R>>,
-) => {
-  fetch: LazyQueryTrigger<D>;
-  state: Signal<UseQueryStateResult<D, R>>;
-  lastArg: Signal<QueryArgFrom<D>>;
-};
+  options?: UseLazyQueryOptions<D, R> | Signal<UseLazyQueryOptions<D, R>> | (() => UseLazyQueryOptions<D, R>),
+) => LazyQueryTrigger<D> &
+  UseLazyQueryStateResult<D, R> & {
+    lastArg: Signal<QueryArgFrom<D>>;
+  };
 
 export type TypedUseLazyQuery<ResultType, QueryArg, BaseQuery extends BaseQueryFn> = UseLazyQuery<
   QueryDefinition<QueryArg, BaseQuery, string, ResultType, string>
@@ -271,7 +271,7 @@ export type LazyQueryOptions<
  *    and the fetch has been manually called at least once
  */
 export type UseLazyQuerySubscription<D extends QueryDefinition<any, any, any, any>> = (
-  options?: SubscriptionOptions | Signal<SubscriptionOptions>,
+  options?: SubscriptionOptions | Signal<SubscriptionOptions> | (() => SubscriptionOptions),
 ) => readonly [LazyQueryTrigger<D>, Signal<QueryArgFrom<D> | UninitializedValue>];
 
 export type TypedUseLazyQuerySubscription<
@@ -303,9 +303,9 @@ export type TypedUseQueryState<ResultType, QueryArg, BaseQuery extends BaseQuery
 export type UseQueryState<D extends QueryDefinition<any, any, any, any>> = <
   R extends Record<string, any> = UseQueryStateDefaultResult<D>,
 >(
-  arg: Signal<QueryArgFrom<D> | SkipToken> | QueryArgFrom<D> | SkipToken,
-  options?: UseQueryStateOptions<D, R> | Signal<UseQueryStateOptions<D, R>>,
-) => Signal<UseQueryStateResult<D, R>>;
+  arg: Signal<QueryArgFrom<D> | SkipToken> | (() => QueryArgFrom<D> | SkipToken) | QueryArgFrom<D> | SkipToken,
+  options?: UseQueryStateOptions<D, R> | Signal<UseQueryStateOptions<D, R>> | (() => UseQueryStateOptions<D, R>),
+) => UseQueryStateResult<D, R>;
 
 export type UseQueryStateOptions<D extends QueryDefinition<any, any, any, any>, R extends Record<string, any>> = {
   /**
@@ -350,7 +350,8 @@ export type UseQueryStateOptions<D extends QueryDefinition<any, any, any, any>, 
   selectFromResult?: QueryStateSelector<R, D>;
 };
 
-export type UseQueryStateResult<_ extends QueryDefinition<any, any, any, any>, R> = TSHelpersNoInfer<R>;
+export type UseQueryStateResult<_ extends QueryDefinition<any, any, any, any>, R> = DeepSignal<TSHelpersNoInfer<R>>;
+export type UseLazyQueryStateResult<_ extends QueryDefinition<any, any, any, any>, R> = SignalsMap<TSHelpersNoInfer<R>>;
 
 /**
  * Helper type to manually type the result
@@ -361,7 +362,7 @@ export type TypedUseQueryStateResult<
   QueryArg,
   BaseQuery extends BaseQueryFn,
   R = UseQueryStateDefaultResult<QueryDefinition<QueryArg, BaseQuery, string, ResultType, string>>,
-> = TSHelpersNoInfer<R>;
+> = DeepSignal<TSHelpersNoInfer<R>>;
 
 type UseQueryStateBaseResult<D extends QueryDefinition<any, any, any, any>> = QuerySubState<D> & {
   /**
@@ -430,8 +431,10 @@ export type UseMutationStateOptions<D extends MutationDefinition<any, any, any, 
   fixedCacheKey?: string;
 };
 
-export type UseMutationStateResult<D extends MutationDefinition<any, any, any, any>, R> = TSHelpersNoInfer<R> & {
-  originalArgs?: QueryArgFrom<D>;
+export type UseMutationStateResult<D extends MutationDefinition<any, any, any, any>, R> = SignalsMap<
+  TSHelpersNoInfer<R>
+> & {
+  originalArgs: Signal<QueryArgFrom<D> | undefined>;
   /**
    * Resets the hook state to it's initial `uninitialized` state.
    * This will also remove the last result from the cache.
@@ -465,10 +468,7 @@ export type UseMutation<D extends MutationDefinition<any, any, any, any>> = <
   R extends Record<string, any> = MutationResultSelectorResult<D>,
 >(
   options?: UseMutationStateOptions<D, R>,
-) => {
-  dispatch: MutationTrigger<D>;
-  state: Signal<UseMutationStateResult<D, R>>;
-};
+) => MutationTrigger<D> & UseMutationStateResult<D, R>;
 
 export type TypedUseMutation<ResultType, QueryArg, BaseQuery extends BaseQueryFn> = UseMutation<
   MutationDefinition<QueryArg, BaseQuery, string, ResultType, string>
@@ -484,7 +484,7 @@ export type MutationTrigger<D extends MutationDefinition<any, any, any, any>> = 
    * ```ts
    * // codeblock-meta title="Using .unwrap with async await"
    * try {
-   *   const payload = await this.addPostMutation.dispatch({ id: 1, name: 'Example' }).unwrap();
+   *   const payload = await this.addPostMutation({ id: 1, name: 'Example' }).unwrap();
    *   console.log('fulfilled', payload)
    * } catch (error) {
    *   console.error('rejected', error);
@@ -494,8 +494,7 @@ export type MutationTrigger<D extends MutationDefinition<any, any, any, any>> = 
    * @example
    * ```ts
    * // codeblock-meta title="Using .unwrap with async await"
-   * this.deletePostMutation
-   *    .dispatch(+this.route.snapshot.params.id)
+   * this.deletePostMutation(+this.route.snapshot.params.id)
    *    .unwrap()
    *    .then(() => this.router.navigate(['/posts']))
    *    .catch(() => console.error('Error deleting Post'));

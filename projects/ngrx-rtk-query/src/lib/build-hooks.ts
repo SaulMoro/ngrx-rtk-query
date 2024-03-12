@@ -1,4 +1,4 @@
-import { DestroyRef, computed, effect, inject, isDevMode, signal, untracked } from '@angular/core';
+import { DestroyRef, computed, effect, inject, isDevMode, isSignal, signal, untracked } from '@angular/core';
 import type { Action, DefaultProjectorFn, MemoizedSelector } from '@ngrx/store';
 import type { SubscriptionSelectors } from '@reduxjs/toolkit/dist/query/core/buildMiddleware/types';
 import type {
@@ -36,7 +36,7 @@ import type {
   UseQuerySubscription,
 } from './types';
 import { useStableQueryArgs } from './useSerializedStableValue';
-import { shallowEqual } from './utils';
+import { shallowEqual, signalProxy, toDeepSignal, toLazySignal } from './utils';
 
 /**
  * Wrapper around `defaultQueryStateSelector` to be used in `useQuery`.
@@ -128,6 +128,13 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       isFetching,
       isLoading,
       isSuccess,
+      // Deep signals required init in undefined atleast
+      endpointName: currentState.endpointName,
+      error: currentState.error,
+      fulfilledTimeStamp: currentState.fulfilledTimeStamp,
+      originalArgs: currentState.originalArgs,
+      requestId: currentState.requestId,
+      startedTimeStamp: currentState.startedTimeStamp,
     } as UseQueryStateDefaultResult<any>;
   }
 
@@ -335,12 +342,24 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
     };
 
     const useQueryState: UseQueryState<any> = (arg: any, options = {}) => {
+      // We need to use `toLazySignal` here to prevent 'signal required inputs' errors
+      const lazyArg = isSignal(arg)
+        ? toLazySignal(arg, { initialValue: skipToken })
+        : typeof arg === 'function'
+          ? arg
+          : () => arg;
+      const lazyOptions = isSignal(options)
+        ? toLazySignal(options, { initialValue: {} })
+        : typeof options === 'function'
+          ? options
+          : () => options;
+
       const stateOptions = computed(() => {
-        const { skip = false, selectFromResult } = typeof options === 'function' ? options() : options;
+        const { skip = false, selectFromResult } = lazyOptions();
         return { skip, selectFromResult };
       });
       const subscriptionArg = computed(() => {
-        const subscriptionArg = typeof arg === 'function' ? arg() : arg;
+        const subscriptionArg = lazyArg();
         return stateOptions().skip ? skipToken : subscriptionArg;
       });
 
@@ -370,8 +389,9 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         lastValue = selectDefaultResult(getState());
         return currentState();
       });
+      const deepSignal = toDeepSignal(currentState);
 
-      return currentState;
+      return deepSignal as any;
     };
 
     return {
@@ -385,20 +405,27 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
           skip: arg() === UNINITIALIZED_VALUE,
         }));
         const queryStateResults = useQueryState(arg, subscriptionOptions);
+        const signalsMap = signalProxy(queryStateResults);
+        Object.assign(trigger, { lastArg: arg });
+        Object.assign(trigger, signalsMap);
 
-        return { fetch: trigger, state: queryStateResults, lastArg: arg } as const;
+        return trigger as any;
       },
       useQuery(arg, options) {
         const querySubscriptionResults = useQuerySubscription(arg, options);
         const subscriptionOptions = computed(() => {
-          const subscriptionArg = typeof arg === 'function' ? arg() : arg;
-          const { skip } = typeof options === 'function' ? options() : options || {};
-          const selectFromResult = subscriptionArg === skipToken || skip ? undefined : noPendingQueryStateSelector;
-          return { selectFromResult, ...options };
+          const subscriptionArg = typeof arg === 'function' ? arg() : options;
+          const subscriptionOptions = typeof options === 'function' ? options() : options;
+          return {
+            selectFromResult:
+              subscriptionArg === skipToken || subscriptionOptions?.skip ? undefined : noPendingQueryStateSelector,
+            ...subscriptionOptions,
+          };
         });
         const queryStateResults = useQueryState(arg, subscriptionOptions);
+        Object.assign(queryStateResults, querySubscriptionResults);
 
-        return computed(() => ({ ...queryStateResults(), ...querySubscriptionResults }));
+        return queryStateResults as any;
       },
       selector: select as QuerySelector<any>,
     };
@@ -428,8 +455,22 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         return promise;
       };
 
+      const fixedSelect: typeof select = (args) => (state) => {
+        const currentState = select(args)(state);
+        return {
+          ...currentState,
+          // Deep signals required init in undefined atleast
+          data: currentState.data,
+          endpointName: currentState.endpointName,
+          error: currentState.error,
+          fulfilledTimeStamp: currentState.fulfilledTimeStamp,
+          requestId: currentState.requestId,
+          startedTimeStamp: currentState.startedTimeStamp,
+        } as any;
+      };
+
       const requestId = computed(() => promiseRef()?.requestId);
-      const selectDefaultResult = (requestId?: string) => select({ fixedCacheKey, requestId });
+      const selectDefaultResult = (requestId?: string) => fixedSelect({ fixedCacheKey, requestId });
       const mutationSelector = (
         requestId?: string,
       ): MemoizedSelector<RootState<Definitions, any, any>, any, DefaultProjectorFn<any>> =>
@@ -457,9 +498,13 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         }
       };
 
-      const finalState = computed(() => ({ ...currentState()(), originalArgs: originalArgs(), reset }));
+      const finalState = computed(() => currentState()());
+      const signalsMap = signalProxy(finalState);
+      Object.assign(triggerMutation, { originalArgs });
+      Object.assign(triggerMutation, { reset });
+      Object.assign(triggerMutation, signalsMap);
 
-      return { dispatch: triggerMutation, state: finalState } as const;
+      return triggerMutation as any;
     };
 
     return {

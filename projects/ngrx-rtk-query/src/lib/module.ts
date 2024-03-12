@@ -1,5 +1,6 @@
-import { isDevMode } from '@angular/core';
+import { type Injector, type Signal } from '@angular/core';
 import { createSelectorFactory, defaultMemoize, type Action } from '@ngrx/store';
+import type { SelectSignalOptions } from '@ngrx/store/src/models';
 import type { ThunkAction } from '@reduxjs/toolkit';
 import type {
   Api,
@@ -14,7 +15,6 @@ import type {
 } from '@reduxjs/toolkit/query';
 
 import { buildHooks } from './build-hooks';
-import { dispatch as _dispatch, getState as _getState, select } from './thunk.service';
 import {
   isMutationDefinition,
   isQueryDefinition,
@@ -61,9 +61,13 @@ declare module '@reduxjs/toolkit/query' {
         options?: PrefetchOptions,
       ): (arg: QueryArgFrom<Definitions[EndpointName]>, options?: PrefetchOptions) => void;
       /**
-       * A hook that provides access to the store's api dispatch function.
+       * Provides access to the api dispatch function.
        */
       dispatch: Dispatch;
+      /**
+       * Provides access to the api injector.
+       */
+      injector: Injector;
     } & HooksWithUniqueNames<Definitions>;
   }
 }
@@ -82,11 +86,11 @@ export interface AngularHooksModuleOptions {
     /**
      * The version of the `getState` to be used
      */
-    getState: typeof _getState;
+    getState: () => any;
     /**
      * The version of the `useSelector` hook to be used
      */
-    useSelector: typeof select;
+    useSelector: <K>(mapFn: (state: any) => K, options?: SelectSignalOptions<K>) => Signal<K>;
   };
   /**
    * A selector creator (usually from `reselect`, or matching the same signature)
@@ -103,9 +107,9 @@ export interface AngularHooksModuleOptions {
  *   coreModule(),
  *   angularHooksModule({
  *     hooks: {
- *       useDispatch: createDispatchHook(MyContext),
- *       useSelector: createSelectorHook(MyContext),
- *       useStore: createStoreHook(MyContext)
+ *       dispatch: createDispatchHook(MyContext),
+ *       getState: createSelectorHook(MyContext),
+ *       useSelector: createStoreHook(MyContext)
  *     }
  *   })
  * );
@@ -114,55 +118,21 @@ export interface AngularHooksModuleOptions {
  * @returns A module for use with `buildCreateApi`
  */
 export const angularHooksModule = ({
-  hooks = {
-    dispatch: _dispatch as Dispatch,
-    useSelector: select,
-    getState: _getState,
-  },
+  hooks,
   createSelector = _createSelector,
-  ...rest
 }: AngularHooksModuleOptions = {}): Module<AngularHooksModule> => {
-  if (isDevMode()) {
-    const hookNames = ['dispatch', 'useSelector', 'getState'] as const;
-    let warned = false;
-    for (const hookName of hookNames) {
-      // warn for old hook options
-      if (Object.keys(rest).length > 0) {
-        if ((rest as Partial<typeof hooks>)[hookName]) {
-          if (!warned) {
-            console.warn(
-              'As of RTK 2.0, the hooks now need to be specified as one object, provided under a `hooks` key:' +
-                '\n`angularHooksModule({ hooks: { dispatch, useSelector, getState } })`',
-            );
-            warned = true;
-          }
-        }
-        // @ts-expect-error migrate
-        hooks[hookName] = rest[hookName];
-      }
-      // then make sure we have them all
-      if (typeof hooks[hookName] !== 'function') {
-        throw new Error(
-          `When using custom hooks for context, all ${hookNames.length} hooks need to be provided: ${hookNames.join(
-            ', ',
-          )}.\nHook ${hookName} was either not provided or not a function.`,
-        );
-      }
-    }
-  }
-
   return {
     name: angularHooksModuleName,
     init(api, { serializeQueryArgs }, context) {
       const anyApi = api as any as Api<any, Record<string, any>, any, any, AngularHooksModule>;
       const { buildQueryHooks, buildMutationHook, usePrefetch } = buildHooks({
         api,
-        moduleOptions: { hooks, createSelector },
+        moduleOptions: { hooks: hooks!, createSelector },
         serializeQueryArgs,
         context,
       });
       safeAssign(anyApi, { usePrefetch });
-      safeAssign(anyApi, { dispatch: hooks.dispatch });
+      safeAssign(anyApi, { dispatch: hooks!.dispatch });
 
       return {
         injectEndpoint(endpointName, definition) {

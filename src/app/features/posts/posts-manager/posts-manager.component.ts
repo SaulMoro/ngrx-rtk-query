@@ -10,10 +10,10 @@ import { useAddPostMutation } from '../services';
         <input id="name" placeholder="New post name" type="text" [formControl]="postNameFormControl" />
         <button
           class="btn btn-primary m-4"
-          [disabled]="postNameFormControl.invalid || addPost.state().isLoading"
+          [disabled]="postNameFormControl.invalid || addPost.isLoading()"
           (click)="addNewPost()"
         >
-          {{ addPost.state().isLoading ? 'Adding...' : 'Add Post' }}
+          {{ addPost.isLoading() ? 'Adding...' : 'Add Post' }}
         </button>
       </div>
 
@@ -34,8 +34,7 @@ export class PostsManagerComponent {
   constructor() {}
 
   addNewPost(): void {
-    this.addPost
-      .dispatch({ name: this.postNameFormControl.value })
+    this.addPost({ name: this.postNameFormControl.value })
       .unwrap()
       .then(() => this.postNameFormControl.setValue(''));
   }

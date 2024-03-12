@@ -31,42 +31,20 @@
 
 ## Installation
 
-### Versions
-
-|   Angular / NgRx   |     ngrx-rtk-query     | @reduxjs/toolkit |       Support       |
-| :----------------: | :--------------------: | :--------------: | :-----------------: |
-|        17.x        |   >=17.1.x (signals)   |     ~2.2.1       | Bugs / New Features |
-|        17.x        |   >=17.0.x (signals)   |     ~1.9.7       |        Bugs         |
-|        16.x        |   >=16.x.x (signals)   |     ~1.9.7       |        Bugs         |
-|        16.x        |    >=4.2.x (rxjs)      |     ~1.9.5       |    Critical bugs    |
-|        15.x        |      4.1.x (rxjs)      |      1.9.5       |        None         |
-
-Only the latest version of Angular in the table above is actively supported. This is due to the fact that compilation of Angular libraries is [incompatible between major versions](https://angular.io/guide/creating-libraries#ensuring-library-version-compatibility).
-
-You can install it with **npm**:
-
 ```bash
 npm install ngrx-rtk-query
 ```
 
-When you install using **npm or yarn**, you will also need to use the **Standalone provider** `provideStoreApi` in your `app` or in a `lazy route`. You can also set setupListeners here:
+### Versions
 
-```typescript
-import { provideStoreApi } from 'ngrx-rtk-query';
-import { api } from './route/to/api.ts';
+|   Angular / NgRx   |     ngrx-rtk-query     | @reduxjs/toolkit |       Support       |
+| :----------------: | :--------------------: | :--------------: | :-----------------: |
+|        17.x        |   >=17.3.x (signals)   |     ~2.2.1       | Bugs / New Features |
+|        17.x        |   >=17.1.x (signals)   |     ~2.2.1       |        Bugs         |
+|        16.x        |    >=4.2.x (rxjs)      |     ~1.9.5       |    Critical bugs    |
+|        15.x        |      4.1.x (rxjs)      |      1.9.5       |        None         |
 
-bootstrapApplication(AppComponent, {
-  providers: [
-    ...
-
-    provideStoreApi(api),
-    // Or to disable setupListeners:
-    // provideStoreApi(api, { setupListeners: false })
-
-    ...
-  ],
-}).catch((err) => console.error(err));
-```
+Only the latest version of Angular in the table above is actively supported. This is due to the fact that compilation of Angular libraries is [incompatible between major versions](https://angular.io/guide/creating-libraries#ensuring-library-version-compatibility).
 
 ## Basic Usage
 
@@ -119,20 +97,23 @@ export const {
 } = counterApi;
 ```
 
-Add the api to your store
+Add the api to your store in your `app` or in a `lazy route`.
 
 ```typescript
 import { provideStoreApi } from 'ngrx-rtk-query';
+import { counterApi } from './route/to/counterApi.ts';
 
-...
+bootstrapApplication(AppComponent, {
   providers: [
     ...
 
     provideStoreApi(counterApi),
+    // Or to disable setupListeners:
+    // provideStoreApi(counterApi, { setupListeners: false })
 
     ...
   ],
-...
+}).catch((err) => console.error(err));
 ```
 
 Use the query in a component
@@ -145,15 +126,15 @@ import { useDecrementCountMutation, useGetCountQuery, useIncrementCountMutation 
   template: `
     <section>
       <button
-        [disabled]="increment.state().isLoading"
-        (click)="increment.dispatch(1)"
+        [disabled]="increment.isLoading()"
+        (click)="increment(1)"
       > + </button>
 
-      <span *ngIf="countQuery()">{{ countQuery().data?.count || 0 }}</span>
+      <span>{{ countQuery.data()?.count ?? 0 }}</span>
 
       <button
-        [disabled]="decrement.state().isLoading"
-        (click)="decrement.dispatch(1)"
+        [disabled]="decrement.isLoading()"
+        (click)="decrement(1)"
       > - </button>
     </section>
   `,
@@ -169,7 +150,7 @@ export class CounterManagerComponent {
 
 ## Usage with HttpClient or injectable service
 
-You can use the `fetchBaseQuery` function to create a base query that uses the Angular `HttpClient` to make requests or any injectable service. Example:
+You can use the `fetchBaseQuery` function to create a base query that uses the Angular `HttpClient` to make requests or any injectable service. Basic HttpClient example:
 
 ```ts
 
@@ -210,31 +191,49 @@ The use of queries is a bit different compared to the original [Queries - RTK Qu
 
 The parameters and options of the Query can be **signals** or static. You can update the signal to change the parameter/option.
 
-The hook `useXXXQuery()` returns a signal with all the information indicated in the official documentation (including `refetch()` function).
+The hook `useXXXQuery()` returns a signal with all the information indicated in the official documentation (including `refetch()` function). Can be used as an object with each of its properties acting like a signal. For example, 'isLoading' can be accessed as `xxxQuery.isLoading()` or `xxxQuery().isLoading()`. The first case offers a more fine-grained change detection.
 
 ```ts
 // Use query without params or options
 postsQuery = useGetPostsQuery();
 
-// Use query with static params or options
+// Use query with signals params or options (can be mixed with static)
+postQuery = useGetPostsQuery(myArgSignal, myOptionsSignal);
+
+// Use query with function (similar to a computed), detect changes in the function (can be mixed)
+postQuery = useGetPostsQuery(() => id(), () => ({ skip: id() <= 5 }));
+
+// Use query with static params or options (can be mixed)
 postQuery = useGetPostsQuery(2, {
   selectFromResult: ({ data: post, isLoading }) => ({ post, isLoading }),
 });
-
-// Use query with signals params or options (can be mixed with static)
-id = signal(2);
-options = signal(...);
-postQuery = useGetPostsQuery(id, options);
 ```
 
-Another good use case is with signals inputs and skipToken
+A good use case is to work with router inputs.
 
 ```ts
-<span>{{ locationQuery().data }}</span>
+// ...
+<span>{{ locationQuery.isLoading() }}</span>
+<span>{{ locationQuery.data() }}</span>
+// ...
+
+export class CharacterCardComponent {
+  readonly characterParamId = input.required<number>();
+  readonly characterQuery = useGetCharacterQuery(this.characterParamId);
+
+// ...
+```
+
+Another good use case is with signals inputs not required and use skipToken
+
+```ts
+// ...
+<span>{{ locationQuery.data() }}</span>
+// ...
 
 export class CharacterCardComponent implements OnInit {
   readonly character = input<Character | undefined>(undefined);
-  readonly locationQuery = useGetLocationQuery(computed(() => this.character()?.currentLocation ?? skipToken));
+  readonly locationQuery = useGetLocationQuery(() => this.character()?.currentLocation ?? skipToken);
 
 // ...
 ```
@@ -243,56 +242,53 @@ export class CharacterCardComponent implements OnInit {
 
 The use of lazy queries is a bit different compared to the original. As in the case of queries, the parameters and options of the Query can be signal or static. You can look at lazy feature example from this repository.
 
-Like in the original library, a lazy returns a object (not array) of 3 items, but the structure and naming of the items is different.
-
-- `fetch(arg)`: This function is the trigger to run the fetch action.
-- `state`: Signal that returns an object with the query state.
-- `lastArg`: Signal that returns the last argument.
+Like in the original library, a lazy query returns a object (not array) with each of its properties acting like a signal.
 
 ```ts
 // Use query without options
 postsQuery = useLazyGetPostsQuery();
+// Use query with signal options
+options = signal(...);
+postQuery = useLazyGetPostsQuery(options);
 // Use query with static options
 postQuery = useLazyGetPostsQuery({
   selectFromResult: ({ data: post, isLoading }) => ({ post, isLoading }),
 });
-// Use query with signal options
-options = signal(...);
-postQuery = useLazyGetPostsQuery(options);
 ```
 
 Use when data needs to be loaded on demand
 
 ```ts
-<span>{{ xxxQuery.state().data }}</span>
+//...
+<span>{{ xxxQuery.data() }}</span>
 <span>{{ xxxQuery.lastArg() }}</span>
-
 //...
 
 export class XxxComponent {
   xxxQuery = useLazyGetXxxQuery();
 
 // ...
-
   xxx(id: string) {
-    this.xxxQuery.fetch(id).unwrap();
+    this.xxxQuery(id).unwrap();
   }
-
 // ...
 ```
 
-Another good use case is to work with nested or relational data
+Another use case is to work with nested or relational data.
+
+> [!TIP]
+> We advise using 'query' instead of 'lazy query' for these cases for more declarative code.
 
 ```ts
-<span>{{ locationQuery.state().data }}</span>
+<span>{{ locationQuery.data() }}</span>
 
 export class CharacterCardComponent implements OnInit {
-  @Input() character: Character;
+  readonly character = input.required<Character>();
 
   locationQuery = useLazyGetLocationQuery();
 
   ngOnInit(): void {
-    this.locationQuery.fetch(this.character.currentLocation, { preferCacheValue: true });
+    this.locationQuery(this.character().currentLocation, { preferCacheValue: true });
   }
 
 // ...
@@ -305,19 +301,36 @@ Perfect for ngOnInit cases. You can look at pagination feature example from this
 
 The use of mutations is a bit different compared to the original [Mutations - RTK Query guide](https://redux-toolkit.js.org/rtk-query/usage/mutations). You can look at the examples from this repository.
 
-Like in the original library, a mutation is a object (not array) of 2 items, but the structure and naming of the items is different.
-
-- `dispatch(params)`: This function is the trigger to run the mutation action.
-- `state`: Signal that returns an object with the state, including the status flags and other info (see official docs).
+Like in the original library, a mutation is a object (not array) with each of its properties acting like a signal.
 
 ```ts
 // Use mutation hook
 addPost = useAddPostMutation();
 
 // Mutation trigger
-addPost.dispatch({params});
-// Signal with the state of mutation
-addPost.state()
+this.addPost({params});
+
+
+// Can unwrap the mutation to do a action
+
+this.addPost({params}).unwrap().then((data) => {
+  // Do something with data
+}).catch((error) => {
+  // Do something with error
+});
+
+// Or
+
+try {
+  const data = await this.addPost({params}).unwrap();
+  // Do something with data
+} catch (error) {
+  // Do something with error
+}
+
+// Signal with the state of mutation to use in the template or component (isLoading, data, error, isSuccess, etc)
+addPost.isLoading();
+addPost.data();
 ```
 
 ### **Code-splitted/Lazy feature/Lazy modules**
@@ -329,7 +342,6 @@ Import this module where needed. You can look at posts feature example from this
 
 ```ts
 // ...
-
 export const postsApi = createApi({
   reducerPath: 'postsApi',
   baseQuery: baseQueryWithRetry,
@@ -338,20 +350,17 @@ export const postsApi = createApi({
     // ...
   }),
 });
-
 // ...
 
 import { provideStoreApi } from 'ngrx-rtk-query';
 
-...
+// ...
   providers: [
-    ...
-
+    // ...
     provideStoreApi(postsApi),
-
-    ...
+    // ...
   ],
-...
+// ...
 ```
 
 <br />

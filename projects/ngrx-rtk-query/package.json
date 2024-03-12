@@ -11,12 +11,13 @@
     "tslib": "^2.0.0"
   },
   "keywords": [
-    "angular",
+    "angular query",
     "angular rtk query",
     "ngrx-rtk-query",
     "ngrx rtk query",
     "rtk-query",
     "ngrx",
+    "angular",
     "signals",
     "query",
     "redux",

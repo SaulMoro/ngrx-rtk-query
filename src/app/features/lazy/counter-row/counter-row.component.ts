@@ -8,18 +8,16 @@ import { useDecrementCountByIdMutation, useIncrementCountByIdMutation } from '@a
     <div class="mt-4 flex items-center space-x-4">
       <button
         class="btn-outline btn-primary"
-        [disabled]="increment.state().isLoading || counterData?.isUninitialized"
-        (click)="incrementCounter()"
+        [disabled]="increment.isLoading() || isUninitialized"
+        (click)="increment({ id: originalArgs ?? '', amount: 1 })"
       >
         +
       </button>
-      <span class="text-3xl font-bold" [class.bg-green-100]="counterData?.isFetching">{{
-        counterData?.data?.count || 0
-      }}</span>
+      <span class="text-3xl font-bold" [class.bg-green-100]="isFetching">{{ data?.count || 0 }}</span>
       <button
         class="btn-outline btn-primary"
-        [disabled]="decrement.state().isLoading || counterData?.isUninitialized"
-        (click)="decrementCounter()"
+        [disabled]="decrement.isLoading() || isUninitialized"
+        (click)="decrement({ id: originalArgs ?? '', amount: 1 })"
       >
         -
       </button>
@@ -29,23 +27,11 @@ import { useDecrementCountByIdMutation, useIncrementCountByIdMutation } from '@a
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CounterRowComponent {
-  @Input() counterData?: {
-    originalArgs?: string;
-    isFetching: boolean;
-    isUninitialized: boolean;
-    data?: { count: number };
-  };
+  @Input() originalArgs?: string;
+  @Input() data?: { count: number };
+  @Input() isFetching: boolean = false;
+  @Input() isUninitialized: boolean = true;
 
   increment = useIncrementCountByIdMutation();
   decrement = useDecrementCountByIdMutation();
-
-  constructor() {}
-
-  incrementCounter(): void {
-    this.increment.dispatch({ id: this.counterData?.originalArgs ?? '', amount: 1 });
-  }
-
-  decrementCounter(): void {
-    this.decrement.dispatch({ id: this.counterData?.originalArgs ?? '', amount: 1 });
-  }
 }
