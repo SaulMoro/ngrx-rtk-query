@@ -1,4 +1,4 @@
-import { DestroyRef, computed, effect, inject, isDevMode, signal, untracked } from '@angular/core';
+import { DestroyRef, computed, effect, inject, isDevMode, isSignal, signal, untracked } from '@angular/core';
 import type { Action, DefaultProjectorFn, MemoizedSelector } from '@ngrx/store';
 import type { SubscriptionSelectors } from '@reduxjs/toolkit/dist/query/core/buildMiddleware/types';
 import type {
@@ -342,12 +342,24 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
     };
 
     const useQueryState: UseQueryState<any> = (arg: any, options = {}) => {
+      // We need to use `toLazySignal` here to prevent 'signal required inputs' errors
+      const lazyArg = isSignal(arg)
+        ? toLazySignal(arg, { initialValue: skipToken })
+        : typeof arg === 'function'
+          ? arg
+          : () => arg;
+      const lazyOptions = isSignal(options)
+        ? toLazySignal(options, { initialValue: {} })
+        : typeof options === 'function'
+          ? options
+          : () => options;
+
       const stateOptions = computed(() => {
-        const { skip = false, selectFromResult } = typeof options === 'function' ? options() : options;
+        const { skip = false, selectFromResult } = lazyOptions();
         return { skip, selectFromResult };
       });
       const subscriptionArg = computed(() => {
-        const subscriptionArg = typeof arg === 'function' ? arg() : arg;
+        const subscriptionArg = lazyArg();
         return stateOptions().skip ? skipToken : subscriptionArg;
       });
 
@@ -401,10 +413,8 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       },
       useQuery(arg, options) {
         const querySubscriptionResults = useQuerySubscription(arg, options);
-        // We need to use `toLazySignal` here to prevent 'signal required inputs' errors
-        const lazyArg = typeof arg === 'function' ? toLazySignal<unknown>(arg as any) : () => arg;
         const subscriptionOptions = computed(() => {
-          const subscriptionArg = lazyArg();
+          const subscriptionArg = typeof arg === 'function' ? arg() : options;
           const subscriptionOptions = typeof options === 'function' ? options() : options;
           return {
             selectFromResult:
@@ -412,7 +422,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
             ...subscriptionOptions,
           };
         });
-        const queryStateResults = useQueryState(lazyArg, subscriptionOptions);
+        const queryStateResults = useQueryState(arg, subscriptionOptions);
         Object.assign(queryStateResults, querySubscriptionResults);
 
         return queryStateResults as any;
