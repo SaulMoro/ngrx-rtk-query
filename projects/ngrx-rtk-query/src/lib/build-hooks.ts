@@ -344,7 +344,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
     const useQueryState: UseQueryState<any> = (arg: any, options = {}) => {
       // We need to use `toLazySignal` here to prevent 'signal required inputs' errors
       const lazyArg = isSignal(arg)
-        ? toLazySignal(arg, { initialValue: skipToken })
+        ? toLazySignal(arg, { initialValue: undefined })
         : typeof arg === 'function'
           ? arg
           : () => arg;
