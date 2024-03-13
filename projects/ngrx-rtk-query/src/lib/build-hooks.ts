@@ -128,7 +128,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       isFetching,
       isLoading,
       isSuccess,
-      // Deep signals required init in undefined atleast
+      // Deep signals required init properties undefined atleast
       endpointName: currentState.endpointName,
       error: currentState.error,
       fulfilledTimeStamp: currentState.fulfilledTimeStamp,
@@ -344,12 +344,12 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
     const useQueryState: UseQueryState<any> = (arg: any, options = {}) => {
       // We need to use `toLazySignal` here to prevent 'signal required inputs' errors
       const lazyArg = isSignal(arg)
-        ? toLazySignal(arg, { initialValue: undefined })
+        ? toLazySignal(arg, { initialValue: skipToken })
         : typeof arg === 'function'
           ? arg
           : () => arg;
       const lazyOptions = isSignal(options)
-        ? toLazySignal(options, { initialValue: {} })
+        ? toLazySignal(options, { initialValue: { selectFromResult: noPendingQueryStateSelector } })
         : typeof options === 'function'
           ? options
           : () => options;
@@ -414,7 +414,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       useQuery(arg, options) {
         const querySubscriptionResults = useQuerySubscription(arg, options);
         const subscriptionOptions = computed(() => {
-          const subscriptionArg = typeof arg === 'function' ? arg() : options;
+          const subscriptionArg = typeof arg === 'function' ? arg() : arg;
           const subscriptionOptions = typeof options === 'function' ? options() : options;
           return {
             selectFromResult:
@@ -459,7 +459,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         const currentState = select(args)(state);
         return {
           ...currentState,
-          // Deep signals required init in undefined atleast
+          // Deep signals required init properties undefined atleast
           data: currentState.data,
           endpointName: currentState.endpointName,
           error: currentState.error,

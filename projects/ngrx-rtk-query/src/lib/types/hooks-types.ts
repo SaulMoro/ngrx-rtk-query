@@ -22,7 +22,7 @@ import type {
   TSHelpersOverride,
 } from '@reduxjs/toolkit/query';
 import type { UninitializedValue } from '../constants';
-import { DeepSignal, SignalsMap } from '../utils';
+import type { DeepSignal, SignalsMap } from '../utils';
 
 export interface QueryHooks<Definition extends QueryDefinition<any, any, any, any, any>> {
   useQuery: UseQuery<Definition>;
