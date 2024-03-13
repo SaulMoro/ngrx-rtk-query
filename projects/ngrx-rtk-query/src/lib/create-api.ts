@@ -39,7 +39,19 @@ export const createApi: CreateApi<typeof coreModuleName | typeof angularHooksMod
 
   const getApiInjector = () =>
     (api as unknown as Api<any, Record<string, any>, string, string, AngularHooksModule | CoreModule>).injector;
-  const getStore = () => getApiInjector().get(Store);
+  const getStore = () => {
+    const injector = getApiInjector();
+    if (!injector) {
+      throw new Error(
+        `Provide the API (${reducerPath}) is necessary to use the queries. Did you forget to provide the queries api?`,
+      );
+    }
+    const store = injector.get(Store, undefined, { optional: true });
+    if (!store) {
+      throw new Error(`Provide the Store is necessary to use the queries. Did you forget to provide the store?`);
+    }
+    return store;
+  };
   const storeDispatch = (action: Action) => {
     getStore().dispatch(action);
     return action;

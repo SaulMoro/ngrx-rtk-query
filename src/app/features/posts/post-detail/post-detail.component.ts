@@ -1,6 +1,9 @@
-import { ChangeDetectionStrategy, Component, effect, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { RouterSelectors } from '@app/core/router';
+import { Store } from '@ngrx/store';
+import { skipToken } from 'ngrx-rtk-query';
 
 import { useDeletePostMutation, useGetPostQuery, useUpdatePostMutation } from '../services/posts';
 
@@ -47,13 +50,26 @@ import { useDeletePostMutation, useGetPostQuery, useUpdatePostMutation } from '.
       </ng-template>
 
       <pre class="bg-gray-200">{{ postQuery.data() | json }}</pre>
+
+      @if (!postDinamicQuery.isFetching() && !postDinamicQuery.isError() && postDinamicQuery.data()) {
+        <h3>Dynamic router arg and selectFromResult</h3>
+        <pre class="bg-gray-200">Name: {{ postDinamicQuery().name }}</pre>
+      }
     </section>
   `,
   styles: [],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PostDetailComponent {
-  postQuery = useGetPostQuery(+this.route.snapshot.params.id, { pollingInterval: 5000 });
+  // Static arg
+  readonly postQuery = useGetPostQuery(+this.route.snapshot.params.id, { pollingInterval: 5000 });
+
+  // Dynamic signal arg
+  readonly #paramId = inject(Store).selectSignal(RouterSelectors.selectParamIdNumber);
+  readonly postDinamicQuery = useGetPostQuery(() => this.#paramId() ?? skipToken, {
+    pollingInterval: 5000,
+    selectFromResult: (result) => ({ ...result, name: result.data?.name }),
+  });
 
   #_ = effect(() => {
     const result = this.postQuery();

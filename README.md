@@ -218,8 +218,8 @@ A good use case is to work with router inputs.
 // ...
 
 export class CharacterCardComponent {
-  readonly characterParamId = input.required<number>();
-  readonly characterQuery = useGetCharacterQuery(this.characterParamId);
+  characterParamId = input.required<number>();
+  characterQuery = useGetCharacterQuery(this.characterParamId);
 
 // ...
 ```
@@ -232,8 +232,8 @@ Another good use case is with signals inputs not required and use skipToken
 // ...
 
 export class CharacterCardComponent implements OnInit {
-  readonly character = input<Character | undefined>(undefined);
-  readonly locationQuery = useGetLocationQuery(() => this.character()?.currentLocation ?? skipToken);
+  character = input<Character | undefined>(undefined);
+  locationQuery = useGetLocationQuery(() => this.character()?.currentLocation ?? skipToken);
 
 // ...
 ```
@@ -283,8 +283,7 @@ Another use case is to work with nested or relational data.
 <span>{{ locationQuery.data() }}</span>
 
 export class CharacterCardComponent implements OnInit {
-  readonly character = input.required<Character>();
-
+  character = input.required<Character>();
   locationQuery = useLazyGetLocationQuery();
 
   ngOnInit(): void {

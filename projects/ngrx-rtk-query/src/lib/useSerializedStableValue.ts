@@ -1,4 +1,4 @@
-import { Signal, computed } from '@angular/core';
+import { computed, type Signal } from '@angular/core';
 import type { EndpointDefinition, SerializeQueryArgs } from '@reduxjs/toolkit/query';
 
 export function useStableQueryArgs<T>(
