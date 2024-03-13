@@ -1,3 +1,11 @@
+## [17.3.2](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.1...v17.3.2) (2024-03-13)
+
+
+### Bug Fixes
+
+* add warning if api or store not provided ([d6f444f](https://github.com/SaulMoro/ngrx-rtk-query/commit/d6f444f10c3b220c2434f52cfead2d3fb0f09f07))
+* problem with lazy signal in edge cases ([905c3ae](https://github.com/SaulMoro/ngrx-rtk-query/commit/905c3aeeae68ea4755f6275565877b464c756562))
+
 ## [17.3.2-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.1...v17.3.2-next.1) (2024-03-13)
 
 
