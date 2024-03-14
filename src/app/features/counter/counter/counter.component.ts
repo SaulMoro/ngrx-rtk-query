@@ -50,7 +50,10 @@ export class CounterComponent {
   pollingInterval = signal<number>(this.pollingOptions[0].value);
 
   // Queries
-  countQuery = useGetCountByIdQuery(this.counterId, () => ({ pollingInterval: this.pollingInterval() }));
+  countQuery = useGetCountByIdQuery(
+    () => this.counterId(),
+    () => ({ pollingInterval: this.pollingInterval() }),
+  );
   increment = useIncrementCountByIdMutation();
   decrement = useDecrementCountByIdMutation();
 }

@@ -1,4 +1,4 @@
-import { DestroyRef, computed, effect, inject, isDevMode, isSignal, signal, untracked } from '@angular/core';
+import { DestroyRef, computed, effect, inject, isDevMode, signal, untracked } from '@angular/core';
 import type { Action, DefaultProjectorFn, MemoizedSelector } from '@ngrx/store';
 import type { SubscriptionSelectors } from '@reduxjs/toolkit/dist/query/core/buildMiddleware/types';
 import type {
@@ -343,15 +343,10 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
 
     const useQueryState: UseQueryState<any> = (arg: any, options = {}) => {
       // We need to use `toLazySignal` here to prevent 'signal required inputs' errors
-      const lazyArg = isSignal(arg)
-        ? toLazySignal(arg, { initialValue: skipToken })
-        : typeof arg === 'function'
-          ? arg
-          : () => arg;
-      const lazyOptions = isSignal(options)
-        ? toLazySignal(options, { initialValue: { selectFromResult: noPendingQueryStateSelector } })
-        : typeof options === 'function'
-          ? options
+      const lazyArg = typeof arg === 'function' ? toLazySignal(arg, { initialValue: skipToken }) : () => arg;
+      const lazyOptions =
+        typeof options === 'function'
+          ? toLazySignal(options, { initialValue: { selectFromResult: noPendingQueryStateSelector } })
           : () => options;
 
       const stateOptions = computed(() => {
