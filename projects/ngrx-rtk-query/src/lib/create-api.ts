@@ -37,24 +37,25 @@ export const createApi: CreateApi<typeof coreModuleName | typeof angularHooksMod
   );
   const api = createApi(options);
 
-  const getApiInjector = () =>
-    (api as unknown as Api<any, Record<string, any>, string, string, AngularHooksModule | CoreModule>).injector;
-  let store: Store;
-  const getStore = () => {
-    if (store) return store;
-
-    const injector = getApiInjector();
+  const getApiInjector = () => {
+    const injector = (api as unknown as Api<any, Record<string, any>, string, string, AngularHooksModule | CoreModule>)
+      .injector;
     if (!injector) {
       throw new Error(
         `Provide the API (${reducerPath}) is necessary to use the queries. Did you forget to provide the queries api?`,
       );
     }
-    const storeInstance = injector.get(Store, undefined, { optional: true });
-    if (!storeInstance) {
+    return injector;
+  };
+  // eslint-disable-next-line ngrx/use-consistent-global-store-name
+  let storeFallback: Store;
+  const getStore = () => {
+    const injector = getApiInjector();
+    const store = injector.get(Store, undefined, { optional: true });
+    if (!store) {
       throw new Error(`Provide the Store is necessary to use the queries. Did you forget to provide the store?`);
     }
-
-    store = storeInstance as Store;
+    storeFallback = store as Store;
     return store;
   };
   const storeDispatch = (action: Action) => {
