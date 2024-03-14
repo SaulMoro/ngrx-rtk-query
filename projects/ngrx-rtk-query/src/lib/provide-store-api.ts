@@ -1,6 +1,6 @@
 import {
+  ApplicationRef,
   ENVIRONMENT_INITIALIZER,
-  Injector,
   inject,
   makeEnvironmentProviders,
   type EnvironmentProviders,
@@ -23,8 +23,8 @@ export function provideStoreApi(
       provide: ENVIRONMENT_INITIALIZER,
       multi: true,
       useValue() {
-        const injector = inject(Injector);
-        Object.assign(api, { injector });
+        const appRef = inject(ApplicationRef);
+        Object.assign(api, { injector: appRef.injector });
       },
     },
     provideState(api.reducerPath, api.reducer),

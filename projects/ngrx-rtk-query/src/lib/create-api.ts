@@ -47,15 +47,13 @@ export const createApi: CreateApi<typeof coreModuleName | typeof angularHooksMod
     }
     return injector;
   };
-  // eslint-disable-next-line ngrx/use-consistent-global-store-name
-  let storeFallback: Store;
+
   const getStore = () => {
     const injector = getApiInjector();
     const store = injector.get(Store, undefined, { optional: true });
     if (!store) {
       throw new Error(`Provide the Store is necessary to use the queries. Did you forget to provide the store?`);
     }
-    storeFallback = store as Store;
     return store;
   };
   const storeDispatch = (action: Action) => {
