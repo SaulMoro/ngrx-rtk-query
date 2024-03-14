@@ -1,3 +1,10 @@
+## [17.3.4-next.3](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.4-next.2...v17.3.4-next.3) (2024-03-14)
+
+
+### Bug Fixes
+
+* store instance in tests ([bfa71e9](https://github.com/SaulMoro/ngrx-rtk-query/commit/bfa71e90a672ffb65f7b6f15c92685e9e1eb1f2a))
+
 ## [17.3.4-next.2](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.4-next.1...v17.3.4-next.2) (2024-03-14)
 
 
