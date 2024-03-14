@@ -50,7 +50,7 @@ export const createApi: CreateApi<typeof coreModuleName | typeof angularHooksMod
       );
     }
     const storeInstance = injector.get(Store, undefined, { optional: true });
-    if (!store) {
+    if (!storeInstance) {
       throw new Error(`Provide the Store is necessary to use the queries. Did you forget to provide the store?`);
     }
 
