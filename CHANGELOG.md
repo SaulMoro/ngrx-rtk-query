@@ -1,3 +1,10 @@
+## [17.3.5-next.2](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.5-next.1...v17.3.5-next.2) (2024-03-14)
+
+
+### Bug Fixes
+
+* use appRef in api ([99eba7d](https://github.com/SaulMoro/ngrx-rtk-query/commit/99eba7dcc14780b7870853a55b2ef7f6b8405bc6))
+
 ## [17.3.5-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.4-next.2...v17.3.4-next.3) (2024-03-14)
 
 ### Bug Fixes
