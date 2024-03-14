@@ -39,17 +39,22 @@ export const createApi: CreateApi<typeof coreModuleName | typeof angularHooksMod
 
   const getApiInjector = () =>
     (api as unknown as Api<any, Record<string, any>, string, string, AngularHooksModule | CoreModule>).injector;
+  let store: Store;
   const getStore = () => {
+    if (store) return store;
+
     const injector = getApiInjector();
     if (!injector) {
       throw new Error(
         `Provide the API (${reducerPath}) is necessary to use the queries. Did you forget to provide the queries api?`,
       );
     }
-    const store = injector.get(Store, undefined, { optional: true });
+    const storeInstance = injector.get(Store, undefined, { optional: true });
     if (!store) {
       throw new Error(`Provide the Store is necessary to use the queries. Did you forget to provide the store?`);
     }
+
+    store = storeInstance as Store;
     return store;
   };
   const storeDispatch = (action: Action) => {
@@ -57,7 +62,7 @@ export const createApi: CreateApi<typeof coreModuleName | typeof angularHooksMod
     return action;
   };
   const storeState = () => {
-    const storeState = getStore().selectSignal((state) => state)();
+    const storeState: Record<string, any> = getStore().selectSignal((state) => state)();
     return storeState?.[reducerPath]
       ? storeState
       : // Query inside forFeature (Code splitting)
