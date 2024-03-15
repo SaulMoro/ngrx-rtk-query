@@ -1,7 +1,5 @@
-import { type Injector, type Signal } from '@angular/core';
-import { createSelectorFactory, defaultMemoize, type Action } from '@ngrx/store';
-import type { SelectSignalOptions } from '@ngrx/store/src/models';
-import type { ThunkAction } from '@reduxjs/toolkit';
+import type { Injector, Signal, ValueEqualityFn } from '@angular/core';
+import type { Action, Selector, ThunkAction } from '@reduxjs/toolkit';
 import type {
   Api,
   BaseQueryFn,
@@ -22,7 +20,7 @@ import {
   type MutationHooks,
   type QueryHooks,
 } from './types';
-import { capitalize, safeAssign, shallowEqual } from './utils';
+import { capitalize, safeAssign } from './utils';
 
 export const angularHooksModuleName = /* @__PURE__ */ Symbol();
 export type AngularHooksModule = typeof angularHooksModuleName;
@@ -67,18 +65,16 @@ declare module '@reduxjs/toolkit/query' {
       /**
        * Provides access to the api injector.
        */
-      injector: Injector;
+      getInjector: () => Injector;
     } & HooksWithUniqueNames<Definitions>;
   }
 }
-
-const _createSelector = createSelectorFactory((projector) => defaultMemoize(projector, shallowEqual, shallowEqual));
 
 export interface AngularHooksModuleOptions {
   /**
    * The hooks from Redux to be used
    */
-  hooks?: {
+  hooks: {
     /**
      * The version of the `dispatch` to be used
      */
@@ -90,12 +86,16 @@ export interface AngularHooksModuleOptions {
     /**
      * The version of the `useSelector` hook to be used
      */
-    useSelector: <K>(mapFn: (state: any) => K, options?: SelectSignalOptions<K>) => Signal<K>;
+    useSelector: <K>(mapFn: (state: any) => K, options?: { equal?: ValueEqualityFn<K> }) => Signal<K>;
   };
   /**
    * A selector creator (usually from `reselect`, or matching the same signature)
    */
-  createSelector?: typeof _createSelector;
+  createSelector: <T = any, V = any>(...input: any[]) => Selector<T, V>;
+  /**
+   * The injector to be used
+   */
+  getInjector: () => Injector;
 }
 
 /**
@@ -105,13 +105,7 @@ export interface AngularHooksModuleOptions {
  * ```ts
  * const customCreateApi = buildCreateApi(
  *   coreModule(),
- *   angularHooksModule({
- *     hooks: {
- *       dispatch: createDispatchHook(MyContext),
- *       getState: createSelectorHook(MyContext),
- *       useSelector: createStoreHook(MyContext)
- *     }
- *   })
+ *   angularHooksModule(() => myCreateAngularHooksModule())
  * );
  * ```
  *
@@ -119,25 +113,27 @@ export interface AngularHooksModuleOptions {
  */
 export const angularHooksModule = ({
   hooks,
-  createSelector = _createSelector,
-}: AngularHooksModuleOptions = {}): Module<AngularHooksModule> => {
+  createSelector,
+  getInjector,
+}: AngularHooksModuleOptions): Module<AngularHooksModule> => {
   return {
     name: angularHooksModuleName,
     init(api, { serializeQueryArgs }, context) {
       const anyApi = api as any as Api<any, Record<string, any>, any, any, AngularHooksModule>;
       const { buildQueryHooks, buildMutationHook, usePrefetch } = buildHooks({
         api,
-        moduleOptions: { hooks: hooks!, createSelector },
+        moduleOptions: { hooks, createSelector, getInjector },
         serializeQueryArgs,
         context,
       });
       safeAssign(anyApi, { usePrefetch });
-      safeAssign(anyApi, { dispatch: hooks!.dispatch });
+      safeAssign(anyApi, { dispatch: hooks.dispatch });
+      safeAssign(anyApi, { getInjector });
 
       return {
         injectEndpoint(endpointName, definition) {
           if (isQueryDefinition(definition)) {
-            const { useQuery, useLazyQuery, useLazyQuerySubscription, useQueryState, useQuerySubscription, selector } =
+            const { useQuery, useLazyQuery, useLazyQuerySubscription, useQueryState, useQuerySubscription } =
               buildQueryHooks(endpointName);
             safeAssign(anyApi.endpoints[endpointName], {
               useQuery,
@@ -145,13 +141,12 @@ export const angularHooksModule = ({
               useLazyQuerySubscription,
               useQueryState,
               useQuerySubscription,
-              selector,
             });
             (api as any)[`use${capitalize(endpointName)}Query`] = useQuery;
             (api as any)[`useLazy${capitalize(endpointName)}Query`] = useLazyQuery;
           } else if (isMutationDefinition(definition)) {
-            const { useMutation, selector } = buildMutationHook(endpointName);
-            safeAssign(anyApi.endpoints[endpointName], { useMutation, selector });
+            const { useMutation } = buildMutationHook(endpointName);
+            safeAssign(anyApi.endpoints[endpointName], { useMutation });
             (api as any)[`use${capitalize(endpointName)}Mutation`] = useMutation;
           }
         },

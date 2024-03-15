@@ -1,6 +1,4 @@
-import type { Signal } from '@angular/core';
-import { Store, type Action } from '@ngrx/store';
-import type { SelectSignalOptions } from '@ngrx/store/src/models';
+import type { Action } from '@reduxjs/toolkit';
 import {
   buildCreateApi,
   coreModule,
@@ -9,21 +7,28 @@ import {
   type CoreModule,
   type CreateApi,
 } from '@reduxjs/toolkit/query';
-import { angularHooksModule, angularHooksModuleName, type AngularHooksModule, type Dispatch } from './module';
+import {
+  angularHooksModule,
+  angularHooksModuleName,
+  type AngularHooksModule,
+  type AngularHooksModuleOptions,
+  type Dispatch,
+} from './module';
 
 export const createApi: CreateApi<typeof coreModuleName | typeof angularHooksModuleName> = (options) => {
-  const reducerPath = options.reducerPath as string;
-
   const next = (action: unknown): unknown => {
     if (typeof action === 'function') {
-      return action(dispatch, storeState, { injector: getApiInjector() });
+      return action(dispatch, getState, { injector: getInjector() });
     }
-    return storeDispatch(action as Action);
+    return store.hooks.dispatch(action as Action);
   };
   const dispatch = (action: unknown): unknown => middleware(next)(action);
-  const getState = () => storeState();
-  const useSelector = <K>(mapFn: (state: any) => K, options?: SelectSignalOptions<K>): Signal<K> =>
-    storeSelect(mapFn, options);
+
+  const getState: AngularHooksModuleOptions['hooks']['getState'] = () => store.hooks.getState();
+  const useSelector: AngularHooksModuleOptions['hooks']['useSelector'] = (mapFn, options) =>
+    store.hooks.useSelector(mapFn, options);
+  const createSelector: AngularHooksModuleOptions['createSelector'] = (...input) => store.createSelector(...input);
+  const getInjector: AngularHooksModuleOptions['getInjector'] = () => store.getInjector();
 
   const createApi = /* @__PURE__ */ buildCreateApi(
     coreModule(),
@@ -33,46 +38,21 @@ export const createApi: CreateApi<typeof coreModuleName | typeof angularHooksMod
         getState,
         useSelector,
       },
+      createSelector,
+      getInjector,
     }),
   );
   const api = createApi(options);
 
-  const getApiInjector = () => {
-    const injector = (api as unknown as Api<any, Record<string, any>, string, string, AngularHooksModule | CoreModule>)
-      .injector;
-    if (!injector) {
-      throw new Error(
-        `Provide the API (${reducerPath}) is necessary to use the queries. Did you forget to provide the queries api?`,
-      );
-    }
-    return injector;
+  let store: AngularHooksModuleOptions;
+  const initApiStore = (setupFn: () => AngularHooksModuleOptions) => {
+    store = setupFn();
   };
-
-  const getStore = () => {
-    const injector = getApiInjector();
-    const store = injector.get(Store, undefined, { optional: true });
-    if (!store) {
-      throw new Error(`Provide the Store is necessary to use the queries. Did you forget to provide the store?`);
-    }
-    return store;
-  };
-  const storeDispatch = (action: Action) => {
-    getStore().dispatch(action);
-    return action;
-  };
-  const storeState = () => {
-    const storeState: Record<string, any> = getStore().selectSignal((state) => state)();
-    return storeState?.[reducerPath]
-      ? storeState
-      : // Query inside forFeature (Code splitting)
-        { [reducerPath]: storeState };
-  };
-  const storeSelect = <K>(mapFn: (state: any) => K, options?: SelectSignalOptions<K>): Signal<K> =>
-    getStore().selectSignal(mapFn, options);
+  Object.assign(api, { initApiStore });
 
   const middleware = (
     api as unknown as Api<any, Record<string, any>, string, string, AngularHooksModule | CoreModule>
-  ).middleware({ dispatch, getState: storeState });
+  ).middleware({ dispatch, getState });
 
   return api;
 };
