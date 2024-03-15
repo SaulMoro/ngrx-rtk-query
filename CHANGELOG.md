@@ -1,3 +1,16 @@
+# [17.4.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.4...v17.4.0) (2024-03-15)
+
+
+### Bug Fixes
+
+* store instance in tests ([bfa71e9](https://github.com/SaulMoro/ngrx-rtk-query/commit/bfa71e90a672ffb65f7b6f15c92685e9e1eb1f2a))
+* use appRef in api ([99eba7d](https://github.com/SaulMoro/ngrx-rtk-query/commit/99eba7dcc14780b7870853a55b2ef7f6b8405bc6))
+
+
+### Features
+
+* remove selector to avoid ngrx-store imports in core ([65076d5](https://github.com/SaulMoro/ngrx-rtk-query/commit/65076d5317a630e8c071cb8711ff0a723db0f118))
+
 # [17.4.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.5-next.2...v17.4.0-next.1) (2024-03-15)
 
 
