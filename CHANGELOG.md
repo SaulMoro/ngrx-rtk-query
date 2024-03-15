@@ -1,3 +1,10 @@
+# [17.4.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.5-next.2...v17.4.0-next.1) (2024-03-15)
+
+
+### Features
+
+* remove selector to avoid ngrx-store imports in core ([65076d5](https://github.com/SaulMoro/ngrx-rtk-query/commit/65076d5317a630e8c071cb8711ff0a723db0f118))
+
 ## [17.3.5-next.2](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.5-next.1...v17.3.5-next.2) (2024-03-14)
 
 
