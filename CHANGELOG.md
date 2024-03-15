@@ -1,13 +1,31 @@
-## [17.3.4](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.3...v17.3.4) (2024-03-14)
+# [17.4.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.5-next.2...v17.4.0-next.1) (2024-03-15)
+
+
+### Features
+
+* remove selector to avoid ngrx-store imports in core ([65076d5](https://github.com/SaulMoro/ngrx-rtk-query/commit/65076d5317a630e8c071cb8711ff0a723db0f118))
+
+## [17.3.5-next.2](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.5-next.1...v17.3.5-next.2) (2024-03-14)
 
 
 ### Bug Fixes
 
-* store instance in tests ([44b4e41](https://github.com/SaulMoro/ngrx-rtk-query/commit/44b4e41114e5f5b9e5bb039e47aa8e96db7071c1))
+* use appRef in api ([99eba7d](https://github.com/SaulMoro/ngrx-rtk-query/commit/99eba7dcc14780b7870853a55b2ef7f6b8405bc6))
+
+## [17.3.5-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.4-next.2...v17.3.4-next.3) (2024-03-14)
+
+### Bug Fixes
+
 * store instance in tests ([65d65b5](https://github.com/SaulMoro/ngrx-rtk-query/commit/65d65b51fdb5b2e9d35e9d656991d2ccc76de16d))
 
-## [17.3.4-next.2](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.4-next.1...v17.3.4-next.2) (2024-03-14)
+## [17.3.4](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.3...v17.3.4) (2024-03-14)
 
+### Bug Fixes
+
+* store instance in tests ([bfa71e9](https://github.com/SaulMoro/ngrx-rtk-query/commit/bfa71e90a672ffb65f7b6f15c92685e9e1eb1f2a))
+* store instance in tests ([44b4e41](https://github.com/SaulMoro/ngrx-rtk-query/commit/44b4e41114e5f5b9e5bb039e47aa8e96db7071c1))
+
+## [17.3.4-next.2](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.4-next.1...v17.3.4-next.2) (2024-03-14)
 
 ### Bug Fixes
 
@@ -15,13 +33,11 @@
 
 ## [17.3.4-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.3...v17.3.4-next.1) (2024-03-14)
 
-
 ### Bug Fixes
 
 * store instance in tests ([65d65b5](https://github.com/SaulMoro/ngrx-rtk-query/commit/65d65b51fdb5b2e9d35e9d656991d2ccc76de16d))
 
 ## [17.3.3](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.2...v17.3.3) (2024-03-14)
-
 
 ### Bug Fixes
 
@@ -29,13 +45,11 @@
 
 ## [17.3.3-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.2...v17.3.3-next.1) (2024-03-14)
 
-
 ### Bug Fixes
 
 * issue in required signal input ([e5fa2e3](https://github.com/SaulMoro/ngrx-rtk-query/commit/e5fa2e32bfe2fd4534b4b4f85bbf57df97a44b82))
 
 ## [17.3.2](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.1...v17.3.2) (2024-03-13)
-
 
 ### Bug Fixes
 
@@ -44,7 +58,6 @@
 
 ## [17.3.2-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.1...v17.3.2-next.1) (2024-03-13)
 
-
 ### Bug Fixes
 
 * add warning if api or store not provided ([d6f444f](https://github.com/SaulMoro/ngrx-rtk-query/commit/d6f444f10c3b220c2434f52cfead2d3fb0f09f07))
@@ -52,20 +65,17 @@
 
 ## [17.3.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.0...v17.3.1) (2024-03-12)
 
-
 ### Bug Fixes
 
 * problem with lazy signal in edge cases ([5d3324f](https://github.com/SaulMoro/ngrx-rtk-query/commit/5d3324ff60900ec7b9442ced35ef44531b444d6d))
 
 ## [17.3.1-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.0...v17.3.1-next.1) (2024-03-12)
 
-
 ### Bug Fixes
 
 * problem with lazy signal in edge cases ([5d3324f](https://github.com/SaulMoro/ngrx-rtk-query/commit/5d3324ff60900ec7b9442ced35ef44531b444d6d))
 
 # [17.3.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.2.1...v17.3.0) (2024-03-12)
-
 
 ### Bug Fixes
 
@@ -77,7 +87,6 @@
 * package tags ([1f42bbc](https://github.com/SaulMoro/ngrx-rtk-query/commit/1f42bbcf7d2113cf39e3b4270628f88ed1e839b5))
 * required signal inputs errors ([47e8905](https://github.com/SaulMoro/ngrx-rtk-query/commit/47e89052204105ed2f8edf512b352d9703c6e364))
 * required signal inputs errors v2 ([1960a40](https://github.com/SaulMoro/ngrx-rtk-query/commit/1960a404d5708b06c1195937cd2c77b6d2254f22))
-
 
 ### Features
 
@@ -86,20 +95,17 @@
 
 # [17.3.0-next.8](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.0-next.7...v17.3.0-next.8) (2024-03-12)
 
-
 ### Bug Fixes
 
 * move lazy signal to useQueryState and add to options ([d884770](https://github.com/SaulMoro/ngrx-rtk-query/commit/d88477096dfe4fa3e9d5e5e23c5c2cf3c0de209d))
 
 # [17.3.0-next.7](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.0-next.6...v17.3.0-next.7) (2024-03-11)
 
-
 ### Bug Fixes
 
 * required signal inputs errors v2 ([1960a40](https://github.com/SaulMoro/ngrx-rtk-query/commit/1960a404d5708b06c1195937cd2c77b6d2254f22))
 
 # [17.3.0-next.6](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.0-next.5...v17.3.0-next.6) (2024-03-11)
-
 
 ### Bug Fixes
 
@@ -108,13 +114,11 @@
 
 # [17.3.0-next.5](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.0-next.4...v17.3.0-next.5) (2024-03-11)
 
-
 ### Bug Fixes
 
 * **lib:** select from result when options is signal or function ([e2007cf](https://github.com/SaulMoro/ngrx-rtk-query/commit/e2007cf3072fff7c0c2f6b15995c9a5b0284e210))
 
 # [17.3.0-next.4](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.0-next.3...v17.3.0-next.4) (2024-03-07)
-
 
 ### Bug Fixes
 
@@ -123,13 +127,11 @@
 
 # [17.3.0-next.3](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.0-next.2...v17.3.0-next.3) (2024-03-06)
 
-
 ### Features
 
 * **lib:** remove dispatch and fetch functions ([6f441fb](https://github.com/SaulMoro/ngrx-rtk-query/commit/6f441fb0bc23fa0ca237e1ec5bc1e8a46bad6c43))
 
 # [17.3.0-next.2](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.0-next.1...v17.3.0-next.2) (2024-02-29)
-
 
 ### Bug Fixes
 
@@ -137,13 +139,11 @@
 
 # [17.3.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.2.1...v17.3.0-next.1) (2024-02-28)
 
-
 ### Features
 
 * **lib:** add deep signals and refactor mutations and lazy ([c7f3ca0](https://github.com/SaulMoro/ngrx-rtk-query/commit/c7f3ca091155cf09b120b29b3e515426a5294049))
 
 ## [17.2.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.2.0...v17.2.1) (2024-02-27)
-
 
 ### Bug Fixes
 
@@ -152,7 +152,6 @@
 
 ## [17.2.1-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.2.0...v17.2.1-next.1) (2024-02-27)
 
-
 ### Bug Fixes
 
 * avoid testing cleanup issue ([8111ff5](https://github.com/SaulMoro/ngrx-rtk-query/commit/8111ff50bee7f5d228d45cc45ccced7c8f3f85eb))
@@ -160,13 +159,11 @@
 
 # [17.2.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.1.1...v17.2.0) (2024-02-15)
 
-
 ### Features
 
 * **lib:** update to rtk 2.2.1 ([f2d81fb](https://github.com/SaulMoro/ngrx-rtk-query/commit/f2d81fbd2c1e144efa18725ece978ca19f9e6484))
 
 # [17.2.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.1.1...v17.2.0-next.1) (2024-02-15)
-
 
 ### Features
 
@@ -174,13 +171,11 @@
 
 ## [17.1.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.1.0...v17.1.1) (2024-01-24)
 
-
 ### Bug Fixes
 
 * minor issue when tab is unfocused ([2fe5dfa](https://github.com/SaulMoro/ngrx-rtk-query/commit/2fe5dfabd188c391ee8bec756ff345a012332432))
 
 ## [17.1.1-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.1.0...v17.1.1-next.1) (2024-01-24)
-
 
 ### Bug Fixes
 
@@ -188,13 +183,11 @@
 
 # [17.1.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.0.1...v17.1.0) (2024-01-23)
 
-
 ### Features
 
 * supports rtk v2 ([e4053c7](https://github.com/SaulMoro/ngrx-rtk-query/commit/e4053c73c4ad2a073c9eacf3365afa9acce402cb))
 
 # [17.1.0-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.0.1...v17.1.0-next.1) (2024-01-23)
-
 
 ### Features
 
@@ -202,18 +195,15 @@
 
 ## [17.0.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.0.0...v17.0.1) (2023-11-21)
 
-
 ### Bug Fixes
 
 * release 17.0.1 ([7db01e9](https://github.com/SaulMoro/ngrx-rtk-query/commit/7db01e97d3fecdd9de357bd48e41060301bcc2cb))
 
 # [16.4.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v16.3.0...v16.4.0) (2023-11-21)
 
-
 ### Bug Fixes
 
 * version ([2fd0211](https://github.com/SaulMoro/ngrx-rtk-query/commit/2fd021182b9e0b11a5c727b394d4e6c4a3a6eb2d))
-
 
 ### Features
 

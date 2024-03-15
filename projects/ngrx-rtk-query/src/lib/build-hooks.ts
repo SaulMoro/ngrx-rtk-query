@@ -1,5 +1,5 @@
 import { DestroyRef, computed, effect, inject, isDevMode, signal, untracked } from '@angular/core';
-import type { Action, DefaultProjectorFn, MemoizedSelector } from '@ngrx/store';
+import type { Action, Selector } from '@reduxjs/toolkit';
 import type { SubscriptionSelectors } from '@reduxjs/toolkit/dist/query/core/buildMiddleware/types';
 import type {
   Api,
@@ -25,9 +25,7 @@ import type { AngularHooksModuleOptions } from './module';
 import type {
   GenericPrefetchThunk,
   MutationHooks,
-  MutationSelector,
   QueryHooks,
-  QuerySelector,
   QueryStateSelector,
   UseLazyQuerySubscription,
   UseMutation,
@@ -75,7 +73,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
   context,
 }: {
   api: Api<any, Definitions, any, any, CoreModule>;
-  moduleOptions: Required<AngularHooksModuleOptions>;
+  moduleOptions: AngularHooksModuleOptions;
   serializeQueryArgs: SerializeQueryArgs<any>;
   context: ApiContext<Definitions>;
 }) {
@@ -422,7 +420,6 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
 
         return queryStateResults as any;
       },
-      selector: select as QuerySelector<any>,
     };
   }
 
@@ -466,16 +463,10 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
 
       const requestId = computed(() => promiseRef()?.requestId);
       const selectDefaultResult = (requestId?: string) => fixedSelect({ fixedCacheKey, requestId });
-      const mutationSelector = (
-        requestId?: string,
-      ): MemoizedSelector<RootState<Definitions, any, any>, any, DefaultProjectorFn<any>> =>
+      const mutationSelector = (requestId?: string): Selector<RootState<Definitions, any, any>, any> =>
         selectFromResult
           ? createSelector(selectDefaultResult(requestId), selectFromResult)
-          : (selectDefaultResult(requestId) as MemoizedSelector<
-              RootState<Definitions, any, any>,
-              any,
-              DefaultProjectorFn<any>
-            >);
+          : selectDefaultResult(requestId);
 
       const currentState = computed(() => useSelector(mutationSelector(requestId()), { equal: shallowEqual }));
       const originalArgs = computed(() => (fixedCacheKey == null ? promiseRef()?.arg.originalArgs : undefined));
@@ -502,9 +493,6 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       return triggerMutation as any;
     };
 
-    return {
-      useMutation,
-      selector: select as MutationSelector<any>,
-    };
+    return { useMutation };
   }
 }

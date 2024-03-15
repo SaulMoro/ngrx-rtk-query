@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { useDecrementCountMutation, useGetCountQuery, useIncrementCountMutation } from '@app/core/services';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { counterApi, useDecrementCountMutation, useGetCountQuery, useIncrementCountMutation } from '@app/core/services';
+import { Store } from '@ngrx/store';
 import { nanoid } from '@reduxjs/toolkit';
 
 @Component({
@@ -19,6 +20,13 @@ import { nanoid } from '@reduxjs/toolkit';
           <p class="mt-6 bg-gray-200 text-xs">
             <code>{{ countQuery() | json }}</code>
           </p>
+
+          <div class="mt-6">
+            Data from selector:
+            <p class="bg-gray-200 text-xs">
+              <code>{{ test() | json }}</code>
+            </p>
+          </div>
         </div>
       </section>
 
@@ -41,6 +49,8 @@ export class CounterManagerComponent {
   countQuery = useGetCountQuery();
   increment = useIncrementCountMutation();
   decrement = useDecrementCountMutation();
+
+  test = inject(Store).selectSignal(counterApi.endpoints.getCount.select());
 
   counters: string[] = [];
 

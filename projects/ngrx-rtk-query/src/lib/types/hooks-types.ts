@@ -1,5 +1,4 @@
 import type { Signal } from '@angular/core';
-import type { MemoizedSelector } from '@ngrx/store';
 import type { ThunkAction, UnknownAction } from '@reduxjs/toolkit';
 import type {
   BaseQueryFn,
@@ -11,7 +10,6 @@ import type {
   QueryActionCreatorResult,
   QueryArgFrom,
   QueryDefinition,
-  QueryResultSelectorResult,
   QueryStatus,
   QuerySubState,
   ResultTypeFrom,
@@ -30,20 +28,11 @@ export interface QueryHooks<Definition extends QueryDefinition<any, any, any, an
   useQuerySubscription: UseQuerySubscription<Definition>;
   useLazyQuerySubscription: UseLazyQuerySubscription<Definition>;
   useQueryState: UseQueryState<Definition>;
-  selector: QuerySelector<Definition>;
 }
 
 export interface MutationHooks<Definition extends MutationDefinition<any, any, any, any, any>> {
   useMutation: UseMutation<Definition>;
-  selector: MutationSelector<Definition>;
 }
-
-export type QuerySelector<Definition extends QueryDefinition<any, any, any, any>> = (
-  queryArg: QueryArgFrom<Definition> | SkipToken,
-) => MemoizedSelector<Record<string, any>, QueryResultSelectorResult<Definition>>;
-export type MutationSelector<Definition extends MutationDefinition<any, any, any, any>> = (
-  requestId: string | { requestId: string | undefined; fixedCacheKey: string | undefined } | SkipToken,
-) => MemoizedSelector<Record<string, any>, MutationResultSelectorResult<Definition>>;
 
 /**
  * A hook that automatically triggers fetches of data from an endpoint, 'subscribes' the component
