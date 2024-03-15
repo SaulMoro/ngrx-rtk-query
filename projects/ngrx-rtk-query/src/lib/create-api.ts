@@ -22,7 +22,15 @@ export const createApi: CreateApi<typeof coreModuleName | typeof angularHooksMod
     }
     return store.hooks.dispatch(action as Action);
   };
-  const dispatch = (action: unknown): unknown => middleware(next)(action);
+  const dispatch = (action: unknown): unknown => {
+    if (!store) {
+      const reducerPath = options.reducerPath;
+      throw new Error(
+        `Provide the API (${reducerPath}) is necessary to use the queries. Did you forget to provide the queries api?`,
+      );
+    }
+    return middleware(next)(action);
+  };
 
   const getState: AngularHooksModuleOptions['hooks']['getState'] = () => store.hooks.getState();
   const useSelector: AngularHooksModuleOptions['hooks']['useSelector'] = (mapFn, options) =>

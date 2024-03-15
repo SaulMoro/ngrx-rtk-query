@@ -1,3 +1,10 @@
+## [17.4.1-next.1](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.4.0...v17.4.1-next.1) (2024-03-15)
+
+
+### Bug Fixes
+
+* add warning if api or store not provided ([3438b07](https://github.com/SaulMoro/ngrx-rtk-query/commit/3438b074f1af21ed5524734ae6fcc546a6292b9a))
+
 # [17.4.0](https://github.com/SaulMoro/ngrx-rtk-query/compare/v17.3.4...v17.4.0) (2024-03-15)
 
 
