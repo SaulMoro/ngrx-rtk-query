@@ -1,0 +1,9 @@
+{
+  "name": "with-ngrx-store-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/with-ngrx-store-e2e/src",
+  "implicitDependencies": ["with-ngrx-store"],
+  "// targets": "to see all targets run: nx show project with-ngrx-store-e2e --web",
+  "targets": {}
+}
