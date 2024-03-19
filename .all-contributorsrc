@@ -1,0 +1,29 @@
+{
+  "projectName": "ngrx-rtk-query",
+  "projectOwner": "ngrx-rtk-query",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": ["packages/ngrx-rtk-query/README.md"],
+  "imageSize": 100,
+  "commit": true,
+  "commitConvention": "angular",
+  "contributorsPerLine": 7,
+  "skipCi": true,
+  "commitType": "docs",
+  "contributors": [
+    {
+      "login": "saulmoro",
+      "name": "Saul Moro",
+      "avatar_url": "https://avatars.githubusercontent.com/u/4116819?v=4",
+      "profile": "https://github.com/SaulMoro",
+      "contributions": ["code", "doc", "ideas", "test", "tool", "design"]
+    },
+    {
+      "login": "adrian-pena-castro",
+      "name": "Adrián Peña",
+      "avatar_url": "https://avatars.githubusercontent.com/u/80181162?v=4",
+      "profile": "https://github.com/SaulMoro",
+      "contributions": ["doc", "ideas"]
+    }
+  ]
+}

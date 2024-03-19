@@ -1,0 +1,25 @@
+name: 'Install'
+description: 'Sets up Node.js and runs install'
+
+runs:
+  using: composite
+  steps:
+    - uses: pnpm/action-setup@v2
+      with:
+        run_install: false
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        cache: 'pnpm'
+        node-version-file: .node-version
+
+    - name: Preinstallation steps
+      shell: bash
+      run: corepack enable
+
+    - uses: nrwl/nx-set-shas@v4
+
+    - name: Install dependencies
+      shell: bash
+      run: pnpm install --frozen-lockfile

@@ -1,0 +1,59 @@
+# ORIGINALLY FROM Analog: Brandon Roberts
+# https://github.com/analogjs/analog/blob/main/.github/ISSUE_TEMPLATE/01-bug-report.yml
+
+name: Bug Report
+description: Report a bug in ngrx-rtk-query
+labels: [bug]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping us grow. ❤️
+        Please search GitHub for a similar [issue](https://github.com/SaulMoro/ngrx-rtk-query/issues) or [PR](https://github.com/SaulMoro/ngrx-rtk-query/issues)  before submitting a new issue.
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Please provide the environment you discovered this bug in.
+      description: Use [StackBlitz example](https://stackblitz.com/) to create a reproduction.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: type_bug
+    attributes:
+      label: Which area/package is the issue in?
+      options:
+        - ngrx-rtk-query
+        - examples
+        - docs
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+    validations:
+      required: true
+
+  - type: textarea
+    id: exception-or-error
+    attributes:
+      label: Please provide the exception or error you saw
+      render: true
+
+  - type: textarea
+    id: other
+    attributes:
+      label: Other information
+
+  - type: checkboxes
+    id: assistance
+    attributes:
+      label: I would be willing to submit a PR to fix this issue
+      description: Assistance is provided if you need help submitting a pull request
+      options:
+        - label: 'Yes'
+        - label: 'No'

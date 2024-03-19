@@ -1,0 +1,14 @@
+'📌 area: ngrx-rtk-query':
+  - any: ['packages/ngrx-rtk-query/**/*']
+
+'📌 area: examples':
+  - any: ['examples/**/*']
+
+'📌 area: docs web':
+  - any: ['docs/**/*']
+
+'📚 documentation':
+  - any: ['**/*.md']
+
+'📌 area: ci':
+  - any: ['.github/**/*']

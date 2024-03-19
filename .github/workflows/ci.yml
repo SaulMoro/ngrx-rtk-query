@@ -1,37 +1,80 @@
+# Adapted from Analog & create-t3-app.
 name: CI
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
-
-permissions:
-  actions: read
-  contents: read
+    branches: ['*']
+  merge_group:
 
 jobs:
-  main:
+  commitlint:
     runs-on: ubuntu-latest
+    name: Commitlint
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-
-      # Connect your workspace on nx.app and uncomment this to enable task distribution.
-      # The "--stop-agents-after" is optional, but allows idle agents to shut down once the "e2e-ci" targets have been requested
-      # - run: pnpm exec nx-cloud start-ci-run --distribute-on="5 linux-medium-js" --stop-agents-after="e2e-ci"
-
-      - uses: pnpm/action-setup@v2
+      - name: Lint commit messages
+        uses: wagoid/commitlint-github-action@v5
         with:
-          version: 8
-      # Cache node_modules
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 20
-          cache: 'pnpm'
-      - run: pnpm install --frozen-lockfile
-      - uses: nrwl/nx-set-shas@v4
+          failOnWarnings: true
+          helpURL: https://github.com/SaulMoro/ngrx-rtk-query/blob/main/.github/CONTRIBUTING.md#-commit-message-guidelines
 
-      - run: pnpm exec nx-cloud record -- nx format:check
-      - run: pnpm exec nx affected -t lint test build e2e-ci
+  lint:
+    runs-on: ubuntu-latest
+    name: Lint
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: ./.github/composite-actions/install
+      - name: Lint
+        run: pnpm affected:lint
+
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: ./.github/composite-actions/install
+      - name: Validate
+        run: pnpm exec nx-cloud record -- nx format:check
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: ./.github/composite-actions/install
+      - name: Build
+        run: pnpm affected:build
+
+  test:
+    runs-on: ubuntu-latest
+    needs:
+      - build
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: ./.github/composite-actions/install
+      - name: Test
+        run: pnpm affected:test
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs:
+      - build
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: ./.github/composite-actions/install
+      - name: End-to-end test
+        run: pnpm affected:e2e-ci

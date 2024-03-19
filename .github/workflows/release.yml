@@ -1,0 +1,42 @@
+# Adapted from create-t3-app.
+name: Release
+
+on:
+  push:
+    paths:
+      - '.changeset/**'
+      - 'packages/**'
+    branches:
+      - main
+
+jobs:
+  release:
+    if: ${{ github.repository_owner == 'SaulMoro' }}
+    name: Create a PR for release workflow
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - uses: ./.github/composite-actions/install
+
+      - name: Check for errors
+        run: pnpm affected:lint
+
+      - name: Build ngrx-rtk-query package
+        run: pnpm build:ngrx-rtk-query
+
+      - name: Create Version PR or Publish to NPM
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          commit: 'chore(release): version packages'
+          title: 'chore(release): version packages'
+          version: node .github/changeset-version.mjs
+          publish: npx changeset publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_ACCESS_TOKEN }}
+          NODE_ENV: 'production'
