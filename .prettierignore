@@ -1,5 +1,14 @@
 # Add files here to ignore them from prettier formatting
+/node_modules
 /dist
 /coverage
+/tmp
 /.nx/cache
 .angular
+.astro
+.prettierignore
+
+package-lock.json
+pnpm-lock.yaml
+
+/stats.html

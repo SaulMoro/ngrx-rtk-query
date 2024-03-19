@@ -2,6 +2,11 @@
   "root": true,
   "ignorePatterns": ["**/*"],
   "plugins": ["@nx"],
+  "settings": {
+    "tailwindcss": {
+      "callees": ["cva", "cn"]
+    }
+  },
   "overrides": [
     {
       "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
@@ -23,8 +28,26 @@
     },
     {
       "files": ["*.ts", "*.tsx"],
-      "extends": ["plugin:@nx/typescript"],
-      "rules": {}
+      "plugins": ["import"],
+      "extends": ["plugin:@nx/typescript", "plugin:tailwindcss/recommended"],
+      "rules": {
+        "@typescript-eslint/consistent-type-imports": [
+          "error",
+          { "prefer": "type-imports", "fixStyle": "inline-type-imports" }
+        ],
+        "import/consistent-type-specifier-style": ["error", "prefer-inline"],
+        "@typescript-eslint/naming-convention": [
+          "error",
+          {
+            "selector": ["memberLike"],
+            "modifiers": ["private"],
+            "prefix": ["#"],
+            "format": null
+          }
+        ],
+        "tailwindcss/no-custom-classname": "off",
+        "tailwindcss/classnames-order": "error"
+      }
     },
     {
       "files": ["*.js", "*.jsx"],
@@ -33,10 +56,11 @@
     },
     {
       "files": ["*.spec.ts", "*.spec.tsx", "*.spec.js", "*.spec.jsx"],
-      "env": {
-        "jest": true
-      },
-      "rules": {}
+      "extends": ["plugin:vitest/recommended", "plugin:jest-dom/recommended", "plugin:testing-library/angular"],
+      "rules": {
+        "vitest/consistent-test-it": ["error"],
+        "testing-library/prefer-explicit-assert": "error"
+      }
     }
   ]
 }

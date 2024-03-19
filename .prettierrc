@@ -1,3 +1,40 @@
 {
-  "singleQuote": true
+  "singleQuote": true,
+  "printWidth": 120,
+  "tabWidth": 2,
+  "trailingComma": "all",
+  "arrowParens": "always",
+  "htmlWhitespaceSensitivity": "ignore",
+  "attributeGroups": [
+    "^ui",
+    "$ANGULAR_STRUCTURAL_DIRECTIVE",
+    "$ID",
+    "$DEFAULT",
+    "$CLASS",
+    "$ANGULAR_ANIMATION",
+    "$ANGULAR_ANIMATION_INPUT",
+    "$ANGULAR_INPUT",
+    "$ANGULAR_TWO_WAY_BINDING",
+    "$ANGULAR_OUTPUT",
+    "$ANGULAR_ELEMENT_REF"
+  ],
+  "importOrder": ["^ngrx-rtk-query/(.*)$", "^@ngrx-rtk-query/(.*)$", "^[./]"],
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true,
+  "importOrderParserPlugins": ["typescript", "decorators-legacy"],
+  "plugins": [
+    "@trivago/prettier-plugin-sort-imports",
+    "prettier-plugin-organize-attributes",
+    "prettier-plugin-packagejson",
+    "prettier-plugin-astro",
+    "prettier-plugin-tailwindcss"
+  ],
+  "overrides": [
+    {
+      "files": "*.astro",
+      "options": {
+        "parser": "astro"
+      }
+    }
+  ]
 }

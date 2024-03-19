@@ -1,5 +1,13 @@
 {
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "workspaceLayout": {
+    "appsDir": "examples",
+    "libsDir": "packages"
+  },
+  "cli": {
+    "packageManager": "pnpm",
+    "defaultCollection": "@nx/angular"
+  },
   "namedInputs": {
     "default": ["{projectRoot}/**/*", "sharedGlobals"],
     "production": [
@@ -20,6 +28,11 @@
       "dependsOn": ["^build"],
       "inputs": ["production", "^production"]
     },
+    "@nx/angular:package": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
+    },
     "@nx/eslint:lint": {
       "cache": true,
       "inputs": [
@@ -28,6 +41,19 @@
         "{workspaceRoot}/.eslintignore",
         "{workspaceRoot}/eslint.config.js"
       ]
+    },
+    "@nx/vite:test": {
+      "inputs": ["default", "^production"],
+      "cache": true,
+      "options": {
+        "passWithNoTests": true
+      },
+      "configurations": {
+        "ci": {
+          "ci": true,
+          "codeCoverage": true
+        }
+      }
     },
     "@nx/jest:jest": {
       "cache": true,
@@ -45,15 +71,25 @@
   },
   "plugins": [
     {
+      "plugin": "@nx/eslint/plugin",
+      "options": {
+        "targetName": "lint"
+      }
+    },
+    {
       "plugin": "@nx/playwright/plugin",
       "options": {
         "targetName": "e2e"
       }
     },
     {
-      "plugin": "@nx/eslint/plugin",
+      "plugin": "@nx/vite/plugin",
       "options": {
-        "targetName": "lint"
+        "buildTargetName": "build",
+        "previewTargetName": "preview",
+        "testTargetName": "test",
+        "serveTargetName": "serve",
+        "serveStaticTargetName": "serve-static"
       }
     }
   ],
@@ -62,7 +98,50 @@
       "e2eTestRunner": "playwright",
       "linter": "eslint",
       "style": "css",
-      "unitTestRunner": "jest"
+      "unitTestRunner": "jest",
+      "standalone": true,
+      "inlineStyle": true,
+      "inlineTemplate": true,
+      "routing": true,
+      "addTailwind": true
+    },
+    "@nx/angular:library": {
+      "linter": "eslint",
+      "unitTestRunner": "jest",
+      "style": "css",
+      "changeDetection": "OnPush",
+      "standalone": true,
+      "inlineStyle": true,
+      "inlineTemplate": true,
+      "viewEncapsulation": "None"
+    },
+    "@nx/angular:component": {
+      "style": "css",
+      "changeDetection": "OnPush",
+      "standalone": true,
+      "inlineStyle": true,
+      "inlineTemplate": true,
+      "viewEncapsulation": "None"
+    },
+    "@schematics/angular:component": {
+      "style": "css",
+      "changeDetection": "OnPush",
+      "standalone": true,
+      "inlineStyle": true,
+      "inlineTemplate": true,
+      "viewEncapsulation": "None"
+    },
+    "@nx/angular:directive": {
+      "standalone": true
+    },
+    "@schematics/angular:directive": {
+      "standalone": true
+    },
+    "@nx/angular:pipe": {
+      "standalone": true
+    },
+    "@schematics/angular:pipe": {
+      "standalone": true
     }
   },
   "nxCloudAccessToken": "Y2I5NDVlMzctYmU0My00MDkzLWEwOTItN2Y4YWQzZDk5MzEwfHJlYWQtd3JpdGU="

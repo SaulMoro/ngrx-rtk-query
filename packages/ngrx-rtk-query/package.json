@@ -1,0 +1,55 @@
+{
+  "name": "ngrx-rtk-query",
+  "version": "17.4.1",
+  "description": "Angular RTK Query",
+  "keywords": [
+    "angular query",
+    "angular rtk query",
+    "ngrx-rtk-query",
+    "ngrx rtk query",
+    "rtk-query",
+    "ngrx",
+    "angular",
+    "signals",
+    "query",
+    "redux",
+    "redux-toolkit"
+  ],
+  "homepage": "https://github.com/SaulMoro/ngrx-rtk-query#readme",
+  "bugs": {
+    "url": "https://github.com/SaulMoro/ngrx-rtk-query/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SaulMoro/ngrx-rtk-query.git",
+    "directory": "packages/ngrx-rtk-query"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Saul Moro",
+    "url": "https://twitter.com/SaulMoroDev"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "scripts": {
+    "build": "nx run ngrx-rtk-query:build --tsConfig=tsconfig.lib.prod.json",
+    "pub:beta": "pnpm publish --no-git-checks --tag beta",
+    "pub:next": "pnpm publish --no-git-checks --tag next",
+    "pub:release": "pnpm publish"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "peerDependencies": {
+    "@angular/core": ">=17.0.0",
+    "@reduxjs/toolkit": "~2.2.1"
+  },
+  "optionalDependencies": {
+    "@ngrx/store": ">=17.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "directory": "../../dist/packages/ngrx-rtk-query",
+    "linkDirectory": true
+  }
+}

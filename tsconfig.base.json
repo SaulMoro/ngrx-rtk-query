@@ -14,7 +14,10 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
-    "paths": {}
+    "paths": {
+      "ngrx-rtk-query": ["packages/ngrx-rtk-query/index.ts"],
+      "ngrx-rtk-query/*": ["packages/ngrx-rtk-query/*"]
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }

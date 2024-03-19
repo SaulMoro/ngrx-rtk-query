@@ -1,8 +1,12 @@
 {
   "recommendations": [
+    "angular.ng-template",
     "nrwl.angular-console",
     "esbenp.prettier-vscode",
-    "firsttris.vscode-jest-runner",
-    "ms-playwright.playwright"
+    "ms-playwright.playwright",
+    "dbaeumer.vscode-eslint",
+    "bradlc.vscode-tailwindcss",
+    "astro-build.astro-vscode",
+    "vitest.explorer"
   ]
 }
