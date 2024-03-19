@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery, retry } from 'ngrx-rtk-query';
 
-import { type Post } from './models/post.model';
+import { type Post } from './post.model';
 
 // Create our baseQuery instance
 const baseQuery = fetchBaseQuery({

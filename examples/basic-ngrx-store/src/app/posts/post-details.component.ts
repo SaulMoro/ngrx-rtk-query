@@ -13,7 +13,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
-import { useDeletePostMutation, useGetPostQuery, useUpdatePostMutation } from '../api';
+import { useDeletePostMutation, useGetPostQuery, useUpdatePostMutation } from './api';
 
 @Component({
   selector: 'app-post-details',
@@ -76,7 +76,7 @@ import { useDeletePostMutation, useGetPostQuery, useUpdatePostMutation } from '.
 export class PostDetailsComponent {
   readonly id = input.required({ transform: numberAttribute });
 
-  readonly postQuery = useGetPostQuery(() => this.id(), {
+  readonly postQuery = useGetPostQuery(this.id, {
     pollingInterval: 5000,
   });
 

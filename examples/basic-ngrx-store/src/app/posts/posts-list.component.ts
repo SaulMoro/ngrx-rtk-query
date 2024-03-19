@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, ViewEncapsulation, signal } from '@
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
-import { useAddPostMutation, useGetPostsQuery } from '../api';
+import { useAddPostMutation, useGetPostsQuery } from './api';
 
 @Component({
   selector: 'app-posts-list',

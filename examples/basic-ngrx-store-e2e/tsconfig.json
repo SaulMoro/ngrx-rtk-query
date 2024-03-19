@@ -3,7 +3,7 @@
   "compilerOptions": {
     "allowJs": true,
     "outDir": "../../dist/out-tsc",
-    "module": "commonjs",
+    "module": "es2022",
     "sourceMap": false,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
@@ -15,7 +15,7 @@
   "include": [
     "**/*.ts",
     "**/*.js",
-    "playwright.config.ts",
+    "playwright.config.mts",
     "src/**/*.spec.ts",
     "src/**/*.spec.js",
     "src/**/*.test.ts",

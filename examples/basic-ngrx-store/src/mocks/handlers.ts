@@ -1,7 +1,7 @@
 import { createEntityAdapter } from '@reduxjs/toolkit';
 import { HttpResponse, delay, http } from 'msw';
 
-import { type Post } from '../app/posts/models/post.model';
+import { type Post } from '../app/posts/post.model';
 
 // high tech in-memory storage
 let startingId = 3; // Just a silly counter for usage when adding new posts
