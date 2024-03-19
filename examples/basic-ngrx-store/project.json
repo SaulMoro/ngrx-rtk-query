@@ -1,0 +1,76 @@
+{
+  "name": "basic-ngrx-store",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "app",
+  "sourceRoot": "examples/basic-ngrx-store/src",
+  "tags": ["scope:examples"],
+  "targets": {
+    "build": {
+      "executor": "@angular-devkit/build-angular:application",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/examples/basic-ngrx-store",
+        "index": "examples/basic-ngrx-store/src/index.html",
+        "browser": "examples/basic-ngrx-store/src/main.ts",
+        "polyfills": ["zone.js"],
+        "tsConfig": "examples/basic-ngrx-store/tsconfig.app.json",
+        "assets": [
+          "examples/basic-ngrx-store/src/favicon.ico",
+          "examples/basic-ngrx-store/src/assets",
+          "examples/basic-ngrx-store/src/mockServiceWorker.js"
+        ],
+        "styles": ["examples/basic-ngrx-store/src/styles.css"],
+        "scripts": []
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "2kb",
+              "maximumError": "4kb"
+            }
+          ],
+          "outputHashing": "all"
+        },
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "serve": {
+      "executor": "@angular-devkit/build-angular:dev-server",
+      "configurations": {
+        "production": {
+          "buildTarget": "basic-ngrx-store:build:production"
+        },
+        "development": {
+          "buildTarget": "basic-ngrx-store:build:development"
+        }
+      },
+      "defaultConfiguration": "development"
+    },
+    "extract-i18n": {
+      "executor": "@angular-devkit/build-angular:extract-i18n",
+      "options": {
+        "buildTarget": "basic-ngrx-store:build"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@analogjs/platform:vitest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"]
+    }
+  }
+}
