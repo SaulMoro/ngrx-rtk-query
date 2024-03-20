@@ -27,12 +27,12 @@ jobs:
         run: node .github/version-script-beta.mjs
 
       - name: Authenticate to NPM
-        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_ACCESS_TOKEN }}" > packages/ngrx-rtk-query/.npmrc
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > packages/ngrx-rtk-query/.npmrc
 
       - name: Publish Beta to NPM
         run: pnpm pub:beta
         env:
-          NPM_PUBLISH_TOKEN: ${{ secrets.NPM_ACCESS_TOKEN }}
+          NPM_PUBLISH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: get-npm-version
         id: package-version
