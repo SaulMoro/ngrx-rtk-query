@@ -1,5 +1,5 @@
 {
-  "extends": ["plugin:playwright/recommended"],
+  "extends": ["plugin:playwright/recommended", "../../.eslintrc.json"],
   "ignorePatterns": ["!**/*"],
   "overrides": [
     {
@@ -16,7 +16,10 @@
     },
     {
       "files": ["src/**/*.{ts,js,tsx,jsx}"],
-      "rules": {}
+      "rules": {
+        "testing-library/prefer-screen-queries": "off",
+        "jest-dom/prefer-in-document": "off"
+      }
     }
   ]
 }
