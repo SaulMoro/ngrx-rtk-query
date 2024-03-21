@@ -46,7 +46,7 @@ jobs:
         with:
           number: ${{ env.WORKFLOW_RUN_PR }}
           message: |
-            A new prerelease is available for testing. You can install this latest build in your project with:
+            A new ngrx-rtk-query prerelease is available for testing. You can install this latest build in your project with:
 
             ```sh
             pnpm install ngrx-rtk-query@${{ env.BETA_PACKAGE_VERSION }}

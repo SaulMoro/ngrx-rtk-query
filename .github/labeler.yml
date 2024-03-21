@@ -4,10 +4,8 @@
 '📌 area: examples':
   - any: ['examples/**/*']
 
-'📌 area: docs web':
-  - any: ['docs/**/*']
-
 '📚 documentation':
+  - any: ['docs/**/*']
   - any: ['**/*.md']
 
 '📌 area: ci':

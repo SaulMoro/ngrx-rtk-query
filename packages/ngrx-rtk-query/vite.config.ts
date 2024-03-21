@@ -13,6 +13,7 @@ export default defineConfig(({ mode }) => ({
     environment: 'jsdom',
     setupFiles: ['test-setup.ts'],
     include: ['**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    passWithNoTests: true,
     reporters: ['default'],
     coverage: {
       reportsDirectory: '../../coverage/packages/ngrx-rtk-query',

@@ -42,10 +42,13 @@
   },
   "peerDependencies": {
     "@angular/core": ">=17.0.0",
-    "@reduxjs/toolkit": "~2.2.1"
+    "@ngrx/store": ">=17.0.0",
+    "@reduxjs/toolkit": "~2.2.2"
   },
-  "optionalDependencies": {
-    "@ngrx/store": ">=17.0.0"
+  "peerDependenciesMeta": {
+    "@ngrx/store": {
+      "optional": true
+    }
   },
   "publishConfig": {
     "access": "public",
