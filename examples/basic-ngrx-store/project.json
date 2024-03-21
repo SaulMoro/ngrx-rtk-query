@@ -70,7 +70,12 @@
     },
     "test": {
       "executor": "@analogjs/platform:vitest",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"]
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "configurations": {
+        "watch": {
+          "watch": true
+        }
+      }
     }
   }
 }
