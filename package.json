@@ -47,6 +47,7 @@
     "contributors:generate": "all-contributors generate",
     "dep-graph": "nx dep-graph",
     "dep-graph:watch": "nx dep-graph --watch",
+    "format:check": "nx format:check && prettier --check . --ignore-unknown --no-error-on-unmatched-pattern",
     "preinstall": "npx only-allow pnpm",
     "prepare": "git config core.hookspath .githooks",
     "pub:beta": "pnpm build:ngrx-rtk-query && cd packages/ngrx-rtk-query && pnpm pub:beta",
