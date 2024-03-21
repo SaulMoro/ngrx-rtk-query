@@ -1,0 +1,73 @@
+{
+  // These tasks will run in order when initializing your CodeSandbox project.
+  "setupTasks": [
+    {
+      "name": "Install Dependencies",
+      "command": "pnpm install"
+    }
+  ],
+
+  // These tasks can be run from CodeSandbox. Running one will open a log in the app.
+  "tasks": {
+    "build:cli": {
+      "name": "build:ngrx-rtk-query",
+      "command": "pnpm build:ngrx-rtk-query",
+      "runAtStart": false
+    },
+    "build:www": {
+      "name": "build:docs",
+      "command": "pnpm build:docs",
+      "runAtStart": false
+    },
+    "dev:basic-store": {
+      "name": "dev:basic-store",
+      "command": "pnpm dev:basic-store",
+      "runAtStart": true
+    },
+    "dev:docs": {
+      "name": "dev:docs",
+      "command": "pnpm dev:docs",
+      "runAtStart": false
+    },
+    "affected:build": {
+      "name": "build",
+      "command": "pnpm affected:build",
+      "runAtStart": false
+    },
+    "affected:lint": {
+      "name": "affected:lint",
+      "command": "pnpm affected:lint",
+      "runAtStart": false
+    },
+    "affected:check": {
+      "name": "affected:check",
+      "command": "pnpm affected:check",
+      "runAtStart": false
+    },
+    "affected:test": {
+      "name": "affected:test",
+      "command": "pnpm affected:test",
+      "runAtStart": false
+    },
+    "affected:e2e": {
+      "name": "affected:e2e",
+      "command": "pnpm affected:e2e",
+      "runAtStart": false
+    },
+    "affected:e2e:watch": {
+      "name": "affected:e2e:watch",
+      "command": "pnpm affected:e2e:watch",
+      "runAtStart": false
+    },
+    "format": {
+      "name": "format",
+      "command": "pnpm format",
+      "runAtStart": false
+    },
+    "format:check": {
+      "name": "format:check",
+      "command": "pnpm format:check",
+      "runAtStart": false
+    }
+  }
+}

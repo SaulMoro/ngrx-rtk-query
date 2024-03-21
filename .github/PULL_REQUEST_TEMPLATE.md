@@ -1,25 +1,12 @@
-## PR Checklist
+Closes #<issue>
 
-Please check if your PR fulfills the following requirements:
+## ✅ Checklist
 
-- [ ] The commit message follows our guidelines: <https://github.com/SaulMoro/ngrx-rtk-query/blob/main/.github/CONTRIBUTING.md#-commit-message-guidelines>
-- [ ] Tests for the changes have been added (for bug fixes / features)
-- [ ] Docs have been added / updated (for bug fixes / features)
+- [ ] I have followed every step in the [contributing guide](https://github.com/SaulMoro/ngrx-rtk-query/blob/main/CONTRIBUTING.md#-commit-message-guidelines) (updated 2024-03-21).
+- [ ] The PR title follows the convention we established [conventional-commit](https://www.conventionalcommits.org/en/v1.0.0/)
+- [ ] I performed a functional test on my final commit
 
-## PR Type
-
-What kind of change does this PR introduce?
-
-<!-- Please check the one that applies to this PR using "x". -->
-
-- [ ] Bugfix
-- [ ] Feature
-- [ ] Code style update (formatting, local variables)
-- [ ] Refactoring (no functional changes, no api changes)
-- [ ] Build related changes
-- [ ] CI related changes
-- [ ] Documentation content changes
-- [ ] Other... Please describe:
+---
 
 ## Which package are you modifying?
 
@@ -27,19 +14,16 @@ What kind of change does this PR introduce?
 - [ ] examples
 - [ ] docs
 
-## What is the current behavior?
+---
 
-<!-- Please describe the current behavior that you are modifying, or link to a relevant issue. -->
+## Changelog
 
-Closes #
+_[Short description of what has changed]_
 
-## What is the new behavior?
+---
 
-## Does this PR introduce a breaking change?
+## Screenshots
 
-- [ ] Yes
-- [ ] No
+_[Screenshots]_
 
-<!-- If this PR contains a breaking change, please describe the impact and migration path for existing applications below. -->
-
-## Other information
+💯

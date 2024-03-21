@@ -1,16 +1,17 @@
 # ORIGINALLY FROM Analog: Brandon Roberts
 # https://github.com/analogjs/analog/blob/main/.github/ISSUE_TEMPLATE/01-bug-report.yml
 
-name: Bug Report
-description: Report a bug in ngrx-rtk-query
-labels: [bug]
+name: 🐞 Bug Report
+description: Create a bug report to help us improve
+title: 'bug: '
+labels: ['🐞❔ unconfirmed bug']
 
 body:
   - type: markdown
     attributes:
       value: |
         Thanks for helping us grow. ❤️
-        Please search GitHub for a similar [issue](https://github.com/SaulMoro/ngrx-rtk-query/issues) or [PR](https://github.com/SaulMoro/ngrx-rtk-query/issues)  before submitting a new issue.
+        Please search GitHub for a similar [issue](https://github.com/SaulMoro/ngrx-rtk-query/issues) or [PR](https://github.com/SaulMoro/ngrx-rtk-query/pulls) before submitting a new issue.
 
   - type: textarea
     id: environment
