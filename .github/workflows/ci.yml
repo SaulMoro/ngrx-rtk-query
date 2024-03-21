@@ -94,8 +94,6 @@ jobs:
 
   e2e:
     runs-on: ubuntu-latest
-    container:
-      image: mcr.microsoft.com/playwright:v1.42.1-jammy
     needs:
       - build
     steps:
@@ -103,7 +101,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: ./.github/composite-actions/install
+      - name: Install Playwright
+        run: npx playwright install --with-deps
       - name: End-to-end test
         run: pnpm affected:e2e
-        env:
-          HOME: /root
