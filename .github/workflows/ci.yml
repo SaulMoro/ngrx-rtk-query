@@ -102,4 +102,4 @@ jobs:
           fetch-depth: 0
       - uses: ./.github/composite-actions/install
       - name: End-to-end test
-        run: pnpm affected:e2e-ci
+        run: pnpm affected:e2e
