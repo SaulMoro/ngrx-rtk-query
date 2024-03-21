@@ -18,7 +18,6 @@ const baseQuery = fetchBaseQuery({
 const baseQueryWithRetry = retry(baseQuery, { maxRetries: 6 });
 
 export const postsApi = createApi({
-  reducerPath: 'postsApi',
   baseQuery: baseQueryWithRetry,
   tagTypes: ['Posts'],
   endpoints: (build) => ({
