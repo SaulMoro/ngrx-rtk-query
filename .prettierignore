@@ -4,6 +4,7 @@
 /coverage
 /tmp
 /.nx/cache
+.changeset
 .angular
 .astro
 .prettierignore
