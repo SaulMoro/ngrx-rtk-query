@@ -1,5 +1,11 @@
 # ngrx-rtk-query
 
+## 17.4.3
+
+### Patch Changes
+
+- [#76](https://github.com/SaulMoro/ngrx-rtk-query/pull/76) [`f8f9656`](https://github.com/SaulMoro/ngrx-rtk-query/commit/f8f96568cfd3dfd9256da2d362c7e52757c4eb66) Thanks [@SaulMoro](https://github.com/SaulMoro)! - add noop store provider
+
 ## 17.4.2
 
 ### Patch Changes
