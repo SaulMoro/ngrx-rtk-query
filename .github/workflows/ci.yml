@@ -104,4 +104,4 @@ jobs:
       - name: Install Playwright
         run: npx playwright install --with-deps
       - name: End-to-end test
-        run: pnpm affected:e2e
+        run: pnpm nx affected --target=e2e-ci
