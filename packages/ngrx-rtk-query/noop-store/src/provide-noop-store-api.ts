@@ -41,6 +41,7 @@ const createNoopStoreApi = (
 
   return (): AngularHooksModuleOptions => {
     const dispatch = (action: UnknownAction) => {
+      if (api.resetApiState.match(action)) return;
       store.dispatch(action, { reducerPath, reducer });
       return action;
     };
