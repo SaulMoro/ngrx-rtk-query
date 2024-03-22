@@ -22,14 +22,14 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class ApiStore {
-  readonly #state = signal<Record<string, any>>({});
+  readonly state = signal<Record<string, any>>({});
 
   selectSignal = <K>(mapFn: (state: any) => K, options?: CreateComputedOptions<K>): Signal<K> =>
-    computed(() => mapFn(this.#state()), { equal: options?.equal });
+    computed(() => mapFn(this.state()), { equal: options?.equal });
 
   dispatch = (action: UnknownAction, { reducerPath, reducer }: { reducerPath: string; reducer: Reducer<any> }) => {
-    const nextState = reducer(this.#state()[reducerPath], action as UnknownAction);
-    this.#state.update((state) => ({ ...state, [reducerPath]: nextState }));
+    const nextState = reducer(this.state()[reducerPath], action as UnknownAction);
+    this.state.update((state) => ({ ...state, [reducerPath]: nextState }));
   };
 }
 
@@ -48,7 +48,7 @@ const createNoopStoreApi = (
     };
     const getState = store.selectSignal((state) => state);
     const useSelector = <K>(mapFn: (state: any) => K, options?: CreateComputedOptions<K>): Signal<K> =>
-      computed(() => mapFn(getState()), { equal: options?.equal });
+      store.selectSignal(mapFn, options);
 
     const hooks = { dispatch: dispatch as Dispatch, getState, useSelector };
     const createSelector = (...input: any[]) => {
