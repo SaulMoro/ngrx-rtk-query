@@ -15,7 +15,7 @@ import { type Api, setupListeners as setupListenersFn } from '@reduxjs/toolkit/q
 
 import { type AngularHooksModuleOptions, type Dispatch, type StoreQueryConfig } from 'ngrx-rtk-query/core';
 
-@Injectable({ providedIn: 'root' })
+@Injectable()
 export class ApiStore {
   readonly state = signal<Record<string, any>>({});
 
@@ -66,6 +66,7 @@ export function provideNoopStoreApi(
   setupListeners === false ? undefined : setupListenersFn(api.dispatch, setupListeners);
 
   return makeEnvironmentProviders([
+    ApiStore,
     {
       provide: ENVIRONMENT_INITIALIZER,
       multi: true,
