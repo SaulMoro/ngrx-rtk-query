@@ -24,7 +24,7 @@ import {
 export class ApiStore {
   readonly #state = signal<Record<string, any>>({});
 
-  selectSignal = <K>(mapFn: (state: Record<string, any>) => K, options?: CreateComputedOptions<K>): Signal<K> =>
+  selectSignal = <K>(mapFn: (state: any) => K, options?: CreateComputedOptions<K>): Signal<K> =>
     computed(() => mapFn(this.#state()), { equal: options?.equal });
 
   dispatch = (action: UnknownAction, { reducerPath, reducer }: { reducerPath: string; reducer: Reducer<any> }) => {
