@@ -54,7 +54,8 @@
           "buildTarget": "basic-noop-store:build:production"
         },
         "development": {
-          "buildTarget": "basic-noop-store:build:development"
+          "buildTarget": "basic-noop-store:build:development",
+          "port": 4201
         }
       },
       "defaultConfiguration": "development"
