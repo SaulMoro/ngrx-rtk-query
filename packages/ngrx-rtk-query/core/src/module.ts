@@ -29,6 +29,8 @@ export type Dispatch = <ReturnType>(
   action: Action | ThunkAction<ReturnType, any, any, Action>,
 ) => ReturnType extends Action ? Action : ReturnType;
 
+export type UseSelector = <K>(mapFn: (state: any) => K, options?: { equal?: ValueEqualityFn<K> }) => Signal<K>;
+
 declare module '@reduxjs/toolkit/query' {
   export interface ApiModules<
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -63,6 +65,10 @@ declare module '@reduxjs/toolkit/query' {
        */
       dispatch: Dispatch;
       /**
+       * Provides access to the api useSelector function.
+       */
+      useSelector: UseSelector;
+      /**
        * Provides access to the api injector.
        */
       getInjector: () => Injector;
@@ -86,7 +92,7 @@ export interface AngularHooksModuleOptions {
     /**
      * The version of the `useSelector` hook to be used
      */
-    useSelector: <K>(mapFn: (state: any) => K, options?: { equal?: ValueEqualityFn<K> }) => Signal<K>;
+    useSelector: UseSelector;
   };
   /**
    * A selector creator (usually from `reselect`, or matching the same signature)
@@ -128,6 +134,7 @@ export const angularHooksModule = ({
       });
       safeAssign(anyApi, { usePrefetch });
       safeAssign(anyApi, { dispatch: hooks.dispatch });
+      safeAssign(anyApi, { useSelector: hooks.useSelector });
       safeAssign(anyApi, { getInjector });
 
       return {

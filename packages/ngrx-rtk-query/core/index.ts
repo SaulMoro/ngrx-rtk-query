@@ -14,6 +14,7 @@ export { shallowEqual } from './src/utils';
 export type {
   LazyQueryOptions,
   QueryOptions,
+  StoreQueryConfig,
   TypedLazyQueryTrigger,
   TypedMutationTrigger,
   TypedUseLazyQuery,

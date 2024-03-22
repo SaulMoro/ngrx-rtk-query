@@ -1,1 +1,1 @@
-export const TODO_NOOP_STORE = 'TODO';
+export { ApiStore, provideNoopStoreApi } from './src/provide-noop-store-api';

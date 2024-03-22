@@ -1,0 +1,82 @@
+{
+  "name": "basic-noop-store",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "app",
+  "sourceRoot": "examples/basic-noop-store/src",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@angular-devkit/build-angular:application",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/examples/basic-noop-store",
+        "index": "examples/basic-noop-store/src/index.html",
+        "browser": "examples/basic-noop-store/src/main.ts",
+        "polyfills": ["zone.js"],
+        "tsConfig": "examples/basic-noop-store/tsconfig.app.json",
+        "assets": [
+          "examples/basic-noop-store/src/favicon.ico",
+          "examples/basic-noop-store/src/assets",
+          "examples/basic-noop-store/src/mockServiceWorker.js"
+        ],
+        "styles": ["examples/basic-noop-store/src/styles.css"],
+        "scripts": []
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "2kb",
+              "maximumError": "4kb"
+            }
+          ],
+          "outputHashing": "all"
+        },
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "serve": {
+      "executor": "@angular-devkit/build-angular:dev-server",
+      "configurations": {
+        "production": {
+          "buildTarget": "basic-noop-store:build:production"
+        },
+        "development": {
+          "buildTarget": "basic-noop-store:build:development",
+          "port": 4201
+        }
+      },
+      "defaultConfiguration": "development"
+    },
+    "extract-i18n": {
+      "executor": "@angular-devkit/build-angular:extract-i18n",
+      "options": {
+        "buildTarget": "basic-noop-store:build"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@analogjs/platform:vitest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "configurations": {
+        "watch": {
+          "watch": true
+        }
+      }
+    }
+  }
+}

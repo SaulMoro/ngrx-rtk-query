@@ -19,15 +19,15 @@
       "command": "pnpm build:docs",
       "runAtStart": false
     },
-    "dev:basic-store": {
-      "name": "dev:basic-store",
-      "command": "pnpm dev:basic-store",
-      "runAtStart": true
-    },
     "dev:docs": {
       "name": "dev:docs",
       "command": "pnpm dev:docs",
       "runAtStart": false
+    },
+    "dev:basic-store": {
+      "name": "dev:noop-store",
+      "command": "pnpm dev:noop-store",
+      "runAtStart": true
     },
     "affected:build": {
       "name": "build",

@@ -49,6 +49,7 @@
     "dep-graph": "nx dep-graph",
     "dep-graph:watch": "nx dep-graph --watch",
     "dev:basic-store": "nx run basic-ngrx-store:serve -o",
+    "dev:noop-store": "nx run basic-noop-store:serve -o",
     "format": "prettier --check . --ignore-unknown --no-error-on-unmatched-pattern",
     "format:check": "nx format:check && prettier --check . --ignore-unknown --no-error-on-unmatched-pattern",
     "preinstall": "npx only-allow pnpm",
