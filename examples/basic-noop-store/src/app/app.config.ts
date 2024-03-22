@@ -6,7 +6,8 @@ import {
   withEnabledBlockingInitialNavigation,
   withPreloading,
 } from '@angular/router';
-import { provideNoopStoreApi } from 'ngrx-rtk-query';
+
+import { provideNoopStoreApi } from 'ngrx-rtk-query/noop-store';
 
 import { appRoutes } from './app.routes';
 import { postsApi } from './posts/api';
