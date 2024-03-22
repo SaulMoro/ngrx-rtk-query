@@ -10,22 +10,17 @@ import {
   makeEnvironmentProviders,
   signal,
 } from '@angular/core';
-import { type Reducer, type UnknownAction } from '@reduxjs/toolkit';
+import { type Reducer, type Selector, type UnknownAction } from '@reduxjs/toolkit';
 import { type Api, setupListeners as setupListenersFn } from '@reduxjs/toolkit/query';
 
-import {
-  type AngularHooksModuleOptions,
-  type Dispatch,
-  type StoreQueryConfig,
-  shallowEqual,
-} from 'ngrx-rtk-query/core';
+import { type AngularHooksModuleOptions, type Dispatch, type StoreQueryConfig } from 'ngrx-rtk-query/core';
 
 @Injectable({ providedIn: 'root' })
 export class ApiStore {
   readonly state = signal<Record<string, any>>({});
 
   selectSignal = <K>(mapFn: (state: any) => K, options?: CreateComputedOptions<K>): Signal<K> =>
-    computed(() => mapFn(this.state()), { equal: options?.equal });
+    computed(() => mapFn(this.state()), options);
 
   dispatch = (action: UnknownAction, { reducerPath, reducer }: { reducerPath: string; reducer: Reducer<any> }) => {
     const nextState = reducer(this.state()[reducerPath], action as UnknownAction);
@@ -51,9 +46,10 @@ const createNoopStoreApi = (
       store.selectSignal(mapFn, options);
 
     const hooks = { dispatch: dispatch as Dispatch, getState, useSelector };
-    const createSelector = (...input: any[]) => {
-      return computed(() => input.reduce((acc, selector) => selector(acc), getState()), { equal: shallowEqual });
-    };
+    const createSelector =
+      <T = any, V = any>(...input: any[]): Selector<T, V> =>
+      (state) =>
+        input.reduce((acc, selector) => selector(acc), state);
     const getInjector = () => injector;
 
     return { hooks, createSelector, getInjector };
