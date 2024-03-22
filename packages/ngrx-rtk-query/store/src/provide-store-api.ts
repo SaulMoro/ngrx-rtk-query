@@ -10,7 +10,12 @@ import { type Action, Store, createSelectorFactory, defaultMemoize, provideState
 import { type SelectSignalOptions } from '@ngrx/store/src/models';
 import { type Api, setupListeners as setupListenersFn } from '@reduxjs/toolkit/query';
 
-import { type AngularHooksModuleOptions, type Dispatch, shallowEqual } from 'ngrx-rtk-query/core';
+import {
+  type AngularHooksModuleOptions,
+  type Dispatch,
+  type StoreQueryConfig,
+  shallowEqual,
+} from 'ngrx-rtk-query/core';
 
 const createStoreApi = (
   api: Api<any, Record<string, any>, string, string, any>,
@@ -26,14 +31,7 @@ const createStoreApi = (
       store.dispatch(action);
       return action;
     };
-    const reducerPath = api.reducerPath as string;
-    const getState = () => {
-      const storeState: Record<string, any> = store.selectSignal((state) => state)();
-      return storeState?.[reducerPath]
-        ? storeState
-        : // Query inside forFeature (Code splitting)
-          { [reducerPath]: storeState };
-    };
+    const getState = store.selectSignal((state) => state);
     const useSelector = <K>(mapFn: (state: any) => K, options?: SelectSignalOptions<K>): Signal<K> =>
       store.selectSignal(mapFn, options);
 
@@ -44,10 +42,6 @@ const createStoreApi = (
     return { hooks, createSelector, getInjector };
   };
 };
-
-export interface StoreQueryConfig {
-  setupListeners?: Parameters<typeof setupListenersFn>[1] | false;
-}
 
 export function provideStoreApi(
   api: Api<any, Record<string, any>, string, string, any>,

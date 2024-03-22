@@ -1,1 +1,1 @@
-export * from './src/provide-noop-store-api';
+export { ApiStore, provideNoopStoreApi } from './src/provide-noop-store-api';

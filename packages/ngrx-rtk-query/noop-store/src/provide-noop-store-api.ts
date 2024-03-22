@@ -1,6 +1,8 @@
 import {
+  type CreateComputedOptions,
   ENVIRONMENT_INITIALIZER,
   type EnvironmentProviders,
+  Injectable,
   Injector,
   type Signal,
   computed,
@@ -8,28 +10,44 @@ import {
   makeEnvironmentProviders,
   signal,
 } from '@angular/core';
-import { type Action } from '@ngrx/store';
-import { type SelectSignalOptions } from '@ngrx/store/src/models';
 import { type Reducer, type UnknownAction } from '@reduxjs/toolkit';
 import { type Api, setupListeners as setupListenersFn } from '@reduxjs/toolkit/query';
 
-import { type AngularHooksModuleOptions, type Dispatch, shallowEqual } from 'ngrx-rtk-query/core';
+import {
+  type AngularHooksModuleOptions,
+  type Dispatch,
+  type StoreQueryConfig,
+  shallowEqual,
+} from 'ngrx-rtk-query/core';
+
+@Injectable({ providedIn: 'root' })
+export class ApiStore {
+  readonly #state = signal<Record<string, any>>({});
+
+  selectSignal = <K>(mapFn: (state: Record<string, any>) => K, options?: CreateComputedOptions<K>): Signal<K> =>
+    computed(() => mapFn(this.#state()), { equal: options?.equal });
+
+  dispatch = (action: UnknownAction, { reducerPath, reducer }: { reducerPath: string; reducer: Reducer<any> }) => {
+    const nextState = reducer(this.#state()[reducerPath], action as UnknownAction);
+    this.#state.update((state) => ({ ...state, [reducerPath]: nextState }));
+  };
+}
 
 const createNoopStoreApi = (
   api: Api<any, Record<string, any>, string, string, any>,
   { injector = inject(Injector) }: { injector?: Injector } = {},
 ) => {
+  const store = injector.get(ApiStore);
   const reducerPath = api.reducerPath;
   const reducer = api.reducer as Reducer<any>;
-  const state = signal<Record<string, any>>({});
 
   return (): AngularHooksModuleOptions => {
-    const getState = computed(() => ({ [reducerPath]: state() }));
-    const dispatch = (action: Action) => {
-      state.set(reducer(state(), action as UnknownAction));
+    const dispatch = (action: UnknownAction) => {
+      store.dispatch(action, { reducerPath, reducer });
       return action;
     };
-    const useSelector = <K>(mapFn: (state: any) => K, options?: SelectSignalOptions<K>): Signal<K> =>
+    const getState = store.selectSignal((state) => state);
+    const useSelector = <K>(mapFn: (state: any) => K, options?: CreateComputedOptions<K>): Signal<K> =>
       computed(() => mapFn(getState()), { equal: options?.equal });
 
     const hooks = { dispatch: dispatch as Dispatch, getState, useSelector };
@@ -41,10 +59,6 @@ const createNoopStoreApi = (
     return { hooks, createSelector, getInjector };
   };
 };
-
-export interface StoreQueryConfig {
-  setupListeners?: Parameters<typeof setupListenersFn>[1] | false;
-}
 
 export function provideNoopStoreApi(
   api: Api<any, Record<string, any>, string, string, any>,
