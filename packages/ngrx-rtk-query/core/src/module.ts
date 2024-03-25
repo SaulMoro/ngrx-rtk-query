@@ -65,9 +65,9 @@ declare module '@reduxjs/toolkit/query' {
        */
       dispatch: Dispatch;
       /**
-       * Provides access to the api useSelector function.
+       * Provides access to the api selectSignal function.
        */
-      useSelector: UseSelector;
+      selectSignal: UseSelector;
       /**
        * Provides access to the api injector.
        */
@@ -134,7 +134,7 @@ export const angularHooksModule = ({
       });
       safeAssign(anyApi, { usePrefetch });
       safeAssign(anyApi, { dispatch: hooks.dispatch });
-      safeAssign(anyApi, { useSelector: hooks.useSelector });
+      safeAssign(anyApi, { selectSignal: hooks.useSelector });
       safeAssign(anyApi, { getInjector });
 
       return {

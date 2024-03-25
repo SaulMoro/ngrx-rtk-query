@@ -3,7 +3,7 @@
   "compilerOptions": {
     "outDir": "../../dist/out-tsc",
     "target": "es2016",
-    "types": ["node", "vitest", "vitest/globals", "vitest/importMeta", "vite/client"]
+    "types": ["node", "vitest", "vitest/globals", "vitest/importMeta", "vite/client", "@testing-library/jest-dom"]
   },
   "files": ["test-setup.ts"],
   "include": ["vite.config.ts", "**/*.test.ts", "**/*.spec.ts", "**/*.d.ts"]
