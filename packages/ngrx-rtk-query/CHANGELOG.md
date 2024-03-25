@@ -1,5 +1,11 @@
 # ngrx-rtk-query
 
+## 17.4.4
+
+### Patch Changes
+
+- [#78](https://github.com/SaulMoro/ngrx-rtk-query/pull/78) [`bd3e844`](https://github.com/SaulMoro/ngrx-rtk-query/commit/bd3e844b81a10f7477464266c3dc8bb3d52f2a19) Thanks [@SaulMoro](https://github.com/SaulMoro)! - change 'useSelector' to 'selectSignal'
+
 ## 17.4.3
 
 ### Patch Changes
