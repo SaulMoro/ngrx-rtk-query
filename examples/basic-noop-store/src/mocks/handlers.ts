@@ -16,11 +16,11 @@ state = adapter.setAll(state, [
 ]);
 
 export const handlers = [
-  http.get('/posts', () => {
+  http.get('http://api.localhost.com/posts', () => {
     delay();
     return HttpResponse.json(selectAll(state));
   }),
-  http.get('/posts/:id', async ({ params }) => {
+  http.get('http://api.localhost.com/posts/:id', async ({ params }) => {
     const { id } = params;
     await delay();
 
@@ -31,7 +31,7 @@ export const handlers = [
 
     return HttpResponse.json(post);
   }),
-  http.post('/posts', async ({ request }) => {
+  http.post('http://api.localhost.com/posts', async ({ request }) => {
     const post = (await request.json()) as Post;
     await delay();
 
@@ -40,7 +40,7 @@ export const handlers = [
 
     return HttpResponse.json(selectById(state, startingId));
   }),
-  http.put('/posts/:id', async ({ params, request }) => {
+  http.put('http://api.localhost.com/posts/:id', async ({ params, request }) => {
     const { id } = params;
     const changes = (await request.json()) as Partial<Post>;
     await delay();
@@ -49,7 +49,7 @@ export const handlers = [
 
     return HttpResponse.json(selectById(state, +id));
   }),
-  http.delete('/posts/:id', async ({ params }) => {
+  http.delete('http://api.localhost.com/posts/:id', async ({ params }) => {
     const { id } = params;
     await delay();
 

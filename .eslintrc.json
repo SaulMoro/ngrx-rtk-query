@@ -58,7 +58,6 @@
       "files": ["*.spec.ts", "*.spec.tsx", "*.spec.js", "*.spec.jsx"],
       "extends": ["plugin:vitest/recommended", "plugin:jest-dom/recommended", "plugin:testing-library/angular"],
       "rules": {
-        "vitest/consistent-test-it": ["error"],
         "testing-library/prefer-explicit-assert": "error"
       }
     }

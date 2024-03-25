@@ -71,6 +71,9 @@
     "test": {
       "executor": "@analogjs/platform:vitest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "config": "examples/basic-ngrx-store/vite.config.ts"
+      },
       "configurations": {
         "watch": {
           "watch": true
