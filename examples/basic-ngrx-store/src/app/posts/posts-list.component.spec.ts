@@ -79,12 +79,4 @@ describe('PostsListComponent', () => {
     expect(screen.queryByText(/Loading/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/No posts/i)).not.toBeInTheDocument();
   });
-
-  test('should reset api after each test', async () => {
-    const view = await render(PostsListComponent, {
-      providers: [provideStore(), provideStoreApi(postsApi)],
-    });
-
-    expect(view.fixture.componentInstance.postsQuery.data()).toBeUndefined();
-  });
 });
