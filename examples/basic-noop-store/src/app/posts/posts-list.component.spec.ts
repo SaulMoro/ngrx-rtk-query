@@ -13,7 +13,8 @@ describe('PostsListComponent', () => {
   beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
   afterEach(() => {
     server.resetHandlers();
-    postsApi.dispatch(postsApi.util.resetApiState());
+    // ⬇️ Not required with Noop store
+    // postsApi.dispatch(postsApi.util.resetApiState());
   });
   afterAll(() => server.close());
 
@@ -78,13 +79,5 @@ describe('PostsListComponent', () => {
     expect(await screen.findByText(/Error/i)).toBeInTheDocument();
     expect(screen.queryByText(/Loading/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/No posts/i)).not.toBeInTheDocument();
-  });
-
-  test('should reset api after each test', async () => {
-    const view = await render(PostsListComponent, {
-      providers: [provideStore(), provideStoreApi(postsApi)],
-    });
-
-    expect(view.fixture.componentInstance.postsQuery.data()).toBeUndefined();
   });
 });
