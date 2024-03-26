@@ -37,6 +37,9 @@ const createNoopStoreApi = (
     const reducerPath = api.reducerPath;
     const reducer = api.reducer as Reducer<any>;
 
+    // Initialize the store with the initial state
+    store.state.update((state) => ({ ...state, [reducerPath]: {} }));
+
     const dispatch = (action: UnknownAction) => {
       store.dispatch(action, { reducerPath, reducer });
       return action;
@@ -51,12 +54,6 @@ const createNoopStoreApi = (
       (state) =>
         input.reduce((acc, selector) => selector(acc), state);
     const getInjector = () => injector;
-
-    // Initialize the store with the initial state
-    const currentApiState = api.selectSignal?.((state: any) => state?.[reducerPath])?.();
-    if (!currentApiState) {
-      store.state.update((state) => ({ ...state, [reducerPath]: {} }));
-    }
 
     return { hooks, createSelector, getInjector };
   };
