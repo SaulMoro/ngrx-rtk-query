@@ -37,7 +37,10 @@ const createNoopStoreApi = (
   const reducer = api.reducer as Reducer<any>;
 
   // Initialize the store with the initial state
-  store.state.update((state) => ({ ...state, [reducerPath]: {} }));
+  const currentApiState = api.selectSignal?.((state: any) => state?.[reducerPath])?.();
+  if (!currentApiState) {
+    store.state.update((state) => ({ ...state, [reducerPath]: {} }));
+  }
 
   return (): AngularHooksModuleOptions => {
     const dispatch = (action: UnknownAction) => {
