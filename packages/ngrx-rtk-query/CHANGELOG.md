@@ -1,5 +1,11 @@
 # ngrx-rtk-query
 
+## 17.4.5
+
+### Patch Changes
+
+- [#80](https://github.com/SaulMoro/ngrx-rtk-query/pull/80) [`dbd139f`](https://github.com/SaulMoro/ngrx-rtk-query/commit/dbd139fd1e6eded267822b6b262b26142085632e) Thanks [@SaulMoro](https://github.com/SaulMoro)! - fix: test concurrent in noop store
+
 ## 17.4.4
 
 ### Patch Changes
