@@ -35,7 +35,7 @@ export const createApi: CreateApi<typeof coreModuleName | typeof angularHooksMod
 
   const getState: AngularHooksModuleOptions['hooks']['getState'] = () => store.hooks.getState();
   const useSelector: AngularHooksModuleOptions['hooks']['useSelector'] = (mapFn, options) =>
-    store.hooks.useSelector(mapFn, options);
+    store?.hooks.useSelector(mapFn, options);
   const createSelector: AngularHooksModuleOptions['createSelector'] = (...input) => store.createSelector(...input);
   const getInjector: AngularHooksModuleOptions['getInjector'] = () => store.getInjector();
 
