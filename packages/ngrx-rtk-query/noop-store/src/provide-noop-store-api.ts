@@ -32,17 +32,11 @@ const createNoopStoreApi = (
   api: Api<any, Record<string, any>, string, string, any>,
   { injector = inject(Injector) }: { injector?: Injector } = {},
 ) => {
-  const store = injector.get(ApiStore);
-  const reducerPath = api.reducerPath;
-  const reducer = api.reducer as Reducer<any>;
-
-  // Initialize the store with the initial state
-  const currentApiState = api.selectSignal?.((state: any) => state?.[reducerPath])?.();
-  if (!currentApiState) {
-    store.state.update((state) => ({ ...state, [reducerPath]: {} }));
-  }
-
   return (): AngularHooksModuleOptions => {
+    const store = injector.get(ApiStore);
+    const reducerPath = api.reducerPath;
+    const reducer = api.reducer as Reducer<any>;
+
     const dispatch = (action: UnknownAction) => {
       store.dispatch(action, { reducerPath, reducer });
       return action;
@@ -57,6 +51,12 @@ const createNoopStoreApi = (
       (state) =>
         input.reduce((acc, selector) => selector(acc), state);
     const getInjector = () => injector;
+
+    // Initialize the store with the initial state
+    const currentApiState = api.selectSignal?.((state: any) => state?.[reducerPath])?.();
+    if (!currentApiState) {
+      store.state.update((state) => ({ ...state, [reducerPath]: {} }));
+    }
 
     return { hooks, createSelector, getInjector };
   };
