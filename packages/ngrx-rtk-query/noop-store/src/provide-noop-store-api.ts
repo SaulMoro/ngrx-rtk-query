@@ -72,6 +72,7 @@ export function provideNoopStoreApi(
       multi: true,
       useValue() {
         api.initApiStore(createNoopStoreApi(api));
+        api.dispatch(api.util.resetApiState());
       },
     },
   ]);
