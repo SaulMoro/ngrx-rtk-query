@@ -1,5 +1,11 @@
 # ngrx-rtk-query
 
+## 17.4.6
+
+### Patch Changes
+
+- [#82](https://github.com/SaulMoro/ngrx-rtk-query/pull/82) [`3d61a20`](https://github.com/SaulMoro/ngrx-rtk-query/commit/3d61a20c92fe0408fa5c5770862a2dd9a809bb2a) Thanks [@SaulMoro](https://github.com/SaulMoro)! - Update to RTK 2.2.4
+
 ## 17.4.5
 
 ### Patch Changes
