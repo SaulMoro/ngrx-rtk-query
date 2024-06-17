@@ -1,5 +1,11 @@
 # ngrx-rtk-query
 
+## 18.0.0
+
+### Major Changes
+
+- [#85](https://github.com/SaulMoro/ngrx-rtk-query/pull/85) [`294bc88`](https://github.com/SaulMoro/ngrx-rtk-query/commit/294bc884b99da0fccec91448003181e8efb56215) Thanks [@SaulMoro](https://github.com/SaulMoro)! - Update to Angular 18 and NgRx 18
+
 ## 17.4.6
 
 ### Patch Changes
