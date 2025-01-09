@@ -1,5 +1,11 @@
 # ngrx-rtk-query
 
+## 18.1.0
+
+### Minor Changes
+
+- [#88](https://github.com/SaulMoro/ngrx-rtk-query/pull/88) [`3f4fd78`](https://github.com/SaulMoro/ngrx-rtk-query/commit/3f4fd78ab6d0758c30f3ac92be14b6e509f25bc7) Thanks [@SaulMoro](https://github.com/SaulMoro)! - Update to RTK 2.5.0.
+
 ## 18.0.0
 
 ### Major Changes
