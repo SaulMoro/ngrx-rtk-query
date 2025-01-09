@@ -8,6 +8,7 @@ import {
 export * from '@reduxjs/toolkit/query';
 export { fetchBaseQuery } from './src/fetch-base-query';
 
+export { UNINITIALIZED_VALUE } from './src/constants';
 export { createApi } from './src/create-api';
 export { shallowEqual } from './src/utils';
 
@@ -17,13 +18,16 @@ export type {
   StoreQueryConfig,
   TypedLazyQueryTrigger,
   TypedMutationTrigger,
+  TypedQueryStateSelector,
   TypedUseLazyQuery,
+  TypedUseLazyQueryStateResult,
   TypedUseLazyQuerySubscription,
   TypedUseMutation,
   TypedUseMutationResult,
   TypedUseQuery,
   TypedUseQueryHookResult,
   TypedUseQueryState,
+  TypedUseQueryStateOptions,
   TypedUseQueryStateResult,
   TypedUseQuerySubscription,
   TypedUseQuerySubscriptionResult,

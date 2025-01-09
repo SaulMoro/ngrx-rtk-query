@@ -24,6 +24,8 @@ export const handlers = [
     const { id } = params;
     await delay();
 
+    if (!id) return HttpResponse.error();
+
     const post = selectById(state, +id);
     if (!post) return HttpResponse.error();
 
@@ -45,6 +47,8 @@ export const handlers = [
     const changes = (await request.json()) as Partial<Post>;
     await delay();
 
+    if (!id) return HttpResponse.error();
+
     state = adapter.updateOne(state, { id: +id, changes });
 
     return HttpResponse.json(selectById(state, +id));
@@ -52,6 +56,8 @@ export const handlers = [
   http.delete('http://api.localhost.com/posts/:id', async ({ params }) => {
     const { id } = params;
     await delay();
+
+    if (!id) return HttpResponse.error();
 
     state = adapter.removeOne(state, +id);
 

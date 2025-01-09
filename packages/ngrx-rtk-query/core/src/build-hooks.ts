@@ -1,6 +1,5 @@
 import { DestroyRef, computed, effect, inject, isDevMode, signal, untracked } from '@angular/core';
 import { type Action, type Selector } from '@reduxjs/toolkit';
-import { type SubscriptionSelectors } from '@reduxjs/toolkit/dist/query/core/buildMiddleware/types';
 import {
   type Api,
   type ApiContext,
@@ -12,6 +11,7 @@ import {
   type MutationDefinition,
   type PrefetchOptions,
   type QueryActionCreatorResult,
+  type QueryCacheKey,
   type QueryDefinition,
   type QueryKeys,
   type QueryResultSelectorResult,
@@ -29,6 +29,7 @@ import {
   type MutationHooks,
   type QueryHooks,
   type QueryStateSelector,
+  type SubscriptionSelectors,
   type UseLazyQuerySubscription,
   type UseMutation,
   type UseQueryState,
@@ -93,16 +94,17 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       const { endpointName } = lastResult;
       const endpointDefinition = context.endpointDefinitions[endpointName];
       if (
+        queryArgs !== skipToken &&
         serializeQueryArgs({
           queryArgs: lastResult.originalArgs,
           endpointDefinition,
           endpointName,
         }) ===
-        serializeQueryArgs({
-          queryArgs,
-          endpointDefinition,
-          endpointName,
-        })
+          serializeQueryArgs({
+            queryArgs,
+            endpointDefinition,
+            endpointName,
+          })
       )
         lastResult = undefined;
     }
@@ -118,8 +120,11 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
     const isFetching = currentState.isLoading;
     // isLoading = true only when loading while no data is present yet (initial load with no data in the cache)
     const isLoading = (!lastResult || lastResult.isLoading || lastResult.isUninitialized) && !hasData && isFetching;
-    // isSuccess = true when data is present
-    const isSuccess = currentState.isSuccess || (isFetching && hasData);
+    // isSuccess = true when data is present and we're not refetching after an error.
+    // That includes cases where the _current_ item is either actively
+    // fetching or about to fetch due to an uninitialized entry.
+    const isSuccess =
+      currentState.isSuccess || (hasData && ((isFetching && !lastResult?.isError) || currentState.isUninitialized));
 
     return {
       ...currentState,
@@ -322,6 +327,16 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         return promise;
       };
 
+      const reset = () => {
+        if (promiseRef?.queryCacheKey) {
+          dispatch(
+            api.internalActions.removeQueryResult({
+              queryCacheKey: promiseRef?.queryCacheKey as QueryCacheKey,
+            }),
+          );
+        }
+      };
+
       /* cleanup on unmount */
       inject(DestroyRef).onDestroy(() => {
         promiseRef?.unsubscribe();
@@ -338,7 +353,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         equal: shallowEqual,
       });
 
-      return [trigger, lastArg] as const;
+      return [trigger, lastArg, { reset }] as const;
     };
 
     const useQueryState: UseQueryState<any> = (arg: any, options = {}) => {
@@ -394,14 +409,14 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       useQuerySubscription,
       useLazyQuerySubscription,
       useLazyQuery(options) {
-        const [trigger, arg] = useLazyQuerySubscription(options);
+        const [trigger, arg, { reset }] = useLazyQuerySubscription(options);
         const subscriptionOptions = computed(() => ({
           ...options,
           skip: arg() === UNINITIALIZED_VALUE,
         }));
         const queryStateResults = useQueryState(arg, subscriptionOptions);
         const signalsMap = signalProxy(queryStateResults);
-        Object.assign(trigger, { lastArg: arg });
+        Object.assign(trigger, { lastArg: arg, reset });
         Object.assign(trigger, signalsMap);
 
         return trigger as any;
