@@ -1,6 +1,5 @@
 import { type Injector, runInInjectionContext } from '@angular/core';
-import { type FetchBaseQueryArgs } from '@reduxjs/toolkit/dist/query/fetchBaseQuery';
-import { fetchBaseQuery as fetchBaseQueryDefault } from '@reduxjs/toolkit/query';
+import { type FetchBaseQueryArgs, fetchBaseQuery as fetchBaseQueryDefault } from '@reduxjs/toolkit/query';
 
 export type FetchBaseQueryFactory = () => ReturnType<typeof fetchBaseQueryDefault>;
 

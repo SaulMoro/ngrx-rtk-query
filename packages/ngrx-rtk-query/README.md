@@ -34,7 +34,8 @@ npm install ngrx-rtk-query @reduxjs/toolkit
 
 | Angular / NgRx |   ngrx-rtk-query   | @reduxjs/toolkit |       Support       |
 | :------------: | :----------------: | :--------------: | :-----------------: |
-|      18.x      | >=18.x.x (signals) |      ~2.2.5      | Bugs / New Features |
+|      18.x      | >=18.1.0 (signals) |      ~2.5.0      | Bugs / New Features |
+|      18.x      | >=18.0.0 (signals) |      ~2.2.5      |        Bugs         |
 |      17.x      | >=17.1.x (signals) |      ~2.2.1      |        Bugs         |
 |      16.x      |   >=4.2.x (rxjs)   |      ~1.9.3      |    Critical bugs    |
 |      15.x      |    4.1.x (rxjs)    |      1.9.3       |        None         |
@@ -260,6 +261,11 @@ export class XxxComponent {
     this.xxxQuery(id).unwrap();
   }
 // ...
+  reset() {
+     this.xxxQuery.reset();
+  }
+// ...
+}
 ```
 
 Another use case is to work with nested or relational data.
