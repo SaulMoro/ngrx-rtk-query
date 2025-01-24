@@ -1,9 +1,9 @@
-import { provideStore } from '@ngrx/store';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { HttpResponse, http } from 'msw';
-import { provideStoreApi } from 'ngrx-rtk-query';
 import { describe, expect, test } from 'vitest';
+
+import { provideNoopStoreApi } from 'ngrx-rtk-query/noop-store';
 
 import { server } from '../../mocks/node';
 import { postsApi } from './api';
@@ -21,7 +21,7 @@ describe('PostsListComponent', () => {
   test('should show default posts and add new posts', async () => {
     const user = userEvent.setup();
     await render(PostsListComponent, {
-      providers: [provideStore(), provideStoreApi(postsApi)],
+      providers: [provideNoopStoreApi(postsApi)],
     });
 
     const newPostControl = screen.getByPlaceholderText(/New post/i);
@@ -50,7 +50,7 @@ describe('PostsListComponent', () => {
     server.use(http.get('http://api.localhost.com/posts', async () => HttpResponse.json([])));
 
     await render(PostsListComponent, {
-      providers: [provideStore(), provideStoreApi(postsApi)],
+      providers: [provideNoopStoreApi(postsApi)],
     });
 
     expect(screen.getByText(/Loading/i)).toBeInTheDocument();
@@ -70,7 +70,7 @@ describe('PostsListComponent', () => {
     );
 
     await render(PostsListComponent, {
-      providers: [provideStore(), provideStoreApi(postsApi)],
+      providers: [provideNoopStoreApi(postsApi)],
     });
 
     expect(screen.getByText(/Loading/i)).toBeInTheDocument();
