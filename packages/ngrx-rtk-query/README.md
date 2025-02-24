@@ -15,12 +15,13 @@
 - [Installation](#installation)
   - [Versions](#versions)
 - [Basic Usage](#basic-usage)
-- [Usage with HttpClient or injectable service](#usage-with-httpclient-or-injectable-service)
 - [Usage](#usage)
   - [**Queries**](#queries)
   - [**Lazy Queries**](#lazy-queries)
+  - [**Infinite Queries**](#infinite-queries)
   - [**Mutations**](#mutations)
   - [**Code-splitted/Lazy feature/Lazy modules**](#code-splittedlazy-featurelazy-modules)
+- [Usage with HttpClient or injectable service](#usage-with-httpclient-or-injectable-service)
 - [FAQ](#faq)
 - [Contributors ✨](#contributors-)
 
@@ -34,7 +35,8 @@ npm install ngrx-rtk-query @reduxjs/toolkit
 
 | Angular / NgRx |   ngrx-rtk-query   | @reduxjs/toolkit |       Support       |
 | :------------: | :----------------: | :--------------: | :-----------------: |
-|      18.x      | >=18.1.0 (signals) |      ~2.5.0      | Bugs / New Features |
+|     >=18.x     | >=18.2.0 (signals) |      ~2.6.0      | Bugs / New Features |
+|     >=18.x     | >=18.1.0 (signals) |      ~2.5.0      |        Bugs         |
 |      18.x      | >=18.0.0 (signals) |      ~2.2.5      |        Bugs         |
 |      17.x      | >=17.1.x (signals) |      ~2.2.1      |        Bugs         |
 |      16.x      |   >=4.2.x (rxjs)   |      ~1.9.3      |    Critical bugs    |
@@ -130,41 +132,6 @@ export class CounterManagerComponent {
   increment = useIncrementCountMutation();
   decrement = useDecrementCountMutation();
 }
-```
-
-<br/>
-
-## Usage with HttpClient or injectable service
-
-You can use the `fetchBaseQuery` function to create a base query that uses the Angular `HttpClient` to make requests or any injectable service. Basic HttpClient example:
-
-```ts
-
-const httpClientBaseQuery = fetchBaseQuery((http = inject(HttpClient), enviroment = inject(ENVIRONMENT)) => {
-  return async (args, { signal }) => {
-    const {
-      url,
-      method = 'get',
-      body = undefined,
-      params = undefined,
-    } = typeof args === 'string' ? { url: args } : args;
-    const fullUrl = `${enviroment.baseAPI}${url}`;
-
-    const request$ = http.request(method, fullUrl, { body, params });
-    try {
-      const data = await lastValueFrom(request$);
-      return { data };
-    } catch (error) {
-      return { error: { status: (error as HttpErrorResponse).status, data: (error as HttpErrorResponse).message } };
-    }
-  };
-});
-
-export const api = createApi({
-  reducerPath: 'api',
-  baseQuery: httpClientBaseQuery,
-//...
-
 ```
 
 <br/>
@@ -290,6 +257,10 @@ export class CharacterCardComponent implements OnInit {
 `preferCacheValue` is `false` by default. When `true`, if the request exists in cache, it will not be dispatched again.
 Perfect for ngOnInit cases. You can look at pagination feature example from this repository.
 
+### **Infinite Queries**
+
+Pending documentation, you can follow the official documentation in the meantime. [Infinite Queries - RTK Query guide](https://redux-toolkit.js.org/rtk-query/usage/infinite-queries).
+
 ### **Mutations**
 
 The use of mutations is a bit different compared to the original [Mutations - RTK Query guide](https://redux-toolkit.js.org/rtk-query/usage/mutations). You can look at the examples from this repository.
@@ -359,6 +330,41 @@ import { provideStoreApi } from 'ngrx-rtk-query';
 ```
 
 <br />
+
+## Usage with HttpClient or injectable service
+
+You can use the `fetchBaseQuery` function to create a base query that uses the Angular `HttpClient` to make requests or any injectable service. Basic HttpClient example:
+
+```ts
+
+const httpClientBaseQuery = fetchBaseQuery((http = inject(HttpClient), enviroment = inject(ENVIRONMENT)) => {
+  return async (args, { signal }) => {
+    const {
+      url,
+      method = 'get',
+      body = undefined,
+      params = undefined,
+    } = typeof args === 'string' ? { url: args } : args;
+    const fullUrl = `${enviroment.baseAPI}${url}`;
+
+    const request$ = http.request(method, fullUrl, { body, params });
+    try {
+      const data = await lastValueFrom(request$);
+      return { data };
+    } catch (error) {
+      return { error: { status: (error as HttpErrorResponse).status, data: (error as HttpErrorResponse).message } };
+    }
+  };
+});
+
+export const api = createApi({
+  reducerPath: 'api',
+  baseQuery: httpClientBaseQuery,
+//...
+
+```
+
+<br/>
 
 ## FAQ
 

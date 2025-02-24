@@ -3,9 +3,15 @@ import { type ThunkAction, type UnknownAction } from '@reduxjs/toolkit';
 import {
   type BaseQueryFn,
   type EndpointDefinition,
+  type InfiniteData,
+  type InfiniteQueryActionCreatorResult,
+  type InfiniteQueryArgFrom,
+  type InfiniteQueryDefinition,
+  type InfiniteQuerySubState,
   type MutationActionCreatorResult,
   type MutationDefinition,
   type MutationResultSelectorResult,
+  type PageParamFrom,
   type PrefetchOptions,
   type QueryActionCreatorResult,
   type QueryArgFrom,
@@ -29,6 +35,12 @@ export type QueryHooks<Definition extends QueryDefinition<any, any, any, any, an
   useQuerySubscription: UseQuerySubscription<Definition>;
   useLazyQuerySubscription: UseLazyQuerySubscription<Definition>;
   useQueryState: UseQueryState<Definition>;
+};
+
+export type InfiniteQueryHooks<Definition extends InfiniteQueryDefinition<any, any, any, any, any>> = {
+  useInfiniteQuery: UseInfiniteQuery<Definition>;
+  useInfiniteQuerySubscription: UseInfiniteQuerySubscription<Definition>;
+  useInfiniteQueryState: UseInfiniteQueryState<Definition>;
 };
 
 export type MutationHooks<Definition extends MutationDefinition<any, any, any, any, any>> = {
@@ -92,7 +104,7 @@ export type TypedUseQueryHookResult<
 > = TypedUseQueryStateResult<ResultType, QueryArg, BaseQuery, R> &
   TypedUseQuerySubscriptionResult<ResultType, QueryArg, BaseQuery>;
 
-type UseQuerySubscriptionOptions = SubscriptionOptions & {
+export type UseQuerySubscriptionOptions = SubscriptionOptions & {
   /**
    * Prevents a query from automatically running.
    *
@@ -439,7 +451,7 @@ export type UseQueryStateOptions<D extends QueryDefinition<any, any, any, any>, 
    * @example
    * ```ts
    * // codeblock-meta title="Using selectFromResult to extract a single result"
-   * const post = api.useGetPostsQuery(undefined, {
+   * post = api.useGetPostsQuery(undefined, {
    *   selectFromResult: ({ data }) => ({ post: data?.find((post) => post.id === id) }),
    * });
    * ```
@@ -588,6 +600,319 @@ export type UseQueryStateDefaultResult<D extends QueryDefinition<any, any, any, 
   status: QueryStatus;
 };
 
+export type InfiniteQueryDirection = 'forward' | 'backward';
+
+export type LazyInfiniteQueryTrigger<D extends InfiniteQueryDefinition<any, any, any, any, any>> = {
+  /**
+   * Triggers a lazy query.
+   *
+   * By default, this will start a new request even if there is already a value in the cache.
+   * If you want to use the cache value and only start a request if there is no cache value, set the second argument to `true`.
+   *
+   * @remarks
+   * If you need to access the error or success payload immediately after a lazy query, you can chain .unwrap().
+   *
+   * @example
+   * ```ts
+   * // codeblock-meta title="Using .unwrap with async await"
+   * try {
+   *   const payload = await getUserById(1).unwrap();
+   *   console.log('fulfilled', payload)
+   * } catch (error) {
+   *   console.error('rejected', error);
+   * }
+   * ```
+   */
+  (arg: QueryArgFrom<D>, direction: InfiniteQueryDirection): InfiniteQueryActionCreatorResult<D>;
+};
+
+export interface UseInfiniteQuerySubscriptionOptions<D extends InfiniteQueryDefinition<any, any, any, any, any>>
+  extends SubscriptionOptions {
+  /**
+   * Prevents a query from automatically running.
+   *
+   * @remarks
+   * When `skip` is true (or `skipToken` is passed in as `arg`):
+   *
+   * - **If the query has cached data:**
+   *   * The cached data **will not be used** on the initial load, and will ignore updates from any identical query until the `skip` condition is removed
+   *   * The query will have a status of `uninitialized`
+   *   * If `skip: false` is set after the initial load, the cached result will be used
+   * - **If the query does not have cached data:**
+   *   * The query will have a status of `uninitialized`
+   *   * The query will not exist in the state when viewed with the dev tools
+   *   * The query will not automatically fetch on mount
+   *   * The query will not automatically run when additional components with the same query are added that do run
+   *
+   * @example
+   * ```tsx
+   * // codeblock-meta no-transpile title="Skip example"
+   *   name = input.required<string>()
+   *   skipCall = input(true);
+   *
+   *   getPokemonByNameQuery = useGetPokemonByNameQuery(name, () => ({
+   *     skip: this.skipCall(),
+   *   }));
+   * };
+   * ```
+   */
+  skip?: boolean;
+  /**
+   * Defaults to `false`. This setting allows you to control whether if a cached result is already available, RTK Query will only serve a cached result, or if it should `refetch` when set to `true` or if an adequate amount of time has passed since the last successful query result.
+   * - `false` - Will not cause a query to be performed _unless_ it does not exist yet.
+   * - `true` - Will always refetch when a new subscriber to a query is added. Behaves the same as calling the `refetch` callback or passing `forceRefetch: true` in the action creator.
+   * - `number` - **Value is in seconds**. If a number is provided and there is an existing query in the cache, it will compare the current time vs the last fulfilled timestamp, and only refetch if enough time has elapsed.
+   *
+   * If you specify this option alongside `skip: true`, this **will not be evaluated** until `skip` is false.
+   */
+  refetchOnMountOrArgChange?: boolean | number;
+  initialPageParam?: PageParamFrom<D>;
+}
+
+export type TypedUseInfiniteQuerySubscription<
+  ResultType,
+  QueryArg,
+  PageParam,
+  BaseQuery extends BaseQueryFn,
+> = UseInfiniteQuerySubscription<InfiniteQueryDefinition<QueryArg, PageParam, BaseQuery, string, ResultType, string>>;
+
+export type UseInfiniteQuerySubscriptionResult<D extends InfiniteQueryDefinition<any, any, any, any, any>> = Pick<
+  InfiniteQueryActionCreatorResult<D>,
+  'refetch'
+> & {
+  trigger: LazyInfiniteQueryTrigger<D>;
+  fetchNextPage: () => InfiniteQueryActionCreatorResult<D>;
+  fetchPreviousPage: () => InfiniteQueryActionCreatorResult<D>;
+};
+
+/**
+ * Helper type to manually type the result
+ * of the `useQuerySubscription` hook in userland code.
+ */
+export type TypedUseInfiniteQuerySubscriptionResult<
+  ResultType,
+  QueryArg,
+  PageParam,
+  BaseQuery extends BaseQueryFn,
+> = UseInfiniteQuerySubscriptionResult<
+  InfiniteQueryDefinition<QueryArg, PageParam, BaseQuery, string, ResultType, string>
+>;
+
+export type InfiniteQueryStateSelector<
+  R extends Record<string, any>,
+  D extends InfiniteQueryDefinition<any, any, any, any, any>,
+> = (state: UseInfiniteQueryStateDefaultResult<D>) => R;
+
+/**
+ * A hook that automatically triggers fetches of data from an endpoint, 'subscribes' the component to the cached data, and reads the request status and cached data from the Redux store. The component will re-render as the loading status changes and the data becomes available.  Additionally, it will cache multiple "pages" worth of responses within a single cache entry, and allows fetching more pages forwards and backwards from the current cached pages.
+ *
+ * The query arg is used as a cache key. Changing the query arg will tell the hook to re-fetch the data if it does not exist in the cache already, and the hook will return the data for that query arg once it's available.
+ *
+ *  The `data` field will be a `{pages: Data[], pageParams: PageParam[]}` structure containing all fetched page responses and the corresponding page param values for each page. You may use this to render individual pages, combine all pages into a single infinite list, or other display logic as needed.
+ *
+ * This hook combines the functionality of both [`useInfiniteQueryState`](#useinfinitequerystate) and [`useInfiniteQuerySubscription`](#useinfinitequerysubscription) together, and is intended to be used in the majority of situations.
+ *
+ * As with normal query hooks, `skipToken` is a valid argument that will skip the query from executing.
+ *
+ * By default, the initial request will use the `initialPageParam` value that was defined on the infinite query endpoint. If you want to start from a different value, you can pass `initialPageParam` as part of the hook options to override that initial request value.
+ *
+ * Use the returned `fetchNextPage` and `fetchPreviousPage` methods on the hook result object to trigger fetches forwards and backwards. These will always calculate the next or previous page param based on the current cached pages and the provided `getNext/PreviousPageParam` callbacks defined in the endpoint.
+ *
+ *
+ * #### Features
+ *
+ * - Automatically triggers requests to retrieve data based on the hook argument and whether cached data exists by default
+ * - 'Subscribes' the component to keep cached data in the store, and 'unsubscribes' when the component unmounts
+ * - Caches multiple pages worth of responses, and provides methods to trigger more page fetches forwards and backwards
+ * - Accepts polling/re-fetching options to trigger automatic re-fetches when the corresponding criteria is met
+ * - Returns the latest request status and cached data from the Redux store
+ * - Re-renders as the request status changes and data becomes available
+ */
+export type UseInfiniteQuery<D extends InfiniteQueryDefinition<any, any, any, any, any>> = <
+  R extends Record<string, any> = UseInfiniteQueryStateDefaultResult<D>,
+>(
+  arg:
+    | Signal<InfiniteQueryArgFrom<D> | SkipToken>
+    | (() => InfiniteQueryArgFrom<D> | SkipToken)
+    | InfiniteQueryArgFrom<D>
+    | SkipToken,
+  options?:
+    | (UseInfiniteQuerySubscriptionOptions<D> & UseInfiniteQueryStateOptions<D, R>)
+    | Signal<UseInfiniteQuerySubscriptionOptions<D> & UseInfiniteQueryStateOptions<D, R>>
+    | (() => UseInfiniteQuerySubscriptionOptions<D> & UseInfiniteQueryStateOptions<D, R>),
+) => UseInfiniteQueryHookResult<D, R> &
+  Pick<UseInfiniteQuerySubscriptionResult<D>, 'fetchNextPage' | 'fetchPreviousPage'>;
+
+/**
+ * A hook that reads the request status and cached data from the Redux store. The component will re-render as the loading status changes and the data becomes available.
+ *
+ * Note that this hook does not trigger fetching new data. For that use-case, see [`useInfiniteQuery`](#useinfinitequery) or [`useInfiniteQuerySubscription`](#useinfinitequerysubscription).
+ *
+ * #### Features
+ *
+ * - Returns the latest request status and cached data from the Redux store
+ * - Re-renders as the request status changes and data becomes available
+ */
+export type UseInfiniteQueryState<D extends InfiniteQueryDefinition<any, any, any, any, any>> = <
+  R extends Record<string, any> = UseInfiniteQueryStateDefaultResult<D>,
+>(
+  arg: Signal<QueryArgFrom<D> | SkipToken> | (() => QueryArgFrom<D> | SkipToken) | QueryArgFrom<D> | SkipToken,
+  options?:
+    | UseInfiniteQueryStateOptions<D, R>
+    | Signal<UseInfiniteQueryStateOptions<D, R>>
+    | (() => UseInfiniteQueryStateOptions<D, R>),
+) => UseInfiniteQueryStateResult<D, R>;
+
+export type TypedUseInfiniteQueryState<
+  ResultType,
+  QueryArg,
+  PageParam,
+  BaseQuery extends BaseQueryFn,
+> = UseInfiniteQueryState<InfiniteQueryDefinition<QueryArg, PageParam, BaseQuery, string, ResultType, string>>;
+
+/**
+ * A hook that automatically triggers fetches of data from an endpoint, and 'subscribes' the component to the cached data. Additionally, it will cache multiple "pages" worth of responses within a single cache entry, and allows fetching more pages forwards and backwards from the current cached pages.
+ *
+ * The query arg is used as a cache key. Changing the query arg will tell the hook to re-fetch the data if it does not exist in the cache already.
+ *
+ * Note that this hook does not return a request status or cached data. For that use-case, see [`useInfiniteQuery`](#useinfinitequery) or [`useInfiniteQueryState`](#useinfinitequerystate).
+ *
+ * #### Features
+ *
+ * - Automatically triggers requests to retrieve data based on the hook argument and whether cached data exists by default
+ * - 'Subscribes' the component to keep cached data in the store, and 'unsubscribes' when the component unmounts
+ * - Caches multiple pages worth of responses, and provides methods to trigger more page fetches forwards and backwards
+ * - Accepts polling/re-fetching options to trigger automatic re-fetches when the corresponding criteria is met
+ */
+export type UseInfiniteQuerySubscription<D extends InfiniteQueryDefinition<any, any, any, any, any>> = (
+  arg: Signal<QueryArgFrom<D> | SkipToken> | (() => QueryArgFrom<D> | SkipToken) | QueryArgFrom<D> | SkipToken,
+  options?:
+    | UseInfiniteQuerySubscriptionOptions<D>
+    | Signal<UseInfiniteQuerySubscriptionOptions<D>>
+    | (() => UseInfiniteQuerySubscriptionOptions<D>),
+) => UseInfiniteQuerySubscriptionResult<D>;
+
+export type UseInfiniteQueryHookResult<
+  D extends InfiniteQueryDefinition<any, any, any, any, any>,
+  R = UseInfiniteQueryStateDefaultResult<D>,
+> = UseInfiniteQueryStateResult<D, R> & Pick<UseInfiniteQuerySubscriptionResult<D>, 'refetch'>;
+
+export type UseInfiniteQueryStateOptions<
+  D extends InfiniteQueryDefinition<any, any, any, any, any>,
+  R extends Record<string, any>,
+> = {
+  /**
+   * Prevents a query from automatically running.
+   *
+   * @remarks
+   * When skip is true:
+   *
+   * - **If the query has cached data:**
+   *   * The cached data **will not be used** on the initial load, and will ignore updates from any identical query until the `skip` condition is removed
+   *   * The query will have a status of `uninitialized`
+   *   * If `skip: false` is set after skipping the initial load, the cached result will be used
+   * - **If the query does not have cached data:**
+   *   * The query will have a status of `uninitialized`
+   *   * The query will not exist in the state when viewed with the dev tools
+   *   * The query will not automatically fetch on mount
+   *   * The query will not automatically run when additional components with the same query are added that do run
+   *
+   * @example
+   * ```ts
+   * // codeblock-meta title="Skip example"
+   *   name = input.required<string>()
+   *   skipCall = input(true);
+   *
+   *   getPokemonByNameQuery = useGetPokemonByNameQuery(name, () => ({
+   *     skip: this.skipCall(),
+   *   }));
+   * ```
+   */
+  skip?: boolean;
+  /**
+   * `selectFromResult` allows you to get a specific segment from a query result in a performant manner.
+   * When using this feature, the component will not rerender unless the underlying data of the selected item has changed.
+   * If the selected item is one element in a larger collection, it will disregard changes to elements in the same collection.
+   *
+   * @example
+   * ```ts
+   * // codeblock-meta title="Using selectFromResult to extract a single result"
+   * post = api.useGetPostsQuery(undefined, {
+   *   selectFromResult: ({ data }) => ({ post: data?.find((post) => post.id === id) }),
+   * });
+   * ```
+   */
+  selectFromResult?: InfiniteQueryStateSelector<R, D>;
+};
+
+export type UseInfiniteQueryStateResult<_ extends InfiniteQueryDefinition<any, any, any, any, any>, R> = DeepSignal<
+  TSHelpersNoInfer<R>
+>;
+
+export type UseInfiniteQueryStateBaseResult<D extends InfiniteQueryDefinition<any, any, any, any, any>> =
+  InfiniteQuerySubState<D> & {
+    /**
+     * Where `data` tries to hold data as much as possible, also re-using
+     * data from the last arguments passed into the hook, this property
+     * will always contain the received data from the query, for the current query arguments.
+     */
+    currentData?: InfiniteData<ResultTypeFrom<D>, PageParamFrom<D>>;
+    /**
+     * Query has not started yet.
+     */
+    isUninitialized: false;
+    /**
+     * Query is currently loading for the first time. No data yet.
+     */
+    isLoading: false;
+    /**
+     * Query is currently fetching, but might have data from an earlier request.
+     */
+    isFetching: false;
+    /**
+     * Query has data from a successful load.
+     */
+    isSuccess: false;
+    /**
+     * Query is currently in "error" state.
+     */
+    isError: false;
+    hasNextPage: false;
+    hasPreviousPage: false;
+    isFetchingNextPage: false;
+    isFetchingPreviousPage: false;
+  };
+
+export type UseInfiniteQueryStateDefaultResult<D extends InfiniteQueryDefinition<any, any, any, any, any>> =
+  TSHelpersId<
+    | TSHelpersOverride<
+        Extract<UseInfiniteQueryStateBaseResult<D>, { status: QueryStatus.uninitialized }>,
+        { isUninitialized: true }
+      >
+    | TSHelpersOverride<
+        UseInfiniteQueryStateBaseResult<D>,
+        | { isLoading: true; isFetching: boolean; data: undefined }
+        | ({
+            isSuccess: true;
+            isFetching: true;
+            error: undefined;
+          } & Required<Pick<UseInfiniteQueryStateBaseResult<D>, 'data' | 'fulfilledTimeStamp'>>)
+        | ({
+            isSuccess: true;
+            isFetching: false;
+            error: undefined;
+          } & Required<Pick<UseInfiniteQueryStateBaseResult<D>, 'data' | 'fulfilledTimeStamp' | 'currentData'>>)
+        | ({ isError: true } & Required<Pick<UseInfiniteQueryStateBaseResult<D>, 'error'>>)
+      >
+  > & {
+    /**
+     * @deprecated Included for completeness, but discouraged.
+     * Please use the `isLoading`, `isFetching`, `isSuccess`, `isError`
+     * and `isUninitialized` flags instead
+     */
+    status: QueryStatus;
+  };
+
 export type MutationStateSelector<R extends Record<string, any>, D extends MutationDefinition<any, any, any, any>> = (
   state: MutationResultSelectorResult<D>,
 ) => R;
@@ -679,14 +1004,26 @@ export type GenericPrefetchThunk = (
   options: PrefetchOptions,
 ) => ThunkAction<void, any, any, UnknownAction>;
 
+export enum DefinitionType {
+  query = 'query',
+  mutation = 'mutation',
+  infinitequery = 'infinitequery',
+}
+
 export function isQueryDefinition(e: EndpointDefinition<any, any, any, any>): e is QueryDefinition<any, any, any, any> {
-  return e.type === 'query';
+  return e.type === DefinitionType.query;
 }
 
 export function isMutationDefinition(
   e: EndpointDefinition<any, any, any, any>,
 ): e is MutationDefinition<any, any, any, any> {
-  return e.type === 'mutation';
+  return e.type === DefinitionType.mutation;
+}
+
+export function isInfiniteQueryDefinition(
+  e: EndpointDefinition<any, any, any, any>,
+): e is InfiniteQueryDefinition<any, any, any, any, any> {
+  return e.type === DefinitionType.infinitequery;
 }
 
 export type Subscribers = { [requestId: string]: SubscriptionOptions };
