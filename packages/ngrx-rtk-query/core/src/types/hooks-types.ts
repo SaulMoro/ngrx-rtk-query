@@ -2,7 +2,6 @@ import { type Signal } from '@angular/core';
 import { type ThunkAction, type UnknownAction } from '@reduxjs/toolkit';
 import {
   type BaseQueryFn,
-  DefinitionType,
   type EndpointDefinition,
   type InfiniteData,
   type InfiniteQueryActionCreatorResult,
@@ -1004,6 +1003,12 @@ export type GenericPrefetchThunk = (
   arg: any,
   options: PrefetchOptions,
 ) => ThunkAction<void, any, any, UnknownAction>;
+
+export enum DefinitionType {
+  query = 'query',
+  mutation = 'mutation',
+  infinitequery = 'infinitequery',
+}
 
 export function isQueryDefinition(e: EndpointDefinition<any, any, any, any>): e is QueryDefinition<any, any, any, any> {
   return e.type === DefinitionType.query;
