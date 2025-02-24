@@ -4,6 +4,7 @@ import {
   type Api,
   type BaseQueryFn,
   type EndpointDefinitions,
+  type InfiniteQueryDefinition,
   type Module,
   type MutationDefinition,
   type PrefetchOptions,
@@ -15,8 +16,10 @@ import {
 import { buildHooks } from './build-hooks';
 import {
   type HooksWithUniqueNames,
+  type InfiniteQueryHooks,
   type MutationHooks,
   type QueryHooks,
+  isInfiniteQueryDefinition,
   isMutationDefinition,
   isQueryDefinition,
 } from './types';
@@ -50,7 +53,9 @@ declare module '@reduxjs/toolkit/query' {
           ? QueryHooks<Definitions[K]>
           : Definitions[K] extends MutationDefinition<any, any, any, any, any>
             ? MutationHooks<Definitions[K]>
-            : never;
+            : Definitions[K] extends InfiniteQueryDefinition<any, any, any, any, any>
+              ? InfiniteQueryHooks<Definitions[K]>
+              : never;
       };
       /**
        * A hook that accepts a string endpoint name, and provides a callback that when called,
@@ -126,7 +131,7 @@ export const angularHooksModule = ({
     name: angularHooksModuleName,
     init(api, { serializeQueryArgs }, context) {
       const anyApi = api as any as Api<any, Record<string, any>, any, any, AngularHooksModule>;
-      const { buildQueryHooks, buildMutationHook, usePrefetch } = buildHooks({
+      const { buildQueryHooks, buildInfiniteQueryHooks, buildMutationHook, usePrefetch } = buildHooks({
         api,
         moduleOptions: { hooks, createSelector, getInjector },
         serializeQueryArgs,
@@ -151,10 +156,20 @@ export const angularHooksModule = ({
             });
             (api as any)[`use${capitalize(endpointName)}Query`] = useQuery;
             (api as any)[`useLazy${capitalize(endpointName)}Query`] = useLazyQuery;
-          } else if (isMutationDefinition(definition)) {
+          }
+          if (isMutationDefinition(definition)) {
             const { useMutation } = buildMutationHook(endpointName);
             safeAssign(anyApi.endpoints[endpointName], { useMutation });
             (api as any)[`use${capitalize(endpointName)}Mutation`] = useMutation;
+          } else if (isInfiniteQueryDefinition(definition)) {
+            const { useInfiniteQuery, useInfiniteQuerySubscription, useInfiniteQueryState } =
+              buildInfiniteQueryHooks(endpointName);
+            safeAssign(anyApi.endpoints[endpointName], {
+              useInfiniteQuery,
+              useInfiniteQuerySubscription,
+              useInfiniteQueryState,
+            });
+            (api as any)[`use${capitalize(endpointName)}InfiniteQuery`] = useInfiniteQuery;
           }
         },
       };
