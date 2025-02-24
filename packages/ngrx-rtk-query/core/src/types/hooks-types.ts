@@ -105,7 +105,7 @@ export type TypedUseQueryHookResult<
 > = TypedUseQueryStateResult<ResultType, QueryArg, BaseQuery, R> &
   TypedUseQuerySubscriptionResult<ResultType, QueryArg, BaseQuery>;
 
-type UseQuerySubscriptionOptions = SubscriptionOptions & {
+export type UseQuerySubscriptionOptions = SubscriptionOptions & {
   /**
    * Prevents a query from automatically running.
    *
@@ -627,7 +627,7 @@ export type LazyInfiniteQueryTrigger<D extends InfiniteQueryDefinition<any, any,
   (arg: QueryArgFrom<D>, direction: InfiniteQueryDirection): InfiniteQueryActionCreatorResult<D>;
 };
 
-interface UseInfiniteQuerySubscriptionOptions<D extends InfiniteQueryDefinition<any, any, any, any, any>>
+export interface UseInfiniteQuerySubscriptionOptions<D extends InfiniteQueryDefinition<any, any, any, any, any>>
   extends SubscriptionOptions {
   /**
    * Prevents a query from automatically running.
@@ -884,34 +884,35 @@ export type UseInfiniteQueryStateBaseResult<D extends InfiniteQueryDefinition<an
     isFetchingPreviousPage: false;
   };
 
-type UseInfiniteQueryStateDefaultResult<D extends InfiniteQueryDefinition<any, any, any, any, any>> = TSHelpersId<
-  | TSHelpersOverride<
-      Extract<UseInfiniteQueryStateBaseResult<D>, { status: QueryStatus.uninitialized }>,
-      { isUninitialized: true }
-    >
-  | TSHelpersOverride<
-      UseInfiniteQueryStateBaseResult<D>,
-      | { isLoading: true; isFetching: boolean; data: undefined }
-      | ({
-          isSuccess: true;
-          isFetching: true;
-          error: undefined;
-        } & Required<Pick<UseInfiniteQueryStateBaseResult<D>, 'data' | 'fulfilledTimeStamp'>>)
-      | ({
-          isSuccess: true;
-          isFetching: false;
-          error: undefined;
-        } & Required<Pick<UseInfiniteQueryStateBaseResult<D>, 'data' | 'fulfilledTimeStamp' | 'currentData'>>)
-      | ({ isError: true } & Required<Pick<UseInfiniteQueryStateBaseResult<D>, 'error'>>)
-    >
-> & {
-  /**
-   * @deprecated Included for completeness, but discouraged.
-   * Please use the `isLoading`, `isFetching`, `isSuccess`, `isError`
-   * and `isUninitialized` flags instead
-   */
-  status: QueryStatus;
-};
+export type UseInfiniteQueryStateDefaultResult<D extends InfiniteQueryDefinition<any, any, any, any, any>> =
+  TSHelpersId<
+    | TSHelpersOverride<
+        Extract<UseInfiniteQueryStateBaseResult<D>, { status: QueryStatus.uninitialized }>,
+        { isUninitialized: true }
+      >
+    | TSHelpersOverride<
+        UseInfiniteQueryStateBaseResult<D>,
+        | { isLoading: true; isFetching: boolean; data: undefined }
+        | ({
+            isSuccess: true;
+            isFetching: true;
+            error: undefined;
+          } & Required<Pick<UseInfiniteQueryStateBaseResult<D>, 'data' | 'fulfilledTimeStamp'>>)
+        | ({
+            isSuccess: true;
+            isFetching: false;
+            error: undefined;
+          } & Required<Pick<UseInfiniteQueryStateBaseResult<D>, 'data' | 'fulfilledTimeStamp' | 'currentData'>>)
+        | ({ isError: true } & Required<Pick<UseInfiniteQueryStateBaseResult<D>, 'error'>>)
+      >
+  > & {
+    /**
+     * @deprecated Included for completeness, but discouraged.
+     * Please use the `isLoading`, `isFetching`, `isSuccess`, `isError`
+     * and `isUninitialized` flags instead
+     */
+    status: QueryStatus;
+  };
 
 export type MutationStateSelector<R extends Record<string, any>, D extends MutationDefinition<any, any, any, any>> = (
   state: MutationResultSelectorResult<D>,
