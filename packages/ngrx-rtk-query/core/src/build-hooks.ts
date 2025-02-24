@@ -287,15 +287,20 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
 
     let lastRenderHadSubscription = false;
 
-    const initialPageParam = untracked(
+    const promiseRef: { current: T | undefined } = { current: undefined };
+
+    const forceRefetch = computed(() => subscriptionOptions().refetchOnMountOrArgChange);
+    const initialPageParam = computed(
       () => (subscriptionOptions() as UseInfiniteQuerySubscriptionOptions<any>).initialPageParam,
     );
-
-    const promiseRef: { current: T | undefined } = { current: undefined };
 
     effect(
       () => {
         const { queryCacheKey, requestId } = promiseRef.current || {};
+        const stableArgValue = stableArg();
+        const stableSubscriptionOptionsValue = stableSubscriptionOptions();
+        const forceRefetchValue = forceRefetch();
+        const initialPageParamValue = initialPageParam();
 
         // HACK We've saved the middleware subscription lookup callbacks into a ref,
         // so we can directly check here if the subscription exists for this query.
@@ -311,7 +316,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         }
 
         const lastPromise = promiseRef;
-        if (stableArg() === skipToken) {
+        if (stableArgValue === skipToken) {
           lastPromise.current?.unsubscribe();
           promiseRef.current = undefined;
           return;
@@ -319,23 +324,23 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
 
         const lastSubscriptionOptions = promiseRef.current?.subscriptionOptions;
 
-        if (!lastPromise.current || lastPromise.current.arg !== stableArg) {
+        if (!lastPromise.current || lastPromise.current.arg !== stableArgValue) {
           lastPromise.current?.unsubscribe();
           const promise = dispatch(
-            initiate(stableArg(), {
-              subscriptionOptions: stableSubscriptionOptions(),
-              forceRefetch: subscriptionOptions().refetchOnMountOrArgChange,
+            initiate(stableArgValue, {
+              subscriptionOptions: stableSubscriptionOptionsValue,
+              forceRefetch: forceRefetchValue,
               ...(isInfiniteQueryDefinition(context.endpointDefinitions[endpointName])
                 ? {
-                    initialPageParam,
+                    initialPageParam: initialPageParamValue,
                   }
                 : {}),
             }),
           );
 
           promiseRef.current = promise as T;
-        } else if (stableSubscriptionOptions() !== lastSubscriptionOptions) {
-          lastPromise.current.updateSubscriptionOptions(stableSubscriptionOptions());
+        } else if (stableSubscriptionOptionsValue !== lastSubscriptionOptions) {
+          lastPromise.current.updateSubscriptionOptions(stableSubscriptionOptionsValue);
         }
       },
       { allowSignalWrites: true },
