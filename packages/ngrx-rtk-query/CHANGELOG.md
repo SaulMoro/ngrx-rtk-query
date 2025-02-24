@@ -1,5 +1,15 @@
 # ngrx-rtk-query
 
+## 18.2.0
+
+### Minor Changes
+
+- [#90](https://github.com/SaulMoro/ngrx-rtk-query/pull/90) [`eedb15a`](https://github.com/SaulMoro/ngrx-rtk-query/commit/eedb15a4bfa4a2b7efae5ac685f5ceac47fb20c4) Thanks [@SaulMoro](https://github.com/SaulMoro)! - Infinite queries
+
+### Patch Changes
+
+- [#90](https://github.com/SaulMoro/ngrx-rtk-query/pull/90) [`8cc9654`](https://github.com/SaulMoro/ngrx-rtk-query/commit/8cc96547cdb7b51c2b493c0a4dfa28826dfc87ab) Thanks [@SaulMoro](https://github.com/SaulMoro)! - fix input required issue
+
 ## 18.1.0
 
 ### Minor Changes
