@@ -1,5 +1,11 @@
 # ngrx-rtk-query
 
+## 18.2.1
+
+### Patch Changes
+
+- [`22ce986`](https://github.com/SaulMoro/ngrx-rtk-query/commit/22ce986669da373d6c91effb8f45749e468229a3) Thanks [@SaulMoro](https://github.com/SaulMoro)! - fix(lib): add export to infinite queries types
+
 ## 18.2.0
 
 ### Minor Changes
