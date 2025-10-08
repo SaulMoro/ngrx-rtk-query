@@ -447,6 +447,7 @@ export type UseQueryStateOptions<D extends QueryDefinition<any, any, any, any>, 
    * item has changed.
    * If the selected item is one element in a larger collection, it will disregard changes to elements in
    * the same collection.
+   * Note that this should always return an object (not a primitive), as RTKQ adds fields to the return value.
    *
    * @example
    * ```ts
@@ -626,48 +627,55 @@ export type LazyInfiniteQueryTrigger<D extends InfiniteQueryDefinition<any, any,
   (arg: QueryArgFrom<D>, direction: InfiniteQueryDirection): InfiniteQueryActionCreatorResult<D>;
 };
 
-export interface UseInfiniteQuerySubscriptionOptions<D extends InfiniteQueryDefinition<any, any, any, any, any>>
-  extends SubscriptionOptions {
-  /**
-   * Prevents a query from automatically running.
-   *
-   * @remarks
-   * When `skip` is true (or `skipToken` is passed in as `arg`):
-   *
-   * - **If the query has cached data:**
-   *   * The cached data **will not be used** on the initial load, and will ignore updates from any identical query until the `skip` condition is removed
-   *   * The query will have a status of `uninitialized`
-   *   * If `skip: false` is set after the initial load, the cached result will be used
-   * - **If the query does not have cached data:**
-   *   * The query will have a status of `uninitialized`
-   *   * The query will not exist in the state when viewed with the dev tools
-   *   * The query will not automatically fetch on mount
-   *   * The query will not automatically run when additional components with the same query are added that do run
-   *
-   * @example
-   * ```tsx
-   * // codeblock-meta no-transpile title="Skip example"
-   *   name = input.required<string>()
-   *   skipCall = input(true);
-   *
-   *   getPokemonByNameQuery = useGetPokemonByNameQuery(name, () => ({
-   *     skip: this.skipCall(),
-   *   }));
-   * };
-   * ```
-   */
-  skip?: boolean;
-  /**
-   * Defaults to `false`. This setting allows you to control whether if a cached result is already available, RTK Query will only serve a cached result, or if it should `refetch` when set to `true` or if an adequate amount of time has passed since the last successful query result.
-   * - `false` - Will not cause a query to be performed _unless_ it does not exist yet.
-   * - `true` - Will always refetch when a new subscriber to a query is added. Behaves the same as calling the `refetch` callback or passing `forceRefetch: true` in the action creator.
-   * - `number` - **Value is in seconds**. If a number is provided and there is an existing query in the cache, it will compare the current time vs the last fulfilled timestamp, and only refetch if enough time has elapsed.
-   *
-   * If you specify this option alongside `skip: true`, this **will not be evaluated** until `skip` is false.
-   */
-  refetchOnMountOrArgChange?: boolean | number;
-  initialPageParam?: PageParamFrom<D>;
-}
+export type TypedLazyInfiniteQueryTrigger<
+  ResultType,
+  QueryArg,
+  PageParam,
+  BaseQuery extends BaseQueryFn,
+> = LazyInfiniteQueryTrigger<InfiniteQueryDefinition<QueryArg, PageParam, BaseQuery, string, ResultType, string>>;
+
+export type UseInfiniteQuerySubscriptionOptions<D extends InfiniteQueryDefinition<any, any, any, any, any>> =
+  SubscriptionOptions & {
+    /**
+     * Prevents a query from automatically running.
+     *
+     * @remarks
+     * When `skip` is true (or `skipToken` is passed in as `arg`):
+     *
+     * - **If the query has cached data:**
+     *   * The cached data **will not be used** on the initial load, and will ignore updates from any identical query until the `skip` condition is removed
+     *   * The query will have a status of `uninitialized`
+     *   * If `skip: false` is set after the initial load, the cached result will be used
+     * - **If the query does not have cached data:**
+     *   * The query will have a status of `uninitialized`
+     *   * The query will not exist in the state when viewed with the dev tools
+     *   * The query will not automatically fetch on mount
+     *   * The query will not automatically run when additional components with the same query are added that do run
+     *
+     * @example
+     * ```tsx
+     * // codeblock-meta no-transpile title="Skip example"
+     *   name = input.required<string>()
+     *   skipCall = input(true);
+     *
+     *   getPokemonByNameQuery = useGetPokemonByNameQuery(name, () => ({
+     *     skip: this.skipCall(),
+     *   }));
+     * };
+     * ```
+     */
+    skip?: boolean;
+    /**
+     * Defaults to `false`. This setting allows you to control whether if a cached result is already available, RTK Query will only serve a cached result, or if it should `refetch` when set to `true` or if an adequate amount of time has passed since the last successful query result.
+     * - `false` - Will not cause a query to be performed _unless_ it does not exist yet.
+     * - `true` - Will always refetch when a new subscriber to a query is added. Behaves the same as calling the `refetch` callback or passing `forceRefetch: true` in the action creator.
+     * - `number` - **Value is in seconds**. If a number is provided and there is an existing query in the cache, it will compare the current time vs the last fulfilled timestamp, and only refetch if enough time has elapsed.
+     *
+     * If you specify this option alongside `skip: true`, this **will not be evaluated** until `skip` is false.
+     */
+    refetchOnMountOrArgChange?: boolean | number;
+    initialPageParam?: PageParamFrom<D>;
+  };
 
 export type TypedUseInfiniteQuerySubscription<
   ResultType,
@@ -702,6 +710,19 @@ export type InfiniteQueryStateSelector<
   R extends Record<string, any>,
   D extends InfiniteQueryDefinition<any, any, any, any, any>,
 > = (state: UseInfiniteQueryStateDefaultResult<D>) => R;
+
+export type TypedInfiniteQueryStateSelector<
+  ResultType,
+  QueryArg,
+  PageParam,
+  BaseQuery extends BaseQueryFn,
+  SelectedResult extends Record<string, any> = UseInfiniteQueryStateDefaultResult<
+    InfiniteQueryDefinition<QueryArg, PageParam, BaseQuery, string, ResultType, string>
+  >,
+> = InfiniteQueryStateSelector<
+  SelectedResult,
+  InfiniteQueryDefinition<QueryArg, PageParam, BaseQuery, string, ResultType, string>
+>;
 
 /**
  * A hook that automatically triggers fetches of data from an endpoint, 'subscribes' the component to the cached data, and reads the request status and cached data from the Redux store. The component will re-render as the loading status changes and the data becomes available.  Additionally, it will cache multiple "pages" worth of responses within a single cache entry, and allows fetching more pages forwards and backwards from the current cached pages.
@@ -742,6 +763,10 @@ export type UseInfiniteQuery<D extends InfiniteQueryDefinition<any, any, any, an
     | (() => UseInfiniteQuerySubscriptionOptions<D> & UseInfiniteQueryStateOptions<D, R>),
 ) => UseInfiniteQueryHookResult<D, R> &
   Pick<UseInfiniteQuerySubscriptionResult<D>, 'fetchNextPage' | 'fetchPreviousPage'>;
+
+export type TypedUseInfiniteQuery<ResultType, QueryArg, PageParam, BaseQuery extends BaseQueryFn> = UseInfiniteQuery<
+  InfiniteQueryDefinition<QueryArg, PageParam, BaseQuery, string, ResultType, string>
+>;
 
 /**
  * A hook that reads the request status and cached data from the Redux store. The component will re-render as the loading status changes and the data becomes available.
@@ -797,6 +822,16 @@ export type UseInfiniteQueryHookResult<
   R = UseInfiniteQueryStateDefaultResult<D>,
 > = UseInfiniteQueryStateResult<D, R> & Pick<UseInfiniteQuerySubscriptionResult<D>, 'refetch'>;
 
+export type TypedUseInfiniteQueryHookResult<
+  ResultType,
+  QueryArg,
+  PageParam,
+  BaseQuery extends BaseQueryFn,
+  R extends Record<string, any> = UseInfiniteQueryStateDefaultResult<
+    InfiniteQueryDefinition<QueryArg, PageParam, BaseQuery, string, ResultType, string>
+  >,
+> = UseInfiniteQueryHookResult<InfiniteQueryDefinition<QueryArg, PageParam, BaseQuery, string, ResultType, string>, R>;
+
 export type UseInfiniteQueryStateOptions<
   D extends InfiniteQueryDefinition<any, any, any, any, any>,
   R extends Record<string, any>,
@@ -845,9 +880,33 @@ export type UseInfiniteQueryStateOptions<
   selectFromResult?: InfiniteQueryStateSelector<R, D>;
 };
 
-export type UseInfiniteQueryStateResult<_ extends InfiniteQueryDefinition<any, any, any, any, any>, R> = DeepSignal<
-  TSHelpersNoInfer<R>
+export type TypedUseInfiniteQueryStateOptions<
+  ResultType,
+  QueryArg,
+  PageParam,
+  BaseQuery extends BaseQueryFn,
+  SelectedResult extends Record<string, any> = UseInfiniteQueryStateDefaultResult<
+    InfiniteQueryDefinition<QueryArg, PageParam, BaseQuery, string, ResultType, string>
+  >,
+> = UseInfiniteQueryStateOptions<
+  InfiniteQueryDefinition<QueryArg, PageParam, BaseQuery, string, ResultType, string>,
+  SelectedResult
 >;
+
+export type UseInfiniteQueryStateResult<
+  D extends InfiniteQueryDefinition<any, any, any, any, any>,
+  R = UseInfiniteQueryStateDefaultResult<D>,
+> = DeepSignal<TSHelpersNoInfer<R>>;
+
+export type TypedUseInfiniteQueryStateResult<
+  ResultType,
+  QueryArg,
+  PageParam,
+  BaseQuery extends BaseQueryFn,
+  R = UseInfiniteQueryStateDefaultResult<
+    InfiniteQueryDefinition<QueryArg, PageParam, BaseQuery, string, ResultType, string>
+  >,
+> = UseInfiniteQueryStateResult<InfiniteQueryDefinition<QueryArg, PageParam, BaseQuery, string, ResultType, string>, R>;
 
 export type UseInfiniteQueryStateBaseResult<D extends InfiniteQueryDefinition<any, any, any, any, any>> =
   InfiniteQuerySubState<D> & {
@@ -877,10 +936,10 @@ export type UseInfiniteQueryStateBaseResult<D extends InfiniteQueryDefinition<an
      * Query is currently in "error" state.
      */
     isError: false;
-    hasNextPage: false;
-    hasPreviousPage: false;
-    isFetchingNextPage: false;
-    isFetchingPreviousPage: false;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+    isFetchingNextPage: boolean;
+    isFetchingPreviousPage: boolean;
   };
 
 export type UseInfiniteQueryStateDefaultResult<D extends InfiniteQueryDefinition<any, any, any, any, any>> =

@@ -20,7 +20,6 @@ import {
   QueryStatus,
   type RootState,
   type SerializeQueryArgs,
-  defaultSerializeQueryArgs,
   skipToken,
 } from '@reduxjs/toolkit/query';
 
@@ -167,16 +166,17 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       const { endpointName } = lastResult;
       const endpointDefinition = context.endpointDefinitions[endpointName];
       if (
+        queryArgs !== skipToken &&
         serializeQueryArgs({
           queryArgs: lastResult.originalArgs,
           endpointDefinition,
           endpointName,
         }) ===
-        serializeQueryArgs({
-          queryArgs,
-          endpointDefinition,
-          endpointName,
-        })
+          serializeQueryArgs({
+            queryArgs,
+            endpointDefinition,
+            endpointName,
+          })
       )
         lastResult = undefined;
     }
@@ -226,6 +226,10 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       QueryDefinition<any, any, any, any, any>,
       Definitions
     >;
+    // We need to use `toLazySignal` here to prevent 'signal required inputs' errors
+    const lazyArg = typeof arg === 'function' ? toLazySignal(arg, { initialValue: skipToken }) : () => arg;
+    const lazyOptions = typeof options === 'function' ? toLazySignal(options, { initialValue: {} }) : () => options;
+
     const subscriptionOptions = computed(() => {
       const {
         refetchOnReconnect,
@@ -235,7 +239,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         pollingInterval = 0,
         skipPollingIfUnfocused = false,
         ...rest
-      } = typeof options === 'function' ? options() : options;
+      } = lazyOptions();
       return {
         refetchOnReconnect,
         refetchOnFocus,
@@ -247,9 +251,11 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       };
     });
     const subscriptionArg = computed(() => {
-      const subscriptionArg = typeof arg === 'function' ? arg() : arg;
+      const subscriptionArg = lazyArg();
       return subscriptionOptions().skip ? skipToken : subscriptionArg;
     });
+
+    const stableArg = useStableQueryArgs(subscriptionArg);
 
     let subscriptionSelectorsRef: SubscriptionSelectors | undefined;
     if (!subscriptionSelectorsRef) {
@@ -266,17 +272,6 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       subscriptionSelectorsRef = returnedValue as unknown as SubscriptionSelectors;
     }
 
-    const stableArg = useStableQueryArgs(
-      subscriptionArg,
-      // Even if the user provided a per-endpoint `serializeQueryArgs` with
-      // a consistent return value, _here_ we want to use the default behavior
-      // so we can tell if _anything_ actually changed. Otherwise, we can end up
-      // with a case where the query args did change but the serialization doesn't,
-      // and then we never try to initiate a refetch.
-      defaultSerializeQueryArgs,
-      context.endpointDefinitions[endpointName],
-      endpointName,
-    );
     const stableSubscriptionOptions = computed(
       () => {
         const { refetchOnReconnect, refetchOnFocus, pollingInterval, skipPollingIfUnfocused } = subscriptionOptions();
@@ -284,8 +279,6 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       },
       { equal: shallowEqual },
     );
-
-    let lastRenderHadSubscription = false;
 
     const promiseRef: { current: T | undefined } = { current: undefined };
 
@@ -309,8 +302,8 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
           currentRenderHasSubscription = !!subscriptionSelectorsRef?.isRequestSubscribed(queryCacheKey, requestId);
         }
 
-        const subscriptionRemoved = !currentRenderHasSubscription && lastRenderHadSubscription;
-        lastRenderHadSubscription = currentRenderHasSubscription;
+        const subscriptionRemoved = !currentRenderHasSubscription && promiseRef.current !== undefined;
+
         if (subscriptionRemoved) {
           promiseRef.current = undefined;
         }
@@ -346,7 +339,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       { allowSignalWrites: true },
     );
 
-    return [promiseRef, dispatch, initiate, stableSubscriptionOptions] as const;
+    return [promiseRef, dispatch, initiate, stableSubscriptionOptions, stableArg] as const;
   }
 
   function buildUseQueryState(
@@ -381,12 +374,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         return stateOptions().skip ? skipToken : subscriptionArg;
       });
 
-      const stableArg = useStableQueryArgs(
-        subscriptionArg,
-        serializeQueryArgs,
-        context.endpointDefinitions[endpointName],
-        endpointName,
-      );
+      const stableArg = useStableQueryArgs(subscriptionArg);
 
       let lastValue: any;
 
@@ -562,7 +550,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
 
   function buildInfiniteQueryHooks(endpointName: string): InfiniteQueryHooks<any> {
     const useInfiniteQuerySubscription: UseInfiniteQuerySubscription<any> = (arg: any, options = {}) => {
-      const [promiseRef, dispatch, initiate, stableSubscriptionOptions] = useQuerySubscriptionCommonImpl<
+      const [promiseRef, dispatch, initiate, stableSubscriptionOptions, stableArg] = useQuerySubscriptionCommonImpl<
         InfiniteQueryActionCreatorResult<any>
       >(endpointName, arg, options);
 
@@ -588,12 +576,14 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
 
       usePromiseRefUnsubscribeOnUnmount(promiseRef);
 
+      const refetch = () => refetchOrErrorIfUnmounted(promiseRef);
+
       const fetchNextPage = () => {
-        return trigger(arg, 'forward');
+        return trigger(stableArg(), 'forward');
       };
 
       const fetchPreviousPage = () => {
-        return trigger(arg, 'backward');
+        return trigger(stableArg(), 'backward');
       };
 
       return {
@@ -601,7 +591,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         /**
          * A method to manually refetch data for the query
          */
-        refetch: () => refetchOrErrorIfUnmounted(promiseRef),
+        refetch,
         fetchNextPage,
         fetchPreviousPage,
       };

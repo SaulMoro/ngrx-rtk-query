@@ -7,12 +7,12 @@ import {
   makeEnvironmentProviders,
 } from '@angular/core';
 import { type Action, Store, createSelectorFactory, defaultMemoize, provideState } from '@ngrx/store';
-import { type SelectSignalOptions } from '@ngrx/store/src/models';
 import { type Api, setupListeners as setupListenersFn } from '@reduxjs/toolkit/query';
 
 import {
   type AngularHooksModuleOptions,
   type Dispatch,
+  type SelectSignalOptions,
   type StoreQueryConfig,
   shallowEqual,
 } from 'ngrx-rtk-query/core';

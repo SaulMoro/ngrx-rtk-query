@@ -1,24 +1,19 @@
-import { type Signal, computed } from '@angular/core';
-import { type EndpointDefinition, type SerializeQueryArgs } from '@reduxjs/toolkit/query';
+import { type Signal, computed, effect } from '@angular/core';
+import { copyWithStructuralSharing } from '@reduxjs/toolkit/query';
 
-export function useStableQueryArgs<T>(
-  queryArgs: Signal<T>,
-  serialize: SerializeQueryArgs<any>,
-  endpointDefinition: EndpointDefinition<any, any, any, any>,
-  endpointName: string,
-) {
-  const incoming = computed(
-    () => {
-      const incomingArgs = queryArgs();
-      return {
-        queryArgs: incomingArgs,
-        serialized:
-          typeof incomingArgs == 'object'
-            ? serialize({ queryArgs: incomingArgs, endpointDefinition, endpointName })
-            : incomingArgs,
-      };
-    },
-    { equal: (a, b) => a.serialized === b.serialized },
-  );
-  return computed(() => incoming().queryArgs);
+export function useStableQueryArgs<T>(queryArgs: Signal<T>) {
+  const cache: { current: T | undefined } = { current: queryArgs() };
+  const copy = computed(() => {
+    const incomingArgs = queryArgs();
+    return copyWithStructuralSharing(cache.current, incomingArgs);
+  });
+
+  effect(() => {
+    const copyValue = copy();
+    if (cache.current !== copyValue) {
+      cache.current = copyValue;
+    }
+  });
+
+  return copy;
 }

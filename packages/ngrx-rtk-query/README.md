@@ -35,10 +35,11 @@ npm install ngrx-rtk-query @reduxjs/toolkit
 
 | Angular / NgRx |   ngrx-rtk-query   | @reduxjs/toolkit |       Support       |
 | :------------: | :----------------: | :--------------: | :-----------------: |
-|     >=18.x     | >=18.2.0 (signals) |      ~2.6.0      | Bugs / New Features |
+|     >=20.x     | >=20.0.0 (signals) |      ~2.9.0      | Bugs / New Features |
+|     >=18.x     | >=18.2.0 (signals) |      ~2.6.0      |        Bugs         |
 |     >=18.x     | >=18.1.0 (signals) |      ~2.5.0      |        Bugs         |
-|      18.x      | >=18.0.0 (signals) |      ~2.2.5      |        Bugs         |
-|      17.x      | >=17.1.x (signals) |      ~2.2.1      |        Bugs         |
+|      18.x      | >=18.0.0 (signals) |      ~2.2.5      |    Critical bugs    |
+|      17.x      | >=17.1.x (signals) |      ~2.2.1      |    Critical bugs    |
 |      16.x      |   >=4.2.x (rxjs)   |      ~1.9.3      |    Critical bugs    |
 |      15.x      |    4.1.x (rxjs)    |      1.9.3       |        None         |
 
