@@ -1,5 +1,11 @@
 # ngrx-rtk-query
 
+## 20.0.0
+
+### Major Changes
+
+- [#93](https://github.com/SaulMoro/ngrx-rtk-query/pull/93) [`147f78e`](https://github.com/SaulMoro/ngrx-rtk-query/commit/147f78e19e70a91f09db726436218c8fb6e8c43f) Thanks [@SaulMoro](https://github.com/SaulMoro)! - Update to angular 20 and toolkit 2.9.0
+
 ## 18.2.1
 
 ### Patch Changes
