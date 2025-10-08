@@ -43,7 +43,7 @@
   "peerDependencies": {
     "@angular/core": ">=20.0.0",
     "@ngrx/store": ">=20.0.0",
-    "@reduxjs/toolkit": "~2.6.0"
+    "@reduxjs/toolkit": "~2.9.0"
   },
   "peerDependenciesMeta": {
     "@ngrx/store": {
