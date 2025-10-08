@@ -144,7 +144,7 @@
     "jsonc-eslint-parser": "^2.4.0",
     "lint-staged": "^16.2.3",
     "msw": "~2.11.3",
-    "ng-packagr": "20.3.0",
+    "ng-packagr": "~18.2.1",
     "nx": "21.6.3",
     "postcss": "^8.4.49",
     "postcss-url": "^10.1.3",
