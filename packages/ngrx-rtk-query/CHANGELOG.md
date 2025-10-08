@@ -1,5 +1,13 @@
 # ngrx-rtk-query
 
+## 20.0.1
+
+### Patch Changes
+
+- [`f671ec7`](https://github.com/SaulMoro/ngrx-rtk-query/commit/f671ec77cf54f9da9c2912dd2a1dc991928e4587) Thanks [@SaulMoro](https://github.com/SaulMoro)! - ci: fix node-version
+
+- [`43c43a9`](https://github.com/SaulMoro/ngrx-rtk-query/commit/43c43a9587ee20f3366a17bd515d65ec24a37d32) Thanks [@SaulMoro](https://github.com/SaulMoro)! - fix ts issues
+
 ## 20.0.0
 
 ### Major Changes
