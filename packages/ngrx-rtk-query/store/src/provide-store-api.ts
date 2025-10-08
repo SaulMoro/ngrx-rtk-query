@@ -1,20 +1,20 @@
 import {
   ENVIRONMENT_INITIALIZER,
-  type EnvironmentProviders,
   Injector,
-  type Signal,
   inject,
   makeEnvironmentProviders,
+  type EnvironmentProviders,
+  type Signal,
 } from '@angular/core';
-import { type Action, Store, createSelectorFactory, defaultMemoize, provideState } from '@ngrx/store';
-import { type SelectSignalOptions } from '@ngrx/store/src/models';
-import { type Api, setupListeners as setupListenersFn } from '@reduxjs/toolkit/query';
+import { Store, createSelectorFactory, defaultMemoize, provideState, type Action } from '@ngrx/store';
+import { setupListeners as setupListenersFn, type Api } from '@reduxjs/toolkit/query';
 
 import {
+  type SelectSignalOptions,
+  shallowEqual,
   type AngularHooksModuleOptions,
   type Dispatch,
-  type StoreQueryConfig,
-  shallowEqual,
+  type StoreQueryConfig
 } from 'ngrx-rtk-query/core';
 
 const createStoreApi = (

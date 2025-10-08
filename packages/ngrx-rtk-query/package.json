@@ -41,8 +41,8 @@
     "tslib": "^2.3.0"
   },
   "peerDependencies": {
-    "@angular/core": ">=18.0.0",
-    "@ngrx/store": ">=18.0.0",
+    "@angular/core": ">=20.0.0",
+    "@ngrx/store": ">=20.0.0",
     "@reduxjs/toolkit": "~2.6.0"
   },
   "peerDependenciesMeta": {
