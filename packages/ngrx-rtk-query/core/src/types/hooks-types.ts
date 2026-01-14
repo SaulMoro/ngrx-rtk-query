@@ -675,6 +675,13 @@ export type UseInfiniteQuerySubscriptionOptions<D extends InfiniteQueryDefinitio
      */
     refetchOnMountOrArgChange?: boolean | number;
     initialPageParam?: PageParamFrom<D>;
+    /**
+     * Defaults to `true`. When this is `true` and an infinite query endpoint is refetched
+     * (due to tag invalidation, polling, arg change configuration, or manual refetching),
+     * RTK Query will try to sequentially refetch all pages currently in the cache.
+     * When `false` only the first page will be refetched.
+     */
+    refetchCachedPages?: boolean;
   };
 
 export type TypedUseInfiniteQuerySubscription<
@@ -684,10 +691,10 @@ export type TypedUseInfiniteQuerySubscription<
   BaseQuery extends BaseQueryFn,
 > = UseInfiniteQuerySubscription<InfiniteQueryDefinition<QueryArg, PageParam, BaseQuery, string, ResultType, string>>;
 
-export type UseInfiniteQuerySubscriptionResult<D extends InfiniteQueryDefinition<any, any, any, any, any>> = Pick<
-  InfiniteQueryActionCreatorResult<D>,
-  'refetch'
-> & {
+export type UseInfiniteQuerySubscriptionResult<D extends InfiniteQueryDefinition<any, any, any, any, any>> = {
+  refetch: (
+    options?: Pick<UseInfiniteQuerySubscriptionOptions<D>, 'refetchCachedPages'>,
+  ) => InfiniteQueryActionCreatorResult<D>;
   trigger: LazyInfiniteQueryTrigger<D>;
   fetchNextPage: () => InfiniteQueryActionCreatorResult<D>;
   fetchPreviousPage: () => InfiniteQueryActionCreatorResult<D>;
@@ -820,7 +827,8 @@ export type UseInfiniteQuerySubscription<D extends InfiniteQueryDefinition<any, 
 export type UseInfiniteQueryHookResult<
   D extends InfiniteQueryDefinition<any, any, any, any, any>,
   R = UseInfiniteQueryStateDefaultResult<D>,
-> = UseInfiniteQueryStateResult<D, R> & Pick<UseInfiniteQuerySubscriptionResult<D>, 'refetch'>;
+> = UseInfiniteQueryStateResult<D, R> &
+  Pick<UseInfiniteQuerySubscriptionResult<D>, 'refetch' | 'fetchNextPage' | 'fetchPreviousPage'>;
 
 export type TypedUseInfiniteQueryHookResult<
   ResultType,

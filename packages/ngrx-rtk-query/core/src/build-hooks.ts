@@ -570,7 +570,10 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
 
       usePromiseRefUnsubscribeOnUnmount(promiseRef);
 
-      const refetch = () => refetchOrErrorIfUnmounted(promiseRef);
+      const refetch = (options?: { refetchCachedPages?: boolean }) => {
+        if (!promiseRef.current) throw new Error('Cannot refetch a query that has not been started yet.');
+        return promiseRef.current.refetch(options);
+      };
 
       const fetchNextPage = () => {
         return trigger(stableArg(), 'forward');

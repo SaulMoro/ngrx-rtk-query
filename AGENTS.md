@@ -200,6 +200,16 @@ pnpm changeset
 
 The library mirrors RTK Query's React hooks implementation. When updating RTK versions:
 
+**MANDATORY CHECKLIST** (do not skip any step):
+
+- [ ] Check RTK Query React commits since last synced version
+- [ ] Compare `buildHooks.ts` for new features/options
+- [ ] Compare `module.ts` for API changes
+- [ ] Compare React hook types for new properties
+- [ ] Update corresponding ngrx-rtk-query files
+- [ ] Build and verify no type errors
+- [ ] Test both example apps manually
+
 1. **Check RTK Query React commits**:
    <https://github.com/reduxjs/redux-toolkit/commits/master/packages/toolkit/src/query/react>
 
