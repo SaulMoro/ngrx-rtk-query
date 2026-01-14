@@ -205,10 +205,12 @@ The library mirrors RTK Query's React hooks implementation. When updating RTK ve
 - [ ] Check RTK Query React commits since last synced version
 - [ ] Compare `buildHooks.ts` for new features/options
 - [ ] Compare `module.ts` for API changes
-- [ ] Compare React hook types for new properties
+- [ ] Compare React hook types for new properties (especially `UseQueryStateDefaultResult`, `UseInfiniteQueryStateDefaultResult`, `TypedUse*` types)
 - [ ] Update corresponding ngrx-rtk-query files
 - [ ] Build and verify no type errors
 - [ ] Test both example apps manually
+
+**CRITICAL**: Types that are NOT in `build-hooks.ts` are in `types/hooks-types.ts`. When RTK changes types in `buildHooks.ts`, check BOTH files for corresponding changes.
 
 1. **Check RTK Query React commits**:
    <https://github.com/reduxjs/redux-toolkit/commits/master/packages/toolkit/src/query/react>
@@ -220,11 +222,11 @@ The library mirrors RTK Query's React hooks implementation. When updating RTK ve
 
 3. **Key files to sync**:
 
-   | RTK Query React                                  | ngrx-rtk-query                                    |
-   | ------------------------------------------------ | ------------------------------------------------- |
-   | `packages/toolkit/src/query/react/buildHooks.ts` | `packages/ngrx-rtk-query/core/src/build-hooks.ts` |
-   | `packages/toolkit/src/query/react/module.ts`     | `packages/ngrx-rtk-query/core/src/module.ts`      |
-   | `packages/toolkit/src/query/react/` types        | `packages/ngrx-rtk-query/core/src/types/`         |
+   | RTK Query React                                          | ngrx-rtk-query                                          |
+   | -------------------------------------------------------- | ------------------------------------------------------- |
+   | `packages/toolkit/src/query/react/buildHooks.ts`         | `packages/ngrx-rtk-query/core/src/build-hooks.ts`       |
+   | `packages/toolkit/src/query/react/buildHooks.ts` (types) | `packages/ngrx-rtk-query/core/src/types/hooks-types.ts` |
+   | `packages/toolkit/src/query/react/module.ts`             | `packages/ngrx-rtk-query/core/src/module.ts`            |
 
 4. **Adaptation notes**:
    - Replace React hooks (`useState`, `useEffect`) with Angular signals (`signal`, `effect`)

@@ -572,26 +572,50 @@ type UseQueryStateBaseResult<D extends QueryDefinition<any, any, any, any>> = Qu
   isError: false;
 };
 
+type UseQueryStateUninitialized<D extends QueryDefinition<any, any, any, any>> = TSHelpersOverride<
+  Extract<UseQueryStateBaseResult<D>, { status: QueryStatus.uninitialized }>,
+  { isUninitialized: true }
+>;
+
+type UseQueryStateLoading<D extends QueryDefinition<any, any, any, any>> = TSHelpersOverride<
+  UseQueryStateBaseResult<D>,
+  { isLoading: true; isFetching: boolean; data: undefined }
+>;
+
+type UseQueryStateSuccessFetching<D extends QueryDefinition<any, any, any, any>> = TSHelpersOverride<
+  UseQueryStateBaseResult<D>,
+  {
+    isSuccess: true;
+    isFetching: true;
+    error: undefined;
+  } & {
+    data: ResultTypeFrom<D>;
+  } & Required<Pick<UseQueryStateBaseResult<D>, 'fulfilledTimeStamp'>>
+>;
+
+type UseQueryStateSuccessNotFetching<D extends QueryDefinition<any, any, any, any>> = TSHelpersOverride<
+  UseQueryStateBaseResult<D>,
+  {
+    isSuccess: true;
+    isFetching: false;
+    error: undefined;
+  } & {
+    data: ResultTypeFrom<D>;
+    currentData: ResultTypeFrom<D>;
+  } & Required<Pick<UseQueryStateBaseResult<D>, 'fulfilledTimeStamp'>>
+>;
+
+type UseQueryStateError<D extends QueryDefinition<any, any, any, any>> = TSHelpersOverride<
+  UseQueryStateBaseResult<D>,
+  { isError: true } & Required<Pick<UseQueryStateBaseResult<D>, 'error'>>
+>;
+
 export type UseQueryStateDefaultResult<D extends QueryDefinition<any, any, any, any>> = TSHelpersId<
-  | TSHelpersOverride<
-      Extract<UseQueryStateBaseResult<D>, { status: QueryStatus.uninitialized }>,
-      { isUninitialized: true }
-    >
-  | TSHelpersOverride<
-      UseQueryStateBaseResult<D>,
-      | { isLoading: true; isFetching: boolean; data: undefined }
-      | ({
-          isSuccess: true;
-          isFetching: true;
-          error: undefined;
-        } & Required<Pick<UseQueryStateBaseResult<D>, 'data' | 'fulfilledTimeStamp'>>)
-      | ({
-          isSuccess: true;
-          isFetching: false;
-          error: undefined;
-        } & Required<Pick<UseQueryStateBaseResult<D>, 'data' | 'fulfilledTimeStamp' | 'currentData'>>)
-      | ({ isError: true } & Required<Pick<UseQueryStateBaseResult<D>, 'error'>>)
-    >
+  | UseQueryStateUninitialized<D>
+  | UseQueryStateLoading<D>
+  | UseQueryStateSuccessFetching<D>
+  | UseQueryStateSuccessNotFetching<D>
+  | UseQueryStateError<D>
 > & {
   /**
    * @deprecated Included for completeness, but discouraged.
@@ -950,27 +974,53 @@ export type UseInfiniteQueryStateBaseResult<D extends InfiniteQueryDefinition<an
     isFetchingPreviousPage: boolean;
   };
 
+type UseInfiniteQueryStateUninitialized<D extends InfiniteQueryDefinition<any, any, any, any, any>> = TSHelpersOverride<
+  Extract<UseInfiniteQueryStateBaseResult<D>, { status: QueryStatus.uninitialized }>,
+  { isUninitialized: true }
+>;
+
+type UseInfiniteQueryStateLoading<D extends InfiniteQueryDefinition<any, any, any, any, any>> = TSHelpersOverride<
+  UseInfiniteQueryStateBaseResult<D>,
+  { isLoading: true; isFetching: boolean; data: undefined }
+>;
+
+type UseInfiniteQueryStateSuccessFetching<D extends InfiniteQueryDefinition<any, any, any, any, any>> =
+  TSHelpersOverride<
+    UseInfiniteQueryStateBaseResult<D>,
+    {
+      isSuccess: true;
+      isFetching: true;
+      error: undefined;
+    } & {
+      data: InfiniteData<ResultTypeFrom<D>, PageParamFrom<D>>;
+    } & Required<Pick<UseInfiniteQueryStateBaseResult<D>, 'fulfilledTimeStamp'>>
+  >;
+
+type UseInfiniteQueryStateSuccessNotFetching<D extends InfiniteQueryDefinition<any, any, any, any, any>> =
+  TSHelpersOverride<
+    UseInfiniteQueryStateBaseResult<D>,
+    {
+      isSuccess: true;
+      isFetching: false;
+      error: undefined;
+    } & {
+      data: InfiniteData<ResultTypeFrom<D>, PageParamFrom<D>>;
+      currentData: InfiniteData<ResultTypeFrom<D>, PageParamFrom<D>>;
+    } & Required<Pick<UseInfiniteQueryStateBaseResult<D>, 'fulfilledTimeStamp'>>
+  >;
+
+type UseInfiniteQueryStateError<D extends InfiniteQueryDefinition<any, any, any, any, any>> = TSHelpersOverride<
+  UseInfiniteQueryStateBaseResult<D>,
+  { isError: true } & Required<Pick<UseInfiniteQueryStateBaseResult<D>, 'error'>>
+>;
+
 export type UseInfiniteQueryStateDefaultResult<D extends InfiniteQueryDefinition<any, any, any, any, any>> =
   TSHelpersId<
-    | TSHelpersOverride<
-        Extract<UseInfiniteQueryStateBaseResult<D>, { status: QueryStatus.uninitialized }>,
-        { isUninitialized: true }
-      >
-    | TSHelpersOverride<
-        UseInfiniteQueryStateBaseResult<D>,
-        | { isLoading: true; isFetching: boolean; data: undefined }
-        | ({
-            isSuccess: true;
-            isFetching: true;
-            error: undefined;
-          } & Required<Pick<UseInfiniteQueryStateBaseResult<D>, 'data' | 'fulfilledTimeStamp'>>)
-        | ({
-            isSuccess: true;
-            isFetching: false;
-            error: undefined;
-          } & Required<Pick<UseInfiniteQueryStateBaseResult<D>, 'data' | 'fulfilledTimeStamp' | 'currentData'>>)
-        | ({ isError: true } & Required<Pick<UseInfiniteQueryStateBaseResult<D>, 'error'>>)
-      >
+    | UseInfiniteQueryStateUninitialized<D>
+    | UseInfiniteQueryStateLoading<D>
+    | UseInfiniteQueryStateSuccessFetching<D>
+    | UseInfiniteQueryStateSuccessNotFetching<D>
+    | UseInfiniteQueryStateError<D>
   > & {
     /**
      * @deprecated Included for completeness, but discouraged.
