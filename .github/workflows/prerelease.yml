@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -36,7 +36,7 @@ jobs:
 
       - name: get-npm-version
         id: package-version
-        uses: martinbeentjes/npm-get-version-action@main
+        uses: martinbeentjes/npm-get-version-action@v1
         with:
           path: packages/ngrx-rtk-query
 
