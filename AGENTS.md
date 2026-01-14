@@ -1,0 +1,242 @@
+# AGENTS.md
+
+Guidance for AI agents working with this repository.
+
+## Repository Overview
+
+**ngrx-rtk-query** is an Angular library that wraps RTK Query (Redux Toolkit Query) for Angular using Signals. It bridges RTK Query's React-centric hooks to Angular's component model.
+
+- Signal-based reactivity (not RxJS)
+- Auto-generated hooks from API definitions (`useXxxQuery`, `useLazyXxxQuery`, `useXxxMutation`)
+- Works with or without NgRx Store (`provideStoreApi` vs `provideNoopStoreApi`)
+- Library versions align with Angular major versions (e.g., ngrx-rtk-query 21.x -> Angular 21.x)
+
+## Quick Start
+
+```bash
+# Prerequisites: Node ^18.18.0 || ^20.0.0 || ^22.0.0, pnpm ^10.0.0
+
+pnpm install
+
+# Run examples
+pnpm dev:basic-store      # NgRx store example
+pnpm dev:noop-store       # Noop store example (no NgRx)
+```
+
+## Essential Commands
+
+```bash
+# Development
+pnpm dev:basic-store         # Start NgRx store example
+pnpm dev:noop-store          # Start noop store example
+pnpm build:ngrx-rtk-query    # Build library
+
+# Quality
+pnpm affected:check          # Lint + type-check + format
+pnpm affected:test           # Run tests
+pnpm affected:e2e            # Run E2E tests
+
+# Changesets (release happens via GitHub Actions)
+pnpm changeset               # Create changeset for version bump
+```
+
+## Architecture
+
+### Library Structure (ng-packagr secondary entry points)
+
+```
+packages/ngrx-rtk-query/
+├── index.ts                 # Re-exports core + store
+├── core/                    # Core functionality (no store dependency)
+│   └── src/
+│       ├── create-api.ts    # Main createApi function
+│       ├── fetch-base-query.ts  # Angular-compatible fetchBaseQuery
+│       ├── build-hooks.ts   # Hook generation logic
+│       ├── module.ts        # Angular hooks module for RTK Query
+│       ├── types/           # TypeScript types for hooks
+│       └── utils/           # Signal utilities (signalProxy, toLazySignal)
+├── store/                   # NgRx Store integration
+│   └── src/provide-store-api.ts
+├── noop-store/              # Standalone store (no NgRx dependency)
+│   └── src/provide-noop-store-api.ts
+└── signal-store/            # Reserved for future @ngrx/signals integration
+```
+
+### Import Paths
+
+```typescript
+// With NgRx Store
+import { createApi, fetchBaseQuery, provideStoreApi } from 'ngrx-rtk-query';
+
+// Without NgRx Store
+import { createApi, fetchBaseQuery } from 'ngrx-rtk-query/core';
+import { provideNoopStoreApi } from 'ngrx-rtk-query/noop-store';
+```
+
+### Core Abstractions
+
+#### `createApi` (core/create-api.ts)
+
+Wraps RTK Query's `buildCreateApi` with Angular-specific hooks module.
+
+#### `fetchBaseQuery` (core/fetch-base-query.ts)
+
+Supports Angular DI via factory function:
+
+```typescript
+fetchBaseQuery((http = inject(HttpClient)) => async (args, api) => {
+  /* ... */
+});
+```
+
+#### Hook System (core/build-hooks.ts)
+
+Generates: `useXxxQuery()`, `useLazyXxxQuery()`, `useXxxMutation()`, `useXxxInfiniteQuery()`
+
+#### Signal Proxy (core/utils/signal-proxy.ts)
+
+Enables fine-grained signal access:
+
+```typescript
+query.isLoading(); // Better than query().isLoading for change detection
+```
+
+### Store Variants
+
+**With NgRx Store:**
+
+```typescript
+providers: [provideStore(), provideStoreDevtools({ name: 'App' }), provideStoreApi(postsApi)];
+```
+
+**Without NgRx Store:**
+
+```typescript
+providers: [provideNoopStoreApi(postsApi)];
+```
+
+## Usage Patterns
+
+### Query with Signal Inputs
+
+```typescript
+userQuery = useGetUserQuery(this.userId); // Signal input
+userQuery = useGetUserQuery(() => this.userId()); // Function
+locationQuery = useGetLocationQuery(() => id ?? skipToken); // Conditional
+```
+
+### Lazy Queries
+
+```typescript
+xxxQuery = useLazyGetXxxQuery();
+this.xxxQuery(id).unwrap();
+this.xxxQuery(id, { preferCacheValue: true });
+this.xxxQuery.reset();
+```
+
+### Mutations
+
+```typescript
+addPost = useAddPostMutation();
+this.addPost({ name: 'New' }).unwrap().then(/* ... */);
+addPost.isLoading(); // Template usage
+```
+
+## Code Style
+
+- **Type imports**: `import { type Signal } from '@angular/core';`
+- **Private members**: Use `#` prefix
+- **Files**: kebab-case
+- **Hooks**: `use` prefix + PascalCase endpoint name
+- **Components**: Standalone, OnPush, inline templates
+
+## Debugging
+
+### Common Errors
+
+| Error                          | Solution                                                 |
+| ------------------------------ | -------------------------------------------------------- |
+| "Provide the API is necessary" | Add `provideStoreApi(api)` or `provideNoopStoreApi(api)` |
+| "Middleware not added"         | Add `provideStore()` before `provideStoreApi()`          |
+| Query not refetching           | Ensure arg is signal/function, check `skip` option       |
+
+### DevTools
+
+With NgRx Store: Redux DevTools extension shows state under `reducerPath` key.
+
+---
+
+## Maintainer Workflows
+
+### 1. Update Nx and Angular
+
+When updating Angular/Nx versions:
+
+```bash
+# 1. Run Nx migration
+pnpm update  # This runs 'nx migrate latest'
+
+# 2. Review and apply migrations
+cat migrations.json
+nx migrate --run-migrations
+
+# 3. Update Angular dependencies in package.json
+# Update @angular/* packages to target version
+
+# 4. Update library peer dependencies
+# Edit packages/ngrx-rtk-query/package.json peerDependencies
+
+# 5. Test both example apps
+pnpm dev:basic-store
+pnpm dev:noop-store
+pnpm affected:test
+pnpm affected:e2e
+
+# 6. Create changeset with major version bump
+pnpm changeset
+```
+
+### 2. Sync with RTK Query React Hooks
+
+The library mirrors RTK Query's React hooks implementation. When updating RTK versions:
+
+1. **Check RTK Query React commits**:
+   <https://github.com/reduxjs/redux-toolkit/commits/master/packages/toolkit/src/query/react>
+
+2. **Compare with last synced version**:
+   - Check current `@reduxjs/toolkit` version in `package.json`
+   - Review commits since that version in the RTK repo
+   - Focus on files: `buildHooks.ts`, `module.ts`, types
+
+3. **Key files to sync**:
+
+   | RTK Query React                                  | ngrx-rtk-query                                    |
+   | ------------------------------------------------ | ------------------------------------------------- |
+   | `packages/toolkit/src/query/react/buildHooks.ts` | `packages/ngrx-rtk-query/core/src/build-hooks.ts` |
+   | `packages/toolkit/src/query/react/module.ts`     | `packages/ngrx-rtk-query/core/src/module.ts`      |
+   | `packages/toolkit/src/query/react/` types        | `packages/ngrx-rtk-query/core/src/types/`         |
+
+4. **Adaptation notes**:
+   - Replace React hooks (`useState`, `useEffect`) with Angular signals (`signal`, `effect`)
+   - Replace `useSelector` with `store.selectSignal`
+   - Replace React refs with object references `{ current: T }`
+   - Adapt cleanup patterns from `useEffect` cleanup to `DestroyRef.onDestroy`
+
+5. **Test thoroughly** after sync:
+
+   ```bash
+   pnpm build:ngrx-rtk-query
+   pnpm affected:test
+   pnpm dev:basic-store  # Manual verification
+   pnpm dev:noop-store
+   pnpm affected:e2e
+   ```
+
+---
+
+## Resources
+
+- [RTK Query Docs](https://redux-toolkit.js.org/rtk-query/overview)
+- [RTK Query React Source](https://github.com/reduxjs/redux-toolkit/tree/master/packages/toolkit/src/query/react)
+- [Angular Signals](https://angular.dev/guide/signals)
+- [Changelog](packages/ngrx-rtk-query/CHANGELOG.md)
