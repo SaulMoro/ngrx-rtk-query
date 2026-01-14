@@ -19,9 +19,6 @@ export default defineConfig(({ mode }) => ({
       reportsDirectory: '../../coverage/packages/ngrx-rtk-query',
       provider: 'v8',
     },
-    cache: {
-      dir: '../../node_modules/.vitest',
-    },
   },
   define: {
     'import.meta.vitest': mode !== 'production',

@@ -47,18 +47,6 @@
         "{workspaceRoot}/eslint.config.js"
       ]
     },
-    "@nx/vite:test": {
-      "inputs": ["default", "^production"],
-      "cache": true,
-      "options": {
-        "passWithNoTests": true
-      },
-      "configurations": {
-        "watch": {
-          "watch": true
-        }
-      }
-    },
     "@nx/jest:jest": {
       "cache": true,
       "inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"],
@@ -69,6 +57,18 @@
         "ci": {
           "ci": true,
           "codeCoverage": true
+        }
+      }
+    },
+    "@nx/vitest:test": {
+      "inputs": ["default", "^production"],
+      "cache": true,
+      "options": {
+        "passWithNoTests": true
+      },
+      "configurations": {
+        "watch": {
+          "watch": true
         }
       }
     }
@@ -90,7 +90,6 @@
       "plugin": "@nx/vite/plugin",
       "options": {
         "buildTargetName": "build",
-        "testTargetName": "test",
         "serveTargetName": "serve",
         "devTargetName": "dev",
         "previewTargetName": "preview",
@@ -99,6 +98,12 @@
         "buildDepsTargetName": "build-deps",
         "watchDepsTargetName": "watch-deps"
       }
+    },
+    {
+      "plugin": "@nx/vitest",
+      "options": {
+        "testTargetName": "test"
+      }
     }
   ],
   "generators": {
@@ -106,7 +111,7 @@
       "e2eTestRunner": "playwright",
       "linter": "eslint",
       "style": "css",
-      "unitTestRunner": "jest",
+      "unitTestRunner": "vitest-analog",
       "standalone": true,
       "inlineStyle": true,
       "inlineTemplate": true,
@@ -115,7 +120,7 @@
     },
     "@nx/angular:library": {
       "linter": "eslint",
-      "unitTestRunner": "jest",
+      "unitTestRunner": "vitest-analog",
       "style": "css",
       "changeDetection": "OnPush",
       "standalone": true,

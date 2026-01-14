@@ -20,9 +20,6 @@ export default defineConfig(({ mode }) => {
         reportsDirectory: '../../coverage/examples/basic-noop-store',
         provider: 'v8' as const,
       },
-      cache: {
-        dir: '../../node_modules/.vitest',
-      },
     },
     define: {
       'import.meta.vitest': mode !== 'production',

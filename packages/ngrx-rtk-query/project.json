@@ -23,7 +23,7 @@
       "defaultConfiguration": "production"
     },
     "test": {
-      "executor": "@analogjs/platform:vitest",
+      "executor": "@nx/vitest:test",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "configurations": {
         "watch": {

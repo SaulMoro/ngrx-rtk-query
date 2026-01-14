@@ -287,57 +287,54 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       () => (subscriptionOptions() as UseInfiniteQuerySubscriptionOptions<any>).initialPageParam,
     );
 
-    effect(
-      () => {
-        const { queryCacheKey, requestId } = promiseRef.current || {};
-        const stableArgValue = stableArg();
-        const stableSubscriptionOptionsValue = stableSubscriptionOptions();
-        const forceRefetchValue = forceRefetch();
-        const initialPageParamValue = initialPageParam();
+    effect(() => {
+      const { queryCacheKey, requestId } = promiseRef.current || {};
+      const stableArgValue = stableArg();
+      const stableSubscriptionOptionsValue = stableSubscriptionOptions();
+      const forceRefetchValue = forceRefetch();
+      const initialPageParamValue = initialPageParam();
 
-        // HACK We've saved the middleware subscription lookup callbacks into a ref,
-        // so we can directly check here if the subscription exists for this query.
-        let currentRenderHasSubscription = false;
-        if (queryCacheKey && requestId) {
-          currentRenderHasSubscription = !!subscriptionSelectorsRef?.isRequestSubscribed(queryCacheKey, requestId);
-        }
+      // HACK We've saved the middleware subscription lookup callbacks into a ref,
+      // so we can directly check here if the subscription exists for this query.
+      let currentRenderHasSubscription = false;
+      if (queryCacheKey && requestId) {
+        currentRenderHasSubscription = !!subscriptionSelectorsRef?.isRequestSubscribed(queryCacheKey, requestId);
+      }
 
-        const subscriptionRemoved = !currentRenderHasSubscription && promiseRef.current !== undefined;
+      const subscriptionRemoved = !currentRenderHasSubscription && promiseRef.current !== undefined;
 
-        if (subscriptionRemoved) {
-          promiseRef.current = undefined;
-        }
+      if (subscriptionRemoved) {
+        promiseRef.current = undefined;
+      }
 
-        const lastPromise = promiseRef;
-        if (stableArgValue === skipToken) {
-          lastPromise.current?.unsubscribe();
-          promiseRef.current = undefined;
-          return;
-        }
+      const lastPromise = promiseRef;
+      if (stableArgValue === skipToken) {
+        lastPromise.current?.unsubscribe();
+        promiseRef.current = undefined;
+        return;
+      }
 
-        const lastSubscriptionOptions = promiseRef.current?.subscriptionOptions;
+      const lastSubscriptionOptions = promiseRef.current?.subscriptionOptions;
 
-        if (!lastPromise.current || lastPromise.current.arg !== stableArgValue) {
-          lastPromise.current?.unsubscribe();
-          const promise = dispatch(
-            initiate(stableArgValue, {
-              subscriptionOptions: stableSubscriptionOptionsValue,
-              forceRefetch: forceRefetchValue,
-              ...(isInfiniteQueryDefinition(context.endpointDefinitions[endpointName])
-                ? {
-                    initialPageParam: initialPageParamValue,
-                  }
-                : {}),
-            }),
-          );
+      if (!lastPromise.current || lastPromise.current.arg !== stableArgValue) {
+        lastPromise.current?.unsubscribe();
+        const promise = dispatch(
+          initiate(stableArgValue, {
+            subscriptionOptions: stableSubscriptionOptionsValue,
+            forceRefetch: forceRefetchValue,
+            ...(isInfiniteQueryDefinition(context.endpointDefinitions[endpointName])
+              ? {
+                  initialPageParam: initialPageParamValue,
+                }
+              : {}),
+          }),
+        );
 
-          promiseRef.current = promise as T;
-        } else if (stableSubscriptionOptionsValue !== lastSubscriptionOptions) {
-          lastPromise.current.updateSubscriptionOptions(stableSubscriptionOptionsValue);
-        }
-      },
-      { allowSignalWrites: true },
-    );
+        promiseRef.current = promise as T;
+      } else if (stableSubscriptionOptionsValue !== lastSubscriptionOptions) {
+        lastPromise.current.updateSubscriptionOptions(stableSubscriptionOptionsValue);
+      }
+    });
 
     return [promiseRef, dispatch, initiate, stableSubscriptionOptions, stableArg] as const;
   }
@@ -452,16 +449,13 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         { equal: shallowEqual },
       );
 
-      effect(
-        () => {
-          const lastSubscriptionOptions = promiseRef?.subscriptionOptions;
+      effect(() => {
+        const lastSubscriptionOptions = promiseRef?.subscriptionOptions;
 
-          if (stableSubscriptionOptions() !== lastSubscriptionOptions) {
-            promiseRef?.updateSubscriptionOptions(stableSubscriptionOptions());
-          }
-        },
-        { allowSignalWrites: true },
-      );
+        if (stableSubscriptionOptions() !== lastSubscriptionOptions) {
+          promiseRef?.updateSubscriptionOptions(stableSubscriptionOptions());
+        }
+      });
 
       let subscriptionOptionsRef = stableSubscriptionOptions();
       effect(() => {
