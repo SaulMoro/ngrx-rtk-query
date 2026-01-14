@@ -234,6 +234,185 @@ The library mirrors RTK Query's React hooks implementation. When updating RTK ve
 
 ---
 
+## Example Apps
+
+The `examples/` folder contains reference implementations that validate library functionality and serve as usage guides.
+
+### Available Examples
+
+| Example                | Description                               | Command                |
+| ---------------------- | ----------------------------------------- | ---------------------- |
+| `basic-ngrx-store`     | Full NgRx Store integration with DevTools | `pnpm dev:basic-store` |
+| `basic-noop-store`     | Standalone usage without NgRx             | `pnpm dev:noop-store`  |
+| `basic-ngrx-store-e2e` | Playwright E2E tests for ngrx variant     | `pnpm affected:e2e`    |
+| `basic-noop-store-e2e` | Playwright E2E tests for noop variant     | `pnpm affected:e2e`    |
+
+### Example Structure
+
+```
+examples/basic-ngrx-store/
+├── src/
+│   ├── app/
+│   │   ├── app.component.ts      # Root component
+│   │   ├── app.config.ts         # Providers (provideStore, provideStoreApi)
+│   │   ├── app.routes.ts         # Lazy-loaded routes
+│   │   └── posts/
+│   │       ├── api.ts            # createApi + hook exports
+│   │       ├── post.model.ts     # TypeScript interfaces
+│   │       ├── posts-list.component.ts      # List with useQuery + useMutation
+│   │       ├── posts-list.component.spec.ts # Vitest + Testing Library tests
+│   │       └── post-details.component.ts    # Detail with signal input
+│   ├── mocks/
+│   │   ├── handlers.ts           # MSW request handlers
+│   │   ├── browser.ts            # Browser MSW worker
+│   │   └── node.ts               # Node MSW server (for tests)
+│   └── main.ts                   # Bootstrap with MSW init
+├── project.json                  # Nx project config
+└── vite.config.ts                # Vitest configuration
+```
+
+### Key Patterns Demonstrated
+
+#### API Definition (`posts/api.ts`)
+
+```typescript
+export const postsApi = createApi({
+  baseQuery: fetchBaseQuery({ baseUrl: 'http://api.localhost.com' }),
+  tagTypes: ['Posts'],
+  endpoints: (build) => ({
+    getPosts: build.query<Post[], void>({
+      query: () => ({ url: '/posts' }),
+      providesTags: (result) =>
+        result
+          ? [...result.map(({ id }) => ({ type: 'Posts', id })), { type: 'Posts', id: 'LIST' }]
+          : [{ type: 'Posts', id: 'LIST' }],
+    }),
+    addPost: build.mutation<Post, Partial<Post>>({
+      query: (body) => ({ url: '/posts', method: 'POST', body }),
+      invalidatesTags: [{ type: 'Posts', id: 'LIST' }],
+    }),
+  }),
+});
+export const { useGetPostsQuery, useAddPostMutation } = postsApi;
+```
+
+#### Component with Query + Mutation (`posts-list.component.ts`)
+
+```typescript
+@Component({
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    @if (postsQuery.isLoading()) { <p>Loading...</p> }
+    @if (postsQuery.data(); as posts) {
+      @for (post of posts; track post.id) { ... }
+    }
+    <button [disabled]="addPost.isLoading()" (click)="addNewPost()">Add</button>
+  `,
+})
+export class PostsListComponent {
+  postsQuery = useGetPostsQuery();
+  addPost = useAddPostMutation();
+
+  addNewPost() {
+    this.addPost({ name: 'New' }).unwrap().then(() => ...);
+  }
+}
+```
+
+#### Component with Signal Input (`post-details.component.ts`)
+
+```typescript
+export class PostDetailsComponent {
+  id = input.required({ transform: numberAttribute }); // Route param
+  postQuery = useGetPostQuery(this.id, { pollingInterval: 5000 });
+  updateMutation = useUpdatePostMutation();
+  deleteMutation = useDeletePostMutation();
+}
+```
+
+#### MSW Mocking (`mocks/handlers.ts`)
+
+Uses `@reduxjs/toolkit` `createEntityAdapter` for in-memory state:
+
+```typescript
+export const handlers = [
+  http.get('http://api.localhost.com/posts', () => HttpResponse.json(selectAll(state))),
+  http.post('http://api.localhost.com/posts', async ({ request }) => { ... }),
+];
+```
+
+#### Unit Tests (`posts-list.component.spec.ts`)
+
+```typescript
+describe('PostsListComponent', () => {
+  beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+  afterEach(() => {
+    server.resetHandlers();
+    postsApi.dispatch(postsApi.util.resetApiState()); // Reset cache between tests
+  });
+
+  test('should show posts', async () => {
+    await render(PostsListComponent, {
+      providers: [provideStore(), provideStoreApi(postsApi)],
+    });
+    expect(await screen.findByRole('link', { name: /sample/i })).toBeInTheDocument();
+  });
+});
+```
+
+### Creating a New Example
+
+1. **Generate with Nx**:
+
+   ```bash
+   nx g @nx/angular:application examples/my-example --standalone --routing
+   ```
+
+2. **Configure providers** in `app.config.ts`:
+
+   ```typescript
+   // For NgRx variant
+   providers: [provideStore(), provideStoreDevtools({ name: 'My Example' }), provideStoreApi(myApi)];
+   // For noop variant
+   providers: [provideNoopStoreApi(myApi)];
+   ```
+
+3. **Add MSW mocking**:
+   - Copy `mocks/` folder from existing example
+   - Update `handlers.ts` with your API endpoints
+   - Init MSW in `main.ts` for dev mode
+
+4. **Add tests**:
+   - Unit tests: `*.spec.ts` with Vitest + Testing Library
+   - E2E tests: Create `my-example-e2e/` with Playwright
+
+5. **Register in package.json** (optional convenience script):
+   ```json
+   "dev:my-example": "nx run my-example:serve -o"
+   ```
+
+### Modifying Examples
+
+When adding features to examples:
+
+1. **Update both variants** if the feature applies to both NgRx and noop stores
+2. **Add corresponding tests** (unit and/or e2e)
+3. **Update MSW handlers** if new API endpoints are needed
+4. **Test the variant** with `pnpm dev:basic-store` or `pnpm dev:noop-store`
+5. **Run affected checks**: `pnpm affected:check && pnpm affected:test`
+
+### Difference Between Variants
+
+| Aspect         | basic-ngrx-store                       | basic-noop-store        |
+| -------------- | -------------------------------------- | ----------------------- |
+| Store Provider | `provideStore()` + `provideStoreApi()` | `provideNoopStoreApi()` |
+| DevTools       | Redux DevTools enabled                 | No DevTools             |
+| Dependencies   | Requires `@ngrx/store`                 | No NgRx dependency      |
+| Use Case       | Apps already using NgRx                | Lightweight / no NgRx   |
+
+---
+
 ## Resources
 
 - [RTK Query Docs](https://redux-toolkit.js.org/rtk-query/overview)
