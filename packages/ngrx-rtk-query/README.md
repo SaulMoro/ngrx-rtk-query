@@ -261,7 +261,60 @@ Perfect for ngOnInit cases. You can look at pagination feature example from this
 
 ### **Infinite Queries**
 
-Pending documentation, you can follow the official documentation in the meantime. [Infinite Queries - RTK Query guide](https://redux-toolkit.js.org/rtk-query/usage/infinite-queries).
+Infinite queries cache multiple "pages" within a single cache entry, enabling "load more" and infinite scroll patterns. You can follow the official [Infinite Queries - RTK Query guide](https://redux-toolkit.js.org/rtk-query/usage/infinite-queries) for detailed concepts.
+
+Define an infinite query endpoint using `build.infiniteQuery()`:
+
+```ts
+import { createApi, fetchBaseQuery } from 'ngrx-rtk-query';
+
+type Pokemon = { id: string; name: string };
+
+export const pokemonApi = createApi({
+  reducerPath: 'pokemonApi',
+  baseQuery: fetchBaseQuery({ baseUrl: 'https://example.com/pokemon' }),
+  endpoints: (build) => ({
+    getPokemon: build.infiniteQuery<Pokemon[], string, number>({
+      infiniteQueryOptions: {
+        initialPageParam: 1,
+        getNextPageParam: (lastPage, allPages, lastPageParam) => lastPageParam + 1,
+        getPreviousPageParam: (firstPage, allPages, firstPageParam) =>
+          firstPageParam > 1 ? firstPageParam - 1 : undefined,
+      },
+      query: ({ queryArg, pageParam }) => `/type/${queryArg}?page=${pageParam}`,
+    }),
+  }),
+});
+
+export const { useGetPokemonInfiniteQuery } = pokemonApi;
+```
+
+Use in a component with `fetchNextPage` and `fetchPreviousPage`:
+
+```ts
+@Component({
+  template: `
+    @if (pokemonQuery.isLoading()) {
+      <p>Loading...</p>
+    }
+    @for (pokemon of allResults(); track pokemon.id) {
+      <div>{{ pokemon.name }}</div>
+    }
+    <button [disabled]="pokemonQuery.isFetching()" (click)="loadMore()">Load More</button>
+  `,
+})
+export class PokemonListComponent {
+  pokemonQuery = useGetPokemonInfiniteQuery('fire');
+
+  allResults = computed(() => this.pokemonQuery.data()?.pages.flat() ?? []);
+
+  loadMore() {
+    this.pokemonQuery.fetchNextPage();
+  }
+}
+```
+
+The hook returns `data` with a `{ pages, pageParams }` structure, plus `hasNextPage`, `hasPreviousPage`, `isFetchingNextPage`, `isFetchingPreviousPage`, and pagination methods.
 
 ### **Mutations**
 
