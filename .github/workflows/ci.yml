@@ -101,6 +101,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: ./.github/composite-actions/install
+      - run: pnpm dlx nx-cloud start-ci-run --distribute-on="3 linux-medium-js" --stop-agents-after="e2e-ci"
       - name: Install Playwright
         run: npx playwright install --with-deps
       - name: End-to-end test
