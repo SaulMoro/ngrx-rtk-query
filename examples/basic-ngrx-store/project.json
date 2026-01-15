@@ -70,7 +70,7 @@
       "executor": "@nx/eslint:lint"
     },
     "test": {
-      "executor": "@analogjs/platform:vitest",
+      "executor": "@nx/vitest:test",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
         "config": "examples/basic-ngrx-store/vite.config.ts"

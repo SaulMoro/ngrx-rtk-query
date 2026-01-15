@@ -1,6 +1,6 @@
 {
   "extends": ["../../.eslintrc.json"],
-  "ignorePatterns": ["!**/*", "**/vite.config.*.timestamp*", "**/vitest.config.*.timestamp*"],
+  "ignorePatterns": ["!**/*", "**/vitest.config.*.timestamp*"],
   "overrides": [
     {
       "files": ["*.ts"],
@@ -21,8 +21,7 @@
             "prefix": "app",
             "style": "kebab-case"
           }
-        ],
-        "@angular-eslint/prefer-standalone": "off"
+        ]
       }
     },
     {

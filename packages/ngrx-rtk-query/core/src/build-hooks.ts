@@ -63,6 +63,8 @@ const noPendingQueryStateSelector: QueryStateSelector<any, any> = (selected) => 
       isUninitialized: false,
       isFetching: true,
       isLoading: selected.data !== undefined ? false : true,
+      // This is the one place where we still have to use `QueryStatus` as an enum,
+      // since it's the only reference in the Angular package and not in the core.
       status: QueryStatus.pending,
     } as any;
   }
@@ -91,6 +93,12 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
   serializeQueryArgs: SerializeQueryArgs<any>;
   context: ApiContext<Definitions>;
 }) {
+  type UnsubscribePromiseRef = { current: { unsubscribe?: () => void } | undefined };
+
+  const unsubscribePromiseRef = (ref: UnsubscribePromiseRef) => ref.current?.unsubscribe?.();
+
+  const endpointDefinitions = context.endpointDefinitions;
+
   return { buildQueryHooks, buildInfiniteQueryHooks, buildMutationHook, usePrefetch };
 
   function queryStatePreSelector(
@@ -103,7 +111,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
     // in this case, reset the hook
     if (lastResult?.endpointName && currentState.isUninitialized) {
       const { endpointName } = lastResult;
-      const endpointDefinition = context.endpointDefinitions[endpointName];
+      const endpointDefinition = endpointDefinitions[endpointName];
       if (
         queryArgs !== skipToken &&
         serializeQueryArgs({
@@ -164,7 +172,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
     // in this case, reset the hook
     if (lastResult?.endpointName && currentState.isUninitialized) {
       const { endpointName } = lastResult;
-      const endpointDefinition = context.endpointDefinitions[endpointName];
+      const endpointDefinition = endpointDefinitions[endpointName];
       if (
         queryArgs !== skipToken &&
         serializeQueryArgs({
@@ -286,58 +294,60 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
     const initialPageParam = computed(
       () => (subscriptionOptions() as UseInfiniteQuerySubscriptionOptions<any>).initialPageParam,
     );
-
-    effect(
-      () => {
-        const { queryCacheKey, requestId } = promiseRef.current || {};
-        const stableArgValue = stableArg();
-        const stableSubscriptionOptionsValue = stableSubscriptionOptions();
-        const forceRefetchValue = forceRefetch();
-        const initialPageParamValue = initialPageParam();
-
-        // HACK We've saved the middleware subscription lookup callbacks into a ref,
-        // so we can directly check here if the subscription exists for this query.
-        let currentRenderHasSubscription = false;
-        if (queryCacheKey && requestId) {
-          currentRenderHasSubscription = !!subscriptionSelectorsRef?.isRequestSubscribed(queryCacheKey, requestId);
-        }
-
-        const subscriptionRemoved = !currentRenderHasSubscription && promiseRef.current !== undefined;
-
-        if (subscriptionRemoved) {
-          promiseRef.current = undefined;
-        }
-
-        const lastPromise = promiseRef;
-        if (stableArgValue === skipToken) {
-          lastPromise.current?.unsubscribe();
-          promiseRef.current = undefined;
-          return;
-        }
-
-        const lastSubscriptionOptions = promiseRef.current?.subscriptionOptions;
-
-        if (!lastPromise.current || lastPromise.current.arg !== stableArgValue) {
-          lastPromise.current?.unsubscribe();
-          const promise = dispatch(
-            initiate(stableArgValue, {
-              subscriptionOptions: stableSubscriptionOptionsValue,
-              forceRefetch: forceRefetchValue,
-              ...(isInfiniteQueryDefinition(context.endpointDefinitions[endpointName])
-                ? {
-                    initialPageParam: initialPageParamValue,
-                  }
-                : {}),
-            }),
-          );
-
-          promiseRef.current = promise as T;
-        } else if (stableSubscriptionOptionsValue !== lastSubscriptionOptions) {
-          lastPromise.current.updateSubscriptionOptions(stableSubscriptionOptionsValue);
-        }
-      },
-      { allowSignalWrites: true },
+    const refetchCachedPages = computed(
+      () => (subscriptionOptions() as UseInfiniteQuerySubscriptionOptions<any>).refetchCachedPages,
     );
+
+    effect(() => {
+      const { queryCacheKey, requestId } = promiseRef.current || {};
+      const stableArgValue = stableArg();
+      const stableSubscriptionOptionsValue = stableSubscriptionOptions();
+      const forceRefetchValue = forceRefetch();
+      const initialPageParamValue = initialPageParam();
+      const refetchCachedPagesValue = refetchCachedPages();
+
+      // HACK We've saved the middleware subscription lookup callbacks into a ref,
+      // so we can directly check here if the subscription exists for this query.
+      let currentRenderHasSubscription = false;
+      if (queryCacheKey && requestId) {
+        currentRenderHasSubscription = !!subscriptionSelectorsRef?.isRequestSubscribed(queryCacheKey, requestId);
+      }
+
+      const subscriptionRemoved = !currentRenderHasSubscription && promiseRef.current !== undefined;
+
+      if (subscriptionRemoved) {
+        promiseRef.current = undefined;
+      }
+
+      const lastPromise = promiseRef;
+      if (stableArgValue === skipToken) {
+        lastPromise.current?.unsubscribe();
+        promiseRef.current = undefined;
+        return;
+      }
+
+      const lastSubscriptionOptions = promiseRef.current?.subscriptionOptions;
+
+      if (!lastPromise.current || lastPromise.current.arg !== stableArgValue) {
+        lastPromise.current?.unsubscribe();
+        const promise = dispatch(
+          initiate(stableArgValue, {
+            subscriptionOptions: stableSubscriptionOptionsValue,
+            forceRefetch: forceRefetchValue,
+            ...(isInfiniteQueryDefinition(endpointDefinitions[endpointName])
+              ? {
+                  initialPageParam: initialPageParamValue,
+                  refetchCachedPages: refetchCachedPagesValue,
+                }
+              : {}),
+          }),
+        );
+
+        promiseRef.current = promise as T;
+      } else if (stableSubscriptionOptionsValue !== lastSubscriptionOptions) {
+        lastPromise.current.updateSubscriptionOptions(stableSubscriptionOptionsValue);
+      }
+    });
 
     return [promiseRef, dispatch, initiate, stableSubscriptionOptions, stableArg] as const;
   }
@@ -403,9 +413,9 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
     return useQueryState;
   }
 
-  function usePromiseRefUnsubscribeOnUnmount(promiseRef: { current: { unsubscribe?: () => void } | undefined }) {
+  function usePromiseRefUnsubscribeOnUnmount(promiseRef: UnsubscribePromiseRef) {
     inject(DestroyRef).onDestroy(() => {
-      promiseRef.current?.unsubscribe?.();
+      unsubscribePromiseRef(promiseRef);
       promiseRef.current = undefined;
     });
   }
@@ -452,16 +462,13 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         { equal: shallowEqual },
       );
 
-      effect(
-        () => {
-          const lastSubscriptionOptions = promiseRef?.subscriptionOptions;
+      effect(() => {
+        const lastSubscriptionOptions = promiseRef?.subscriptionOptions;
 
-          if (stableSubscriptionOptions() !== lastSubscriptionOptions) {
-            promiseRef?.updateSubscriptionOptions(stableSubscriptionOptions());
-          }
-        },
-        { allowSignalWrites: true },
-      );
+        if (stableSubscriptionOptions() !== lastSubscriptionOptions) {
+          promiseRef?.updateSubscriptionOptions(stableSubscriptionOptions());
+        }
+      });
 
       let subscriptionOptionsRef = stableSubscriptionOptions();
       effect(() => {
@@ -559,10 +566,13 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         subscriptionOptionsRef = stableSubscriptionOptions();
       });
 
+      // Extract and stabilize the hook-level refetchCachedPages option
+      const hookRefetchCachedPages = (options as UseInfiniteQuerySubscriptionOptions<any>).refetchCachedPages;
+
       const trigger: LazyInfiniteQueryTrigger<any> = (arg: unknown, direction: 'forward' | 'backward') => {
         let promise: InfiniteQueryActionCreatorResult<any>;
 
-        promiseRef.current?.unsubscribe();
+        unsubscribePromiseRef(promiseRef);
 
         promiseRef.current = promise = dispatch(
           (initiate as any)(arg, {
@@ -576,7 +586,14 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
 
       usePromiseRefUnsubscribeOnUnmount(promiseRef);
 
-      const refetch = () => refetchOrErrorIfUnmounted(promiseRef);
+      const refetch = (options?: Pick<UseInfiniteQuerySubscriptionOptions<any>, 'refetchCachedPages'>) => {
+        if (!promiseRef.current) throw new Error('Cannot refetch a query that has not been started yet.');
+        // Merge per-call options with hook-level default
+        const mergedOptions = {
+          refetchCachedPages: options?.refetchCachedPages ?? hookRefetchCachedPages,
+        };
+        return promiseRef.current.refetch(mergedOptions);
+      };
 
       const fetchNextPage = () => {
         return trigger(stableArg(), 'forward');

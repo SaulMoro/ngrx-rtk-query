@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 
 // For CI, you may want to set BASE_URL to the deployed application.
-const baseURL = process.env['BASE_URL'] || 'http://localhost:4300';
+const baseURL = process.env['BASE_URL'] || 'http://localhost:4202';
 
 /**
  * Read environment variables from file.
@@ -27,9 +27,9 @@ export default defineConfig({
   },
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'pnpm exec nx run basic-noop-store:preview',
-    url: 'http://localhost:4300',
-    reuseExistingServer: !process.env['CI'],
+    command: 'pnpm exec nx run basic-noop-store:serve --port=4202',
+    url: 'http://localhost:4202',
+    reuseExistingServer: true,
     cwd: workspaceRoot,
   },
   projects: [
