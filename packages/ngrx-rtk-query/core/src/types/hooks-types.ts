@@ -704,6 +704,9 @@ export type UseInfiniteQuerySubscriptionOptions<D extends InfiniteQueryDefinitio
      * (due to tag invalidation, polling, arg change configuration, or manual refetching),
      * RTK Query will try to sequentially refetch all pages currently in the cache.
      * When `false` only the first page will be refetched.
+     *
+     * This option applies to all automatic refetches for this subscription (polling, tag invalidation, etc.).
+     * It can be overridden on a per-call basis using the `refetch()` method.
      */
     refetchCachedPages?: boolean;
   };

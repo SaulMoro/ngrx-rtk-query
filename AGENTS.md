@@ -205,12 +205,38 @@ The library mirrors RTK Query's React hooks implementation. When updating RTK ve
 - [ ] Check RTK Query React commits since last synced version
 - [ ] Compare `buildHooks.ts` for new features/options
 - [ ] Compare `module.ts` for API changes
-- [ ] Compare React hook types for new properties (especially `UseQueryStateDefaultResult`, `UseInfiniteQueryStateDefaultResult`, `TypedUse*` types)
+- [ ] Compare React hook types for new properties
 - [ ] Update corresponding ngrx-rtk-query files
 - [ ] Build and verify no type errors
 - [ ] Test both example apps manually
 
 **CRITICAL**: Types that are NOT in `build-hooks.ts` are in `types/hooks-types.ts`. When RTK changes types in `buildHooks.ts`, check BOTH files for corresponding changes.
+
+**CRITICAL**: Review ALL commits, including:
+
+- **Refactoring commits** (titles like "byte-shave", "cleanup", "deduplicate", "optimize")
+- **Internal reorganization** (import path changes, code extraction)
+- **Bundle size optimization** (string constants vs enums, dead code removal)
+
+These commits often contain subtle behavioral changes mixed with non-functional changes. Do NOT skip a commit just because the title suggests "only optimization".
+
+**SYNC POLICY**: Even pure refactoring changes SHOULD be synced when practical:
+
+- **Variable caching** (e.g., `const endpointDefinitions = context.endpointDefinitions`) - Apply the same pattern
+- **Helper function extraction** (e.g., `unsubscribePromiseRef()`) - Create Angular equivalent
+- **Explanatory comments** (e.g., "This is the one place where...") - Copy verbatim if applicable
+- **Type aliases** (e.g., `type UnsubscribePromiseRef = ...`) - Add to types file
+
+Keeping code structure aligned with upstream makes future syncs easier and reduces drift.
+
+**COMMON OVERSIGHT**: When a commit adds a new option (like `refetchCachedPages`):
+
+1. Check if the option is **extracted** from hook options
+2. Check if the option is **passed to initiate()** call
+3. Check if the option has **merge logic** (per-call override of hook-level default)
+4. Check if **JSDoc comments** were extended with additional context
+
+A single feature addition often touches 4-5 places. Review the FULL diff, not just the obvious parts.
 
 1. **Check RTK Query React commits**:
    <https://github.com/reduxjs/redux-toolkit/commits/master/packages/toolkit/src/query/react>
@@ -400,6 +426,7 @@ describe('PostsListComponent', () => {
    - E2E tests: Create `my-example-e2e/` with Playwright
 
 5. **Register in package.json** (optional convenience script):
+
    ```json
    "dev:my-example": "nx run my-example:serve -o"
    ```
