@@ -36,7 +36,7 @@ jobs:
 
       - name: get-npm-version
         id: package-version
-        uses: martinbeentjes/npm-get-version-action@v1
+        uses: martinbeentjes/npm-get-version-action@main
         with:
           path: packages/ngrx-rtk-query
 
