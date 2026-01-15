@@ -8,6 +8,8 @@ runs:
       with:
         run_install: false
 
+    - run: pnpm dlx nx-cloud start-ci-run --distribute-on="3 linux-medium-js" --stop-agents-after="e2e-ci"
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
