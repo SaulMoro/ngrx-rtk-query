@@ -1,4 +1,5 @@
 import {
+  DestroyRef,
   ENVIRONMENT_INITIALIZER,
   type EnvironmentProviders,
   Injector,
@@ -7,13 +8,14 @@ import {
   makeEnvironmentProviders,
 } from '@angular/core';
 import { type Action, Store, createSelectorFactory, defaultMemoize, provideState } from '@ngrx/store';
-import { type Api, setupListeners as setupListenersFn } from '@reduxjs/toolkit/query';
+import { type Api } from '@reduxjs/toolkit/query';
 
 import {
   type AngularHooksModuleOptions,
   type Dispatch,
   type SelectSignalOptions,
   type StoreQueryConfig,
+  setupRuntimeListeners,
   shallowEqual,
 } from 'ngrx-rtk-query/core';
 
@@ -47,14 +49,34 @@ export function provideStoreApi(
   api: Api<any, Record<string, any>, string, string, any>,
   { setupListeners }: StoreQueryConfig = {},
 ): EnvironmentProviders {
-  setupListeners === false ? undefined : setupListenersFn(api.dispatch, setupListeners);
-
   return makeEnvironmentProviders([
     {
       provide: ENVIRONMENT_INITIALIZER,
       multi: true,
       useValue() {
-        api.initApiStore(createStoreApi(api));
+        const destroyRef = inject(DestroyRef);
+        const bindingMetadata = {
+          bindingKey: {},
+          runtimeLabel: 'store',
+        };
+        let releaseApiStore: (() => void) | undefined;
+        let teardownListeners: (() => void) | undefined;
+
+        try {
+          releaseApiStore = api.initApiStore(createStoreApi(api), bindingMetadata);
+          teardownListeners = setupRuntimeListeners(api.dispatch as Dispatch, setupListeners);
+        } catch (error) {
+          teardownListeners?.();
+          releaseApiStore?.();
+
+          throw error;
+        }
+
+        destroyRef.onDestroy(() => {
+          teardownListeners?.();
+          api.dispatch(api.util.resetApiState());
+          releaseApiStore?.();
+        });
       },
     },
     provideState(api.reducerPath, api.reducer),

@@ -31,6 +31,9 @@
 npm install ngrx-rtk-query @reduxjs/toolkit
 ```
 
+If you use the NgRx Store runtime, also install `@ngrx/store`.
+If you use the Signal Store runtime, also install `@ngrx/signals`.
+
 ### Versions
 
 | Angular / NgRx |   ngrx-rtk-query   | @reduxjs/toolkit |       Support       |
@@ -54,7 +57,7 @@ You can see the application of this repository for more examples.
 Start by importing createApi and defining an "API slice" that lists the server's base URL and which endpoints we want to interact with:
 
 ```ts
-import { createApi, fetchBaseQuery } from 'ngrx-rtk-query';
+import { createApi, fetchBaseQuery } from 'ngrx-rtk-query/core';
 
 export interface CountResponse {
   count: number;
@@ -93,7 +96,7 @@ export const counterApi = createApi({
 export const { useGetCountQuery, useIncrementCountMutation, useDecrementCountMutation } = counterApi;
 ```
 
-Add the api to your store in your `app` or in a `lazy route`.
+Add the api to one runtime in your `app` or in a `lazy route`.
 
 ```typescript
 import { provideStoreApi } from 'ngrx-rtk-query';
@@ -111,6 +114,39 @@ bootstrapApplication(AppComponent, {
   ],
 }).catch((err) => console.error(err));
 ```
+
+Or mount the API in an NgRx Signal Store feature:
+
+```ts
+import { computed } from '@angular/core';
+import { signalStore, withComputed } from '@ngrx/signals';
+
+import { withApi } from 'ngrx-rtk-query/signal-store';
+
+export const CounterStore = signalStore(
+  { providedIn: 'root' },
+  withApi(counterApi),
+  withComputed((store) => {
+    const selectedCountState = store.selectApiState(counterApi.endpoints.getCount);
+
+    return {
+      selectedCountValue: computed(() => selectedCountState().data?.count ?? 0),
+    };
+  }),
+);
+```
+
+When using `withApi(api)`, instantiate the host store once near the app shell, derive view-facing state from `selectApiState(...)` inside the store, and keep using the generated RTK Query hooks as usual:
+
+```ts
+export class CounterManagerComponent {
+  readonly counterStore = inject(CounterStore);
+  readonly countQuery = useGetCountQuery();
+}
+```
+
+`selectApiState(...)` returns the same signal you would get from `api.selectSignal(endpoint.select(...))`, and it is safe to call directly inside `withComputed(...)` and `withProps(...)`.
+One `api` instance must be bound to a single host store.
 
 Use the query in a component
 

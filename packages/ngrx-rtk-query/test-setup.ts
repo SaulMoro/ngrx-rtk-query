@@ -1,6 +1,6 @@
-import '@analogjs/vite-plugin-angular/setup-vitest';
-import { getTestBed } from '@angular/core/testing';
-import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
+import '@analogjs/vitest-angular/setup-snapshots';
+import { setupTestBed } from '@analogjs/vitest-angular/setup-testbed';
+import '@angular/compiler';
 import '@testing-library/jest-dom';
 
-getTestBed().initTestEnvironment(BrowserDynamicTestingModule, platformBrowserDynamicTesting());
+setupTestBed();

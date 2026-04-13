@@ -6,23 +6,22 @@ import { defineConfig } from 'vite';
 
 export default defineConfig(() => ({
   root: __dirname,
-  cacheDir: '../../node_modules/.vite/packages/ngrx-rtk-query',
-  plugins: [angular({ tsconfig: 'tsconfig.spec.json' }), nxViteTsPaths(), nxCopyAssetsPlugin(['*.md'])],
+  cacheDir: '../../node_modules/.vite/examples/basic-signal-store',
+  plugins: [angular(), nxViteTsPaths(), nxCopyAssetsPlugin(['*.md'])],
   // Uncomment this if you are using workers.
   // worker: {
   //   plugins: () => [ nxViteTsPaths() ],
   // },
   test: {
-    name: 'ngrx-rtk-query',
+    name: 'basic-signal-store',
     watch: false,
     globals: true,
     environment: 'jsdom',
     include: ['{src,tests}/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
-    setupFiles: ['test-setup.ts'],
-    passWithNoTests: true,
+    setupFiles: ['src/test-setup.ts'],
     reporters: ['default'],
     coverage: {
-      reportsDirectory: '../../coverage/packages/ngrx-rtk-query',
+      reportsDirectory: '../../coverage/examples/basic-signal-store',
       provider: 'v8' as const,
     },
   },
