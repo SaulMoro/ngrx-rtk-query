@@ -33,13 +33,13 @@ Parent Spec: [2026-04-13-signal-store-runtime-spec.md](/Users/pw-smoro/Repositor
 
 ## Slice Set
 
-| # | ID | Title | Role | Mode | Irrev. | Uncert. | Blocked by |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | `SIG-001` | Single-API Signal Store Runtime | Walking Skeleton | AFK | High | Low | None |
-| 2 | `SIG-002` | Query/Infinite Selector Bridge | Vertical Slice | AFK | High | Low | `SIG-001` |
-| 3 | `SIG-003` | Multi-API Registry and Duplicate Guard | Vertical Slice | AFK | High | Low | `SIG-001` |
-| 4 | `SIG-004` | Mutation Selector Contract | Vertical Slice | AFK | High | Low | `SIG-001`, `SIG-002` |
-| 5 | `SIG-005` | Public Parity, Docs, and Example Surface | Vertical Slice | AFK | Low | Low | `SIG-001`, `SIG-002`, `SIG-004` |
+| #   | ID        | Title                                    | Role             | Mode | Irrev. | Uncert. | Blocked by                      |
+| --- | --------- | ---------------------------------------- | ---------------- | ---- | ------ | ------- | ------------------------------- |
+| 1   | `SIG-001` | Single-API Signal Store Runtime          | Walking Skeleton | AFK  | High   | Low     | None                            |
+| 2   | `SIG-002` | Query/Infinite Selector Bridge           | Vertical Slice   | AFK  | High   | Low     | `SIG-001`                       |
+| 3   | `SIG-003` | Multi-API Registry and Duplicate Guard   | Vertical Slice   | AFK  | High   | Low     | `SIG-001`                       |
+| 4   | `SIG-004` | Mutation Selector Contract               | Vertical Slice   | AFK  | High   | Low     | `SIG-001`, `SIG-002`            |
+| 5   | `SIG-005` | Public Parity, Docs, and Example Surface | Vertical Slice   | AFK  | Low    | Low     | `SIG-001`, `SIG-002`, `SIG-004` |
 
 ## Dependency DAG
 
@@ -67,26 +67,26 @@ Parent Spec: [2026-04-13-signal-store-runtime-spec.md](/Users/pw-smoro/Repositor
 
 ## Coverage Matrix
 
-| Source item | Slice IDs | Coverage disposition |
-| --- | --- | --- |
-| User Stories 1-4 | `SIG-001` | Covered by one slice |
-| User Stories 5-6 | `SIG-003` | Covered by one slice |
-| User Stories 8-10, 13, 17 | `SIG-002` | Covered by one slice |
-| User Stories 11-12 | `SIG-004` | Covered by one slice |
-| User Stories 14-16, 19 | `SIG-005` | Covered by one slice |
-| User Story 18 | `SIG-002`, `SIG-003`, `SIG-004` | Intentionally split across named sibling slices by guard family |
-| User Story 20 | `SIG-003` | Covered by one slice |
-| Decision: secondary entry point + feature contract | `SIG-001`, `SIG-005` | Intentionally split between runtime and public rollout surface |
-| Decision: isolated RTK Query state | `SIG-001` | Covered by one slice |
-| Decision: single host helper `selectApiState(...)` | `SIG-002`, `SIG-004` | Intentionally split between query/infinite and mutation families |
-| Decision: multi-API with unique `reducerPath` | `SIG-003` | Covered by one slice |
-| Decision: mutation via `fixedCacheKey`, not `requestId` | `SIG-004` | Covered by one slice |
-| Failure Model: duplicate `reducerPath` registration | `SIG-003` | Covered by one slice |
-| Failure Model: unregistered endpoint selection | `SIG-002` | Covered by one slice |
-| Failure Model: invalid mutation selection identity | `SIG-004` | Covered by one slice |
-| Validation: direct runtime guard coverage | `SIG-002`, `SIG-003`, `SIG-004` | Intentionally split across named sibling slices by guard family |
-| Validation: visible example behavior and e2e parity | `SIG-005` | Covered by one slice |
-| Out of Scope items | none | Explicitly not sliced |
+| Source item                                             | Slice IDs                       | Coverage disposition                                             |
+| ------------------------------------------------------- | ------------------------------- | ---------------------------------------------------------------- |
+| User Stories 1-4                                        | `SIG-001`                       | Covered by one slice                                             |
+| User Stories 5-6                                        | `SIG-003`                       | Covered by one slice                                             |
+| User Stories 8-10, 13, 17                               | `SIG-002`                       | Covered by one slice                                             |
+| User Stories 11-12                                      | `SIG-004`                       | Covered by one slice                                             |
+| User Stories 14-16, 19                                  | `SIG-005`                       | Covered by one slice                                             |
+| User Story 18                                           | `SIG-002`, `SIG-003`, `SIG-004` | Intentionally split across named sibling slices by guard family  |
+| User Story 20                                           | `SIG-003`                       | Covered by one slice                                             |
+| Decision: secondary entry point + feature contract      | `SIG-001`, `SIG-005`            | Intentionally split between runtime and public rollout surface   |
+| Decision: isolated RTK Query state                      | `SIG-001`                       | Covered by one slice                                             |
+| Decision: single host helper `selectApiState(...)`      | `SIG-002`, `SIG-004`            | Intentionally split between query/infinite and mutation families |
+| Decision: multi-API with unique `reducerPath`           | `SIG-003`                       | Covered by one slice                                             |
+| Decision: mutation via `fixedCacheKey`, not `requestId` | `SIG-004`                       | Covered by one slice                                             |
+| Failure Model: duplicate `reducerPath` registration     | `SIG-003`                       | Covered by one slice                                             |
+| Failure Model: unregistered endpoint selection          | `SIG-002`                       | Covered by one slice                                             |
+| Failure Model: invalid mutation selection identity      | `SIG-004`                       | Covered by one slice                                             |
+| Validation: direct runtime guard coverage               | `SIG-002`, `SIG-003`, `SIG-004` | Intentionally split across named sibling slices by guard family  |
+| Validation: visible example behavior and e2e parity     | `SIG-005`                       | Covered by one slice                                             |
+| Out of Scope items                                      | none                            | Explicitly not sliced                                            |
 
 ## Findings Log
 
