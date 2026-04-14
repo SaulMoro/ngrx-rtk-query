@@ -60,6 +60,9 @@ importers:
       '@analogjs/vitest-angular':
         specifier: ~2.2.1
         version: 2.2.2(088fd2253cdd951ff8221a08bb289f2b)
+      '@angular-devkit/architect':
+        specifier: ~0.2100.5
+        version: 0.2100.6(chokidar@4.0.3)
       '@angular-devkit/build-angular':
         specifier: ~21.0.5
         version: 21.0.6(9d1ca972d032e38b9fb95866fe708bee)
@@ -309,6 +312,9 @@ importers:
       '@angular/core':
         specifier: '>=21.0.0'
         version: 21.0.9(@angular/compiler@21.0.9)(rxjs@7.8.2)(zone.js@0.16.0)
+      '@ngrx/signals':
+        specifier: '>=21.0.0'
+        version: 21.0.1(@angular/core@21.0.9(@angular/compiler@21.0.9)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2)
       '@ngrx/store':
         specifier: '>=21.0.0'
         version: 21.0.1(@angular/core@21.0.9(@angular/compiler@21.0.9)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2)

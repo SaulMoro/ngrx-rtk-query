@@ -31,6 +31,9 @@
 npm install ngrx-rtk-query @reduxjs/toolkit
 ```
 
+If you use the NgRx Store runtime, also install `@ngrx/store`.
+If you use the Signal Store runtime, also install `@ngrx/signals`.
+
 ### Versions
 
 | Angular / NgRx |   ngrx-rtk-query   | @reduxjs/toolkit |       Support       |
@@ -54,7 +57,7 @@ You can see the application of this repository for more examples.
 Start by importing createApi and defining an "API slice" that lists the server's base URL and which endpoints we want to interact with:
 
 ```ts
-import { createApi, fetchBaseQuery } from 'ngrx-rtk-query';
+import { createApi, fetchBaseQuery } from 'ngrx-rtk-query/core';
 
 export interface CountResponse {
   count: number;
@@ -93,7 +96,7 @@ export const counterApi = createApi({
 export const { useGetCountQuery, useIncrementCountMutation, useDecrementCountMutation } = counterApi;
 ```
 
-Add the api to your store in your `app` or in a `lazy route`.
+Add the api to one runtime in your `app` or in a `lazy route`.
 
 ```typescript
 import { provideStoreApi } from 'ngrx-rtk-query';
@@ -111,6 +114,56 @@ bootstrapApplication(AppComponent, {
   ],
 }).catch((err) => console.error(err));
 ```
+
+Or mount the API in an NgRx Signal Store feature:
+
+```ts
+import { computed } from '@angular/core';
+import { signalStore, withComputed, withProps } from '@ngrx/signals';
+
+import { withApi, withApiState } from 'ngrx-rtk-query/signal-store';
+
+export const CounterStore = signalStore(
+  { providedIn: 'root' },
+  withApi(counterApi),
+  withApiState(counterApi),
+  withProps((store) => ({
+    selectedCountState: store.getCountState(),
+  })),
+  withComputed(({ selectedCountState }) => ({
+    selectedCountValue: computed(() => selectedCountState().data?.count ?? 0),
+  })),
+);
+```
+
+Mount each api once, then compose `withApiState(api)` in any Signal Store that needs generated `...State()` methods. The reader store does not have to share the host: `withApiState(api)` only requires the same api instance to be mounted by `withApi(api)`, `provideStoreApi(api)`, or `provideNoopStoreApi(api)`.
+
+```ts
+export const CounterReaderStore = signalStore(
+  { providedIn: 'root' },
+  withApiState(counterApi),
+  withProps((store) => ({
+    selectedCountState: store.getCountState(),
+  })),
+  withComputed(({ selectedCountState }) => ({
+    selectedCountValue: computed(() => selectedCountState().data?.count ?? 0),
+  })),
+);
+```
+
+The reader pattern also works when the api is mounted by `provideStoreApi(counterApi)` (the NgRx Store bootstrap shown earlier). The same `CounterReaderStore` picks up the api from that provider — no host Signal Store required. To mount the api without NgRx Store, use `provideNoopStoreApi(api)` at the app root:
+
+```ts
+import { provideNoopStoreApi } from 'ngrx-rtk-query/noop-store';
+
+bootstrapApplication(AppComponent, {
+  providers: [provideNoopStoreApi(counterApi)],
+});
+```
+
+Generated `...State()` methods return the same signal as `api.selectSignal(endpoint.select(...))` and can be called directly inside `withComputed(...)` and `withProps(...)`. They capture the endpoints available when `withApiState(api)` is composed; if the api is later extended with `api.injectEndpoints(...)`, compose `withApiState(extendedApi)` in a new store to pick up the new endpoints.
+
+Each api instance must be bound to a single host store.
 
 Use the query in a component
 

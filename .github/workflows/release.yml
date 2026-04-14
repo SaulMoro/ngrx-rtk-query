@@ -1,7 +1,11 @@
 # Adapted from create-t3-app.
-name: Release
+name: Publish
 
 on:
+  pull_request:
+    types: [labeled]
+    branches:
+      - main
   push:
     paths:
       - '.changeset/**'
@@ -10,10 +14,17 @@ on:
       - main
 
 jobs:
-  release:
-    if: ${{ github.repository_owner == 'SaulMoro' }}
-    name: Create a PR for release workflow
+  prerelease:
+    if: |
+      github.event_name == 'pull_request' &&
+      github.repository_owner == 'SaulMoro' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      contains(github.event.pull_request.labels.*.name, '🚀 autorelease')
+    name: Build & Publish a beta release to NPM
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v6
@@ -21,6 +32,46 @@ jobs:
           fetch-depth: 0
 
       - uses: ./.github/composite-actions/install
+
+      - name: Update npm for trusted publishing
+        run: npm install -g npm@^11.5.1
+
+      - name: Modify package.json version
+        run: node .github/version-script-beta.mjs
+
+      - name: Publish Beta to NPM
+        run: pnpm pub:beta
+
+      - name: get-npm-version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@main
+        with:
+          path: packages/ngrx-rtk-query
+
+      - name: Upload packaged artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-package-ngrx-rtk-query@${{ steps.package-version.outputs.current-version }}-pr-${{ github.event.number }}
+          path: dist/packages/ngrx-rtk-query/
+
+  release:
+    if: ${{ github.event_name == 'push' && github.repository_owner == 'SaulMoro' }}
+    name: Create a PR for release workflow
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      pull-requests: write
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: ./.github/composite-actions/install
+
+      - name: Update npm for trusted publishing
+        run: npm install -g npm@^11.5.1
 
       - name: Check for errors
         run: pnpm affected:lint
@@ -38,5 +89,4 @@ jobs:
           publish: npx changeset publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_ENV: 'production'
