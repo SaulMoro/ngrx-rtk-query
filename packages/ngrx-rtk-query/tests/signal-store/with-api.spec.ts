@@ -87,6 +87,88 @@ describe('withApi', () => {
     });
   });
 
+  test('supports generated endpoint state methods inside withComputed', async () => {
+    const postsApi = createPostsApi('generatedMethodSignalStoreApi');
+    const SignalStoreRuntime = signalStore(
+      withApi(postsApi),
+      withComputed((store) => {
+        const selectedPostsState = store.getPostsState();
+
+        return {
+          selectedPostName: computed(() => selectedPostsState().data?.[0]?.name ?? 'empty'),
+        };
+      }),
+    );
+
+    @Component({
+      standalone: true,
+      changeDetection: ChangeDetectionStrategy.OnPush,
+      template: `
+        <p data-testid="query-name">{{ postsQuery.data()?.[0]?.name }}</p>
+        <p data-testid="selected-post-name">{{ runtime.selectedPostName() }}</p>
+      `,
+    })
+    class HostComponent {
+      readonly runtime = inject(SignalStoreRuntime);
+      readonly postsQuery = postsApi.useGetPostsQuery();
+    }
+
+    await render(HostComponent, {
+      providers: [SignalStoreRuntime],
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('query-name')).toHaveTextContent('generatedMethodSignalStoreApi-post');
+      expect(screen.getByTestId('selected-post-name')).toHaveTextContent('generatedMethodSignalStoreApi-post');
+    });
+  });
+
+  test('supports generated endpoint state methods for argful queries', async () => {
+    const postsApi = createApi({
+      reducerPath: 'argfulSignalStoreApi',
+      baseQuery: fakeBaseQuery(),
+      endpoints: (build) => ({
+        getPostDetails: build.query<Post, number>({
+          queryFn: async (id) => ({
+            data: { id, name: `post-${id}` },
+          }),
+        }),
+      }),
+    });
+    const SignalStoreRuntime = signalStore(
+      withApi(postsApi),
+      withComputed((store) => {
+        const selectedPostState = store.getPostDetailsState(7);
+
+        return {
+          selectedPostName: computed(() => selectedPostState().data?.name ?? 'empty'),
+        };
+      }),
+    );
+
+    @Component({
+      standalone: true,
+      changeDetection: ChangeDetectionStrategy.OnPush,
+      template: `
+        <p data-testid="query-name">{{ postQuery.data()?.name }}</p>
+        <p data-testid="selected-post-name">{{ runtime.selectedPostName() }}</p>
+      `,
+    })
+    class HostComponent {
+      readonly runtime = inject(SignalStoreRuntime);
+      readonly postQuery = postsApi.useGetPostDetailsQuery(7);
+    }
+
+    await render(HostComponent, {
+      providers: [SignalStoreRuntime],
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('query-name')).toHaveTextContent('post-7');
+      expect(screen.getByTestId('selected-post-name')).toHaveTextContent('post-7');
+    });
+  });
+
   test('supports selecting endpoint state directly inside signal store props before any query hook mounts', async () => {
     const postsApi = createPostsApi('propsSignalStoreApi');
     const SignalStoreRuntime = signalStore(
@@ -141,6 +223,32 @@ describe('withApi', () => {
         providers: [SignalStoreRuntime],
       }),
     ).rejects.toThrow(/Signal Store already defines a "selectApiState" method/);
+  });
+
+  test('fails fast when generated endpoint state methods collide with an existing store member', async () => {
+    const postsApi = createPostsApi('collidingGeneratedStateApi');
+    const SignalStoreRuntime = signalStore(
+      withMethods(() => ({
+        getPostsState: () => undefined,
+      })),
+      withApi(postsApi),
+    );
+
+    @Component({
+      standalone: true,
+      template: `
+        collision
+      `,
+    })
+    class HostComponent {
+      readonly runtime = inject(SignalStoreRuntime);
+    }
+
+    await expect(
+      render(HostComponent, {
+        providers: [SignalStoreRuntime],
+      }),
+    ).rejects.toThrow(/cannot generate "getPostsState" because that store member already exists/);
   });
 
   test('accepts selectApiState(endpoint) for void queries without passing undefined', async () => {
@@ -203,6 +311,48 @@ describe('withApi', () => {
       expect(screen.getByTestId('posts')).toHaveTextContent('postsApi-post');
       expect(screen.getByTestId('users')).toHaveTextContent('Alice');
     });
+  });
+
+  test('fails fast when multiple apis in the same host generate the same endpoint state method name', async () => {
+    const firstApi = createApi({
+      reducerPath: 'firstCollisionApi',
+      baseQuery: fakeBaseQuery(),
+      endpoints: (build) => ({
+        getPosts: build.query<Post[], void>({
+          queryFn: async () => ({
+            data: [{ id: 1, name: 'first-post' }],
+          }),
+        }),
+      }),
+    });
+    const secondApi = createApi({
+      reducerPath: 'secondCollisionApi',
+      baseQuery: fakeBaseQuery(),
+      endpoints: (build) => ({
+        getPosts: build.query<Post[], void>({
+          queryFn: async () => ({
+            data: [{ id: 2, name: 'second-post' }],
+          }),
+        }),
+      }),
+    });
+    const SignalStoreRuntime = signalStore(withApi(firstApi), withApi(secondApi));
+
+    @Component({
+      standalone: true,
+      template: `
+        collision
+      `,
+    })
+    class HostComponent {
+      readonly runtime = inject(SignalStoreRuntime);
+    }
+
+    await expect(
+      render(HostComponent, {
+        providers: [SignalStoreRuntime],
+      }),
+    ).rejects.toThrow(/cannot generate "getPostsState" because that store member already exists/);
   });
 
   test('does not invalidate apiA selector state when apiB updates', async () => {
@@ -606,6 +756,36 @@ describe('withApi', () => {
       readonly selectedMutation = this.runtime.selectApiState(postsApi.endpoints.addPost, {
         fixedCacheKey: 'save-post',
       });
+    }
+
+    await render(HostComponent, {
+      providers: [SignalStoreRuntime],
+    });
+
+    expect(screen.getByTestId('selected-mutation')).toHaveTextContent('empty');
+    await user.click(screen.getByRole('button', { name: 'save' }));
+    await waitFor(() => {
+      expect(screen.getByTestId('selected-mutation')).toHaveTextContent('Saved');
+    });
+  });
+
+  test('supports generated endpoint state methods for mutations', async () => {
+    const postsApi = createPostsApi('generatedMutationStateApi');
+    const SignalStoreRuntime = signalStore(withApi(postsApi));
+    const user = userEvent.setup();
+
+    @Component({
+      standalone: true,
+      changeDetection: ChangeDetectionStrategy.OnPush,
+      template: `
+        <button (click)="addPost({ name: 'Saved' })">save</button>
+        <p data-testid="selected-mutation">{{ selectedMutation().data?.name ?? 'empty' }}</p>
+      `,
+    })
+    class HostComponent {
+      readonly runtime = inject(SignalStoreRuntime);
+      readonly addPost = postsApi.useAddPostMutation({ fixedCacheKey: 'save-post' });
+      readonly selectedMutation = this.runtime.addPostState({ fixedCacheKey: 'save-post' });
     }
 
     await render(HostComponent, {

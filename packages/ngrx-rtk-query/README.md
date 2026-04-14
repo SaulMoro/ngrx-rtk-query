@@ -127,7 +127,7 @@ export const CounterStore = signalStore(
   { providedIn: 'root' },
   withApi(counterApi),
   withComputed((store) => {
-    const selectedCountState = store.selectApiState(counterApi.endpoints.getCount);
+    const selectedCountState = store.getCountState();
 
     return {
       selectedCountValue: computed(() => selectedCountState().data?.count ?? 0),
@@ -136,7 +136,7 @@ export const CounterStore = signalStore(
 );
 ```
 
-When using `withApi(api)`, instantiate the host store once near the app shell, derive view-facing state from `selectApiState(...)` inside the store, and keep using the generated RTK Query hooks as usual:
+When using `withApi(api)`, instantiate the host store once near the app shell, derive view-facing state from generated `...State()` methods or `selectApiState(...)` inside the store, and keep using the generated RTK Query hooks as usual:
 
 ```ts
 export class CounterManagerComponent {
@@ -145,7 +145,7 @@ export class CounterManagerComponent {
 }
 ```
 
-`selectApiState(...)` returns the same signal you would get from `api.selectSignal(endpoint.select(...))`, and it is safe to call directly inside `withComputed(...)` and `withProps(...)`.
+Generated `...State()` methods and `selectApiState(...)` return the same signal you would get from `api.selectSignal(endpoint.select(...))`, and both are safe to call directly inside `withComputed(...)` and `withProps(...)`.
 One `api` instance must be bound to a single host store.
 
 Use the query in a component

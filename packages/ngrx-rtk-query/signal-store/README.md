@@ -14,7 +14,7 @@ export const PostsStore = signalStore(
   { providedIn: 'root' },
   withApi(postsApi),
   withComputed((store) => {
-    const selectedPostsState = store.selectApiState(postsApi.endpoints.getPosts);
+    const selectedPostsState = store.getPostsState();
 
     return {
       selectedPostsCount: computed(() => selectedPostsState().data?.length ?? 0),
@@ -23,11 +23,11 @@ export const PostsStore = signalStore(
 );
 ```
 
-Instantiate the host store once near the app shell, derive view-facing state from `selectApiState(...)` inside the store, then keep using the generated RTK Query hooks in feature components.
+Instantiate the host store once near the app shell, derive view-facing state from generated `...State()` methods or `selectApiState(...)` inside the store, then keep using the generated RTK Query hooks in feature components.
 
-`selectApiState(...)` is safe to call directly inside `withComputed(...)` and `withProps(...)`, so the store can expose derived view state without a lazy wrapper.
+Generated `...State()` methods and `selectApiState(...)` are safe to call directly inside `withComputed(...)` and `withProps(...)`, so the store can expose derived view state without a lazy wrapper.
 
-The host store exposes `selectApiState(...)`, which returns the same signal as `api.selectSignal(endpoint.select(...))`.
+The host store exposes one generated method per endpoint, such as `getPostsState()` or `addPostState({ fixedCacheKey })`, plus `selectApiState(...)` for generic access. Both return the same signal as `api.selectSignal(endpoint.select(...))`.
 
 ```ts
 export class PostsListComponent {

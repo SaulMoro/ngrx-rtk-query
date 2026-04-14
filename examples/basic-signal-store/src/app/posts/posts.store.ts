@@ -9,7 +9,7 @@ export const PostsSignalStore = signalStore(
   { providedIn: 'root' },
   withApi(postsApi),
   withComputed((store) => {
-    const selectedPostsState = store.selectApiState(postsApi.endpoints.getPosts);
+    const selectedPostsState = store.getPostsState();
 
     return {
       selectedPostsCount: computed(() => selectedPostsState().data?.length ?? 0),

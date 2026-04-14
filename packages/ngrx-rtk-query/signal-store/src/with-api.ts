@@ -1,5 +1,11 @@
 import { Injector, type Signal, type WritableSignal, computed, inject, signal } from '@angular/core';
-import { type SignalStoreFeature, type SignalStoreFeatureResult, signalStoreFeature, withHooks } from '@ngrx/signals';
+import {
+  type SignalStoreFeature,
+  type SignalStoreFeatureResult,
+  signalStoreFeature,
+  withHooks,
+  withMethods,
+} from '@ngrx/signals';
 import { type Selector, type UnknownAction, createSelector } from '@reduxjs/toolkit';
 import {
   type Api,
@@ -26,13 +32,21 @@ import {
   setupRuntimeListeners,
 } from 'ngrx-rtk-query/core';
 
-type MutationSelectorArg = {
-  fixedCacheKey: string;
-};
+import {
+  type EndpointStateMethodsFromApi,
+  type GeneratedStateMethod,
+  type MutationSelectorArg,
+} from './types/state-methods';
 
-type RuntimeApi = Api<any, Record<string, any>, string, string, any>;
+type RuntimeApi<Definitions extends EndpointDefinitions = Record<string, any>> = Api<
+  any,
+  Definitions,
+  string,
+  string,
+  any
+>;
 
-type InitializedRuntimeApi = RuntimeApi & {
+type InitializedRuntimeApi<Definitions extends EndpointDefinitions = Record<string, any>> = RuntimeApi<Definitions> & {
   dispatch: Dispatch;
   initApiStore: (
     setupFn: () => AngularHooksModuleOptions,
@@ -72,6 +86,20 @@ type SharedRuntime = {
 type SharedRuntimeMethods = {
   selectApiState: SelectApiState;
 };
+
+type SharedRuntimeFeatureResult = {
+  state: {};
+  props: {};
+  methods: SharedRuntimeMethods;
+};
+
+type WithApiFeatureResult<TApi extends RuntimeApi<any>> = {
+  state: {};
+  props: {};
+  methods: SharedRuntimeMethods & EndpointStateMethodsFromApi<TApi>;
+};
+
+type StoreMembersWithSharedRuntime = SharedRuntimeMethods & Record<string | symbol, unknown>;
 
 const runtimeBySelector = new WeakMap<SelectApiState, SharedRuntime>();
 
@@ -187,6 +215,56 @@ const getSharedRuntime = (store: SharedRuntimeMethods): SharedRuntime => {
   return runtime;
 };
 
+const createGeneratedStateMethods = (
+  store: StoreMembersWithSharedRuntime,
+  api: InitializedRuntimeApi,
+): Record<string, GeneratedStateMethod> => {
+  const runtime = getSharedRuntime(store);
+  const methods: Record<string, GeneratedStateMethod> = {};
+
+  if (runtime.apisByReducerPath.has(api.reducerPath)) {
+    throw new Error(
+      `Duplicate RTK Query reducerPath "${api.reducerPath}" in signalStore. Each withApi(api) must use a unique reducerPath.`,
+    );
+  }
+
+  for (const [endpointName, endpoint] of Object.entries(api.endpoints)) {
+    const generatedMethodName = `${endpointName}State`;
+
+    if (generatedMethodName in store || generatedMethodName in methods) {
+      throw new Error(
+        `RTK Query signal-store for reducerPath "${api.reducerPath}" cannot generate "${generatedMethodName}" because that store member already exists.`,
+      );
+    }
+
+    methods[generatedMethodName] = (arg?: unknown, options?: SelectSignalOptions<unknown>) =>
+      runtime.selectApiState(endpoint as never, arg as never, options as never) as Signal<unknown>;
+  }
+
+  return methods;
+};
+
+const withGeneratedStateMethods = <TApi extends RuntimeApi<any>>(
+  api: InitializedRuntimeApi,
+): SignalStoreFeature<
+  SharedRuntimeFeatureResult,
+  {
+    state: {};
+    props: {};
+    methods: EndpointStateMethodsFromApi<TApi>;
+  }
+> =>
+  withMethods((store) =>
+    createGeneratedStateMethods(store as unknown as StoreMembersWithSharedRuntime, api),
+  ) as SignalStoreFeature<
+    SharedRuntimeFeatureResult,
+    {
+      state: {};
+      props: {};
+      methods: EndpointStateMethodsFromApi<TApi>;
+    }
+  >;
+
 const withSharedRuntimeSurface = ((store) => {
   const runtimeStore = store as typeof store & {
     methods: Partial<SharedRuntimeMethods>;
@@ -216,14 +294,7 @@ const withSharedRuntimeSurface = ((store) => {
       selectApiState: runtime.selectApiState,
     } as SharedRuntimeMethods,
   };
-}) as SignalStoreFeature<
-  SignalStoreFeatureResult,
-  {
-    state: {};
-    props: {};
-    methods: SharedRuntimeMethods;
-  }
->;
+}) as SignalStoreFeature<SignalStoreFeatureResult, SharedRuntimeFeatureResult>;
 
 const createSignalStoreApi = (entry: RegisteredApi): (() => AngularHooksModuleOptions) => {
   return () => {
@@ -254,17 +325,18 @@ const createSignalStoreApi = (entry: RegisteredApi): (() => AngularHooksModuleOp
   };
 };
 
-export function withApi(
-  api: RuntimeApi,
+export function withApi<Input extends SignalStoreFeatureResult, TApi extends RuntimeApi<any>>(
+  api: TApi,
   { setupListeners }: StoreQueryConfig = {},
-): SignalStoreFeature<SignalStoreFeatureResult, { state: {}; props: {}; methods: SharedRuntimeMethods }> {
+): SignalStoreFeature<Input, WithApiFeatureResult<TApi>> {
   const initializedApi = api as InitializedRuntimeApi;
   const initialState = initializedApi.reducer(undefined, {
     type: '@@ngrx-rtk-query/signal-store/init',
   }) as Record<string, unknown>;
 
-  return signalStoreFeature(
+  const feature = signalStoreFeature(
     withSharedRuntimeSurface,
+    withGeneratedStateMethods<TApi>(initializedApi),
     withHooks((store) => {
       const injector = inject(Injector);
       const runtime = getSharedRuntime(store);
@@ -279,12 +351,6 @@ export function withApi(
         state,
         selectSignal: (mapFn, options) => computed(() => mapFn({ [entry.reducerPath]: entry.state() }), options),
       };
-
-      if (runtime.apisByReducerPath.has(initializedApi.reducerPath)) {
-        throw new Error(
-          `Duplicate RTK Query reducerPath "${initializedApi.reducerPath}" in signalStore. Each withApi(api) must use a unique reducerPath.`,
-        );
-      }
 
       runtime.register(entry);
 
@@ -314,4 +380,6 @@ export function withApi(
       };
     }),
   );
+
+  return feature as unknown as SignalStoreFeature<Input, WithApiFeatureResult<TApi>>;
 }
