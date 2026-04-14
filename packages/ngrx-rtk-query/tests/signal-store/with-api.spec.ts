@@ -715,6 +715,106 @@ describe('withApi', () => {
     ).rejects.toThrow(/Endpoint is not registered in this signal store/);
   });
 
+  test('supports selecting query state for endpoints injected after host initialization', async () => {
+    const baseApi = createApi({
+      reducerPath: 'lateInjectedQueryApi',
+      baseQuery: fakeBaseQuery(),
+      endpoints: (build) => ({
+        getBase: build.query<Post, void>({
+          queryFn: async () => ({
+            data: { id: 0, name: 'base-post' },
+          }),
+        }),
+      }),
+    });
+    const SignalStoreRuntime = signalStore(withApi(baseApi));
+
+    @Component({
+      standalone: true,
+      template: `
+        late-injected-query
+      `,
+    })
+    class HostComponent {
+      readonly runtime = inject(SignalStoreRuntime);
+    }
+
+    await render(HostComponent, {
+      providers: [SignalStoreRuntime],
+    });
+
+    const runtime = TestBed.inject(SignalStoreRuntime);
+    const postsApi = baseApi.injectEndpoints({
+      endpoints: (build) => ({
+        getPosts: build.query<Post[], void>({
+          queryFn: async () => ({
+            data: [{ id: 1, name: 'late-post' }],
+          }),
+        }),
+      }),
+    });
+    const selectedPosts = runtime.selectApiState(postsApi.endpoints.getPosts);
+
+    expect(selectedPosts().status).toBe('uninitialized');
+
+    postsApi.dispatch(postsApi.endpoints.getPosts.initiate());
+
+    await waitFor(() => {
+      expect(selectedPosts().data?.[0]?.name).toBe('late-post');
+    });
+  });
+
+  test('supports selecting mutation state for endpoints injected after host initialization', async () => {
+    const baseApi = createApi({
+      reducerPath: 'lateInjectedMutationApi',
+      baseQuery: fakeBaseQuery(),
+      endpoints: (build) => ({
+        getBase: build.query<Post, void>({
+          queryFn: async () => ({
+            data: { id: 0, name: 'base-post' },
+          }),
+        }),
+      }),
+    });
+    const SignalStoreRuntime = signalStore(withApi(baseApi));
+
+    @Component({
+      standalone: true,
+      template: `
+        late-injected-mutation
+      `,
+    })
+    class HostComponent {
+      readonly runtime = inject(SignalStoreRuntime);
+    }
+
+    await render(HostComponent, {
+      providers: [SignalStoreRuntime],
+    });
+
+    const runtime = TestBed.inject(SignalStoreRuntime);
+    const postsApi = baseApi.injectEndpoints({
+      endpoints: (build) => ({
+        addPost: build.mutation<Post, { name: string }>({
+          queryFn: async ({ name }) => ({
+            data: { id: 1, name },
+          }),
+        }),
+      }),
+    });
+    const selectedMutation = runtime.selectApiState(postsApi.endpoints.addPost, {
+      fixedCacheKey: 'late-save-post',
+    });
+
+    expect(selectedMutation().status).toBe('uninitialized');
+
+    postsApi.dispatch(postsApi.endpoints.addPost.initiate({ name: 'Saved' }, { fixedCacheKey: 'late-save-post' }));
+
+    await waitFor(() => {
+      expect(selectedMutation().data?.name).toBe('Saved');
+    });
+  });
+
   test('requires fixedCacheKey when selecting mutation state', async () => {
     const postsApi = createPostsApi('mutationApi');
     const SignalStoreRuntime = signalStore(withApi(postsApi));

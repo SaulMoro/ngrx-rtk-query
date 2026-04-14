@@ -29,6 +29,8 @@ Generated `...State()` methods and `selectApiState(...)` are safe to call direct
 
 The host store exposes one generated method per endpoint, such as `getPostsState()` or `addPostState({ fixedCacheKey })`, plus `selectApiState(...)` for generic access. Both return the same signal as `api.selectSignal(endpoint.select(...))`.
 
+Generated `...State()` methods are created from the endpoints that exist when `withApi(api)` is added to the host store. If the same API instance injects more endpoints later with `api.injectEndpoints(...)`, select those lazy endpoints through `selectApiState(injectedApi.endpoints.foo, ...)`.
+
 ```ts
 export class PostsListComponent {
   readonly postsStore = inject(PostsStore);

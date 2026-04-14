@@ -146,9 +146,31 @@ const memoizedCreateSelector: AngularHooksModuleOptions['createSelector'] = (...
   }) as unknown as Selector<any, any>;
 };
 
+const resolveRegisteredEndpoint = (runtime: SharedRuntime, endpoint: object): RegisteredEndpoint | undefined => {
+  const cachedRegistration = runtime.endpoints.get(endpoint);
+
+  if (cachedRegistration) {
+    return cachedRegistration;
+  }
+
+  for (const entry of runtime.apisByReducerPath.values()) {
+    for (const [endpointName, registeredEndpoint] of Object.entries(entry.api.endpoints) as Array<[string, object]>) {
+      if (registeredEndpoint === endpoint) {
+        const registration = { entry, endpointName };
+
+        runtime.endpoints.set(endpoint, registration);
+
+        return registration;
+      }
+    }
+  }
+
+  return undefined;
+};
+
 const createSelectApiState = (runtime: SharedRuntime): SelectApiState =>
   ((endpoint: object, arg: unknown, options?: SelectSignalOptions<unknown>) => {
-    const registration = runtime.endpoints.get(endpoint);
+    const registration = resolveRegisteredEndpoint(runtime, endpoint);
 
     if (!registration) {
       throw new Error(`Endpoint is not registered in this signal store. Add the owning API with withApi(api).`);

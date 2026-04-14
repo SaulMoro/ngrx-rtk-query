@@ -146,6 +146,7 @@ export class CounterManagerComponent {
 ```
 
 Generated `...State()` methods and `selectApiState(...)` return the same signal you would get from `api.selectSignal(endpoint.select(...))`, and both are safe to call directly inside `withComputed(...)` and `withProps(...)`.
+Generated `...State()` methods are a snapshot of the endpoints available when `withApi(api)` is composed. If the same API instance injects more endpoints later with `api.injectEndpoints(...)`, read those lazy endpoints through `selectApiState(injectedApi.endpoints.foo, ...)`.
 One `api` instance must be bound to a single host store.
 
 Use the query in a component
