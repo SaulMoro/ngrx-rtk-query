@@ -1,5 +1,13 @@
 # ngrx-rtk-query
 
+## 21.1.0
+
+### Minor Changes
+
+- [#100](https://github.com/SaulMoro/ngrx-rtk-query/pull/100) [`a29839b`](https://github.com/SaulMoro/ngrx-rtk-query/commit/a29839b561b80422b6bc0ec1bc0894f81666c630) Thanks [@SaulMoro](https://github.com/SaulMoro)! - Add `withApiState(api)` to `ngrx-rtk-query/signal-store` so Signal Stores can read generated `...State()` methods from the same store, a child store, or providers like `provideStoreApi(api)` and `provideNoopStoreApi(api)`.
+
+  Keep API mounting in `withApi(api)`, tighten signal-store binding guards, and update the Signal Store docs, tests, and example to show deriving view state from generated readers inside `withComputed(...)` and `withProps(...)`.
+
 ## 21.0.0
 
 ### Major Changes
