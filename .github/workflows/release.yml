@@ -33,11 +33,8 @@ jobs:
 
       - uses: ./.github/composite-actions/install
 
-      - name: Configure npm registry for trusted publishing
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: .node-version
-          registry-url: 'https://registry.npmjs.org'
+      - name: Update npm for trusted publishing
+        run: npm install -g npm@^11.5.1
 
       - name: Modify package.json version
         run: node .github/version-script-beta.mjs
@@ -73,11 +70,8 @@ jobs:
 
       - uses: ./.github/composite-actions/install
 
-      - name: Configure npm registry for trusted publishing
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: .node-version
-          registry-url: 'https://registry.npmjs.org'
+      - name: Update npm for trusted publishing
+        run: npm install -g npm@^11.5.1
 
       - name: Check for errors
         run: pnpm affected:lint
