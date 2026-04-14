@@ -23,16 +23,13 @@ export const PostsStore = signalStore(
 );
 ```
 
-Instantiate the host store once near the app shell with `withApi(api)`, then compose `withApiState(api)` in the same signal store or in another signal store to derive view-facing state from generated `...State()` methods.
-`withApiState(api)` does not require `withApi(api)` in the same store. It only requires the same api instance to already be mounted by an active host, whether that host comes from `withApi(api)`, `provideStoreApi(api)`, or `provideNoopStoreApi(api)`.
+Mount each api once near the app shell with `withApi(api)`, then compose `withApiState(api)` in the same store or in any other Signal Store that needs to derive view state from the generated `...State()` methods. `withApiState(api)` only requires the same api instance to be mounted by `withApi(api)`, `provideStoreApi(api)`, or `provideNoopStoreApi(api)`.
 
-Generated `...State()` methods are safe to call directly inside `withComputed(...)` and `withProps(...)`, so the store can expose derived view state without a lazy wrapper.
+`withApiState(api)` exposes one generated method per endpoint — for example `getPostsState()` or `addPostState({ fixedCacheKey })` — each returning the same signal as `api.selectSignal(endpoint.select(...))`. They are safe to call directly inside `withComputed(...)` and `withProps(...)`, so stores can expose derived view state without a lazy wrapper.
 
-`withApiState(api)` exposes one generated method per endpoint, such as `getPostsState()` or `addPostState({ fixedCacheKey })`. Each one reads the same state as `api.selectSignal(endpoint.select(...))`.
+The generated methods capture the endpoints available when `withApiState(api)` is composed. If the api is later extended with `api.injectEndpoints(...)`, compose `withApiState(extendedApi)` in a new store to pick up the new endpoints.
 
-Generated `...State()` methods are created from the endpoints that exist when `withApiState(api)` is added to the store. If the same API instance injects more endpoints later with `api.injectEndpoints(...)`, create a new store with `withApiState(extendedApi)` after the injection step.
-
-`withApiState(api)` works with the same API instance mounted by `withApi(api)`, `provideStoreApi(api)`, or `provideNoopStoreApi(api)`.
+A reader store that shares a host:
 
 ```ts
 export const ParentStore = signalStore({ providedIn: 'root' }, withApi(postsApi));
@@ -49,17 +46,40 @@ export const PostsReaderStore = signalStore(
 );
 ```
 
+A reader store backed by an NgRx Store host. Use `provideStoreApi(api)` to mount the api through `ngrx-rtk-query/store`; the reader Signal Store composes `withApiState(api)` on top of that provider:
+
 ```ts
-export class PostsListComponent {
-  readonly postsStore = inject(PostsStore);
-  readonly postsQuery = useGetPostsQuery();
-}
+import { provideStoreApi } from 'ngrx-rtk-query/store';
+
+bootstrapApplication(AppComponent, {
+  providers: [provideStoreApi(postsApi)],
+});
+
+export const PostsReaderStore = signalStore(
+  { providedIn: 'root' },
+  withApiState(postsApi),
+  withProps((store) => ({
+    selectedPostsState: store.getPostsState(),
+  })),
+  withComputed(({ selectedPostsState }) => ({
+    selectedPostsCount: computed(() => selectedPostsState().data?.length ?? 0),
+  })),
+);
+```
+
+A reader store backed by a non-store host. Use `provideNoopStoreApi(api)` to mount the api at the app root without NgRx Store; reader stores composed with `withApiState(api)` can still consume its `...State()` methods:
+
+```ts
+import { provideNoopStoreApi } from 'ngrx-rtk-query/noop-store';
+
+bootstrapApplication(AppComponent, {
+  providers: [provideNoopStoreApi(postsApi)],
+});
 ```
 
 Rules:
 
-- One `api` instance can only be bound to one host store.
-- Each `withApi(api)` in the same host store must use a unique `reducerPath`.
-- Duplicate `reducerPath` values fail fast during store initialization.
+- Each api instance must be bound to a single host store.
+- Each `withApi(api)` in the same host store must use a unique `reducerPath`. Duplicates fail fast during store initialization.
 - Add `withApiState(api)` only once per api instance in a store.
 - Two distinct apis in the same store must not generate the same `...State()` method name.
