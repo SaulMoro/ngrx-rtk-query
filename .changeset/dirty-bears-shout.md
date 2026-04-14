@@ -2,6 +2,6 @@
 'ngrx-rtk-query': minor
 ---
 
-Add a Signal Store runtime with `withApi(api)` so RTK Query APIs can be mounted inside NgRx Signal Store hosts and expose generated endpoint `...State()` methods plus `selectApiState(...)` for derived store state, including endpoints injected later on the same API instance.
+Add `withApiState(api)` to `ngrx-rtk-query/signal-store` so Signal Stores can read generated `...State()` methods from the same store, a child store, or providers like `provideStoreApi(api)` and `provideNoopStoreApi(api)`.
 
-Share runtime listener setup across store variants, tighten API binding cleanup, and add signal-store example, generated-state test coverage, and e2e coverage.
+Keep API mounting in `withApi(api)`, tighten signal-store binding guards, and update the Signal Store docs, tests, and example to show deriving view state from generated readers inside `withComputed(...)` and `withProps(...)`.

@@ -119,24 +119,25 @@ Or mount the API in an NgRx Signal Store feature:
 
 ```ts
 import { computed } from '@angular/core';
-import { signalStore, withComputed } from '@ngrx/signals';
+import { signalStore, withComputed, withProps } from '@ngrx/signals';
 
-import { withApi } from 'ngrx-rtk-query/signal-store';
+import { withApi, withApiState } from 'ngrx-rtk-query/signal-store';
 
 export const CounterStore = signalStore(
   { providedIn: 'root' },
   withApi(counterApi),
-  withComputed((store) => {
-    const selectedCountState = store.getCountState();
-
-    return {
-      selectedCountValue: computed(() => selectedCountState().data?.count ?? 0),
-    };
-  }),
+  withApiState(counterApi),
+  withProps((store) => ({
+    selectedCountState: store.getCountState(),
+  })),
+  withComputed(({ selectedCountState }) => ({
+    selectedCountValue: computed(() => selectedCountState().data?.count ?? 0),
+  })),
 );
 ```
 
-When using `withApi(api)`, instantiate the host store once near the app shell, derive view-facing state from generated `...State()` methods or `selectApiState(...)` inside the store, and keep using the generated RTK Query hooks as usual:
+When using signal-store features, mount the api once with `withApi(api)`, add `withApiState(api)` wherever you want generated `...State()` methods, and keep using the generated RTK Query hooks as usual.
+`withApiState(api)` does not require `withApi(api)` in the same store. It only requires the same api instance to already be mounted by an active host, whether that host comes from `withApi(api)`, `provideStoreApi(api)`, or `provideNoopStoreApi(api)`:
 
 ```ts
 export class CounterManagerComponent {
@@ -145,8 +146,22 @@ export class CounterManagerComponent {
 }
 ```
 
-Generated `...State()` methods and `selectApiState(...)` return the same signal you would get from `api.selectSignal(endpoint.select(...))`, and both are safe to call directly inside `withComputed(...)` and `withProps(...)`.
-Generated `...State()` methods are a snapshot of the endpoints available when `withApi(api)` is composed. If the same API instance injects more endpoints later with `api.injectEndpoints(...)`, read those lazy endpoints through `selectApiState(injectedApi.endpoints.foo, ...)`.
+```ts
+export const CounterReaderStore = signalStore(
+  { providedIn: 'root' },
+  withApiState(counterApi),
+  withProps((store) => ({
+    selectedCountState: store.getCountState(),
+  })),
+  withComputed(({ selectedCountState }) => ({
+    selectedCountValue: computed(() => selectedCountState().data?.count ?? 0),
+  })),
+);
+```
+
+Generated `...State()` methods return the same signal you would get from `api.selectSignal(endpoint.select(...))`, and they are safe to call directly inside `withComputed(...)` and `withProps(...)`.
+Generated `...State()` methods are a snapshot of the endpoints available when `withApiState(api)` is composed. If the same API instance injects more endpoints later with `api.injectEndpoints(...)`, create a new store with `withApiState(extendedApi)` after the injection step.
+`withApiState(api)` works with the same API instance mounted by `withApi(api)`, `provideStoreApi(api)`, or `provideNoopStoreApi(api)`.
 One `api` instance must be bound to a single host store.
 
 Use the query in a component

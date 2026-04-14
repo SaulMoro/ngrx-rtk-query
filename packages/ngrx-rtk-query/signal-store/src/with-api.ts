@@ -1,28 +1,7 @@
 import { Injector, type Signal, type WritableSignal, computed, inject, signal } from '@angular/core';
-import {
-  type SignalStoreFeature,
-  type SignalStoreFeatureResult,
-  signalStoreFeature,
-  withHooks,
-  withMethods,
-} from '@ngrx/signals';
+import { type SignalStoreFeature, type SignalStoreFeatureResult, signalStoreFeature, withHooks } from '@ngrx/signals';
 import { type Selector, type UnknownAction, createSelector } from '@reduxjs/toolkit';
-import {
-  type Api,
-  type ApiEndpointInfiniteQuery,
-  type ApiEndpointMutation,
-  type ApiEndpointQuery,
-  type EndpointDefinitions,
-  type InfiniteQueryArgFrom,
-  type InfiniteQueryDefinition,
-  type InfiniteQueryResultSelectorResult,
-  type MutationDefinition,
-  type MutationResultSelectorResult,
-  type QueryArgFrom,
-  type QueryDefinition,
-  type QueryResultSelectorResult,
-  type SkipToken,
-} from '@reduxjs/toolkit/query';
+import { type Api, type EndpointDefinitions } from '@reduxjs/toolkit/query';
 
 import {
   type AngularHooksModuleOptions,
@@ -31,12 +10,6 @@ import {
   type StoreQueryConfig,
   setupRuntimeListeners,
 } from 'ngrx-rtk-query/core';
-
-import {
-  type EndpointStateMethodsFromApi,
-  type GeneratedStateMethod,
-  type MutationSelectorArg,
-} from './types/state-methods';
 
 type RuntimeApi<Definitions extends EndpointDefinitions = Record<string, any>> = Api<
   any,
@@ -70,70 +43,24 @@ type RegisteredApi = {
   selectSignal: <K>(mapFn: (state: any) => K, options?: SelectSignalOptions<K>) => Signal<K>;
 };
 
-type RegisteredEndpoint = {
-  entry: RegisteredApi;
-  endpointName: string;
+type MountedApiRegistry = {
+  apis: Set<object>;
+  reducerPaths: Map<string, object>;
 };
 
-type SharedRuntime = {
-  apisByReducerPath: Map<string, RegisteredApi>;
-  endpoints: WeakMap<object, RegisteredEndpoint>;
-  register: (entry: RegisteredApi) => void;
-  unregister: (entry: RegisteredApi) => void;
-  selectApiState: SelectApiState;
+const mountedApiRegistryKey = Symbol('ngrx-rtk-query/mounted-api-registry');
+
+type MountedApiRegistryProps = {
+  [mountedApiRegistryKey]: MountedApiRegistry;
 };
 
-type SharedRuntimeMethods = {
-  selectApiState: SelectApiState;
-};
-
-type SharedRuntimeFeatureResult = {
+type MountedApiRegistryFeatureResult = {
   state: {};
-  props: {};
-  methods: SharedRuntimeMethods;
+  props: MountedApiRegistryProps;
+  methods: {};
 };
 
-type WithApiFeatureResult<TApi extends RuntimeApi<any>> = {
-  state: {};
-  props: {};
-  methods: SharedRuntimeMethods & EndpointStateMethodsFromApi<TApi>;
-};
-
-type StoreMembersWithSharedRuntime = SharedRuntimeMethods & Record<string | symbol, unknown>;
-
-const runtimeBySelector = new WeakMap<SelectApiState, SharedRuntime>();
-
-export type SelectApiState = {
-  <Definition extends QueryDefinition<any, any, any, any, any>, Definitions extends EndpointDefinitions>(
-    endpoint: ApiEndpointQuery<Definition, Definitions>,
-    ...args: QueryArgFrom<Definition> extends void
-      ? [
-          arg?: QueryArgFrom<Definition> | SkipToken,
-          options?: SelectSignalOptions<QueryResultSelectorResult<Definition>>,
-        ]
-      : [
-          arg: QueryArgFrom<Definition> | SkipToken,
-          options?: SelectSignalOptions<QueryResultSelectorResult<Definition>>,
-        ]
-  ): Signal<QueryResultSelectorResult<Definition>>;
-  <Definition extends InfiniteQueryDefinition<any, any, any, any, any>, Definitions extends EndpointDefinitions>(
-    endpoint: ApiEndpointInfiniteQuery<Definition, Definitions>,
-    ...args: InfiniteQueryArgFrom<Definition> extends void
-      ? [
-          arg?: InfiniteQueryArgFrom<Definition> | SkipToken,
-          options?: SelectSignalOptions<InfiniteQueryResultSelectorResult<Definition>>,
-        ]
-      : [
-          arg: InfiniteQueryArgFrom<Definition> | SkipToken,
-          options?: SelectSignalOptions<InfiniteQueryResultSelectorResult<Definition>>,
-        ]
-  ): Signal<InfiniteQueryResultSelectorResult<Definition>>;
-  <Definition extends MutationDefinition<any, any, any, any, any>, Definitions extends EndpointDefinitions>(
-    endpoint: ApiEndpointMutation<Definition, Definitions>,
-    arg: MutationSelectorArg,
-    options?: SelectSignalOptions<MutationResultSelectorResult<Definition>>,
-  ): Signal<MutationResultSelectorResult<Definition>>;
-};
+type StoreMembersWithMountedApiRegistry = MountedApiRegistryProps;
 
 const memoizedCreateSelector: AngularHooksModuleOptions['createSelector'] = (...input) => {
   const selectors = input.slice(0, -1);
@@ -146,177 +73,59 @@ const memoizedCreateSelector: AngularHooksModuleOptions['createSelector'] = (...
   }) as unknown as Selector<any, any>;
 };
 
-const resolveRegisteredEndpoint = (runtime: SharedRuntime, endpoint: object): RegisteredEndpoint | undefined => {
-  const cachedRegistration = runtime.endpoints.get(endpoint);
-
-  if (cachedRegistration) {
-    return cachedRegistration;
-  }
-
-  for (const entry of runtime.apisByReducerPath.values()) {
-    for (const [endpointName, registeredEndpoint] of Object.entries(entry.api.endpoints) as Array<[string, object]>) {
-      if (registeredEndpoint === endpoint) {
-        const registration = { entry, endpointName };
-
-        runtime.endpoints.set(endpoint, registration);
-
-        return registration;
-      }
-    }
-  }
-
-  return undefined;
-};
-
-const createSelectApiState = (runtime: SharedRuntime): SelectApiState =>
-  ((endpoint: object, arg: unknown, options?: SelectSignalOptions<unknown>) => {
-    const registration = resolveRegisteredEndpoint(runtime, endpoint);
-
-    if (!registration) {
-      throw new Error(`Endpoint is not registered in this signal store. Add the owning API with withApi(api).`);
-    }
-
-    const { entry, endpointName } = registration;
-
-    if ('useMutation' in (endpoint as ApiEndpointMutation<any, any>)) {
-      const fixedCacheKey = (arg as MutationSelectorArg | undefined)?.fixedCacheKey;
-
-      if (typeof fixedCacheKey !== 'string' || fixedCacheKey.length === 0) {
-        throw new Error(
-          `Mutation endpoint "${endpointName}" from reducerPath "${entry.reducerPath}" requires a valid fixedCacheKey for selectApiState().`,
-        );
-      }
-
-      return entry.selectSignal(
-        (endpoint as ApiEndpointMutation<any, any>).select({ fixedCacheKey, requestId: undefined }),
-        options,
-      );
-    }
-
-    return entry.selectSignal(
-      (endpoint as ApiEndpointQuery<any, any> | ApiEndpointInfiniteQuery<any, any>).select(arg as any),
-      options,
-    );
-  }) as SelectApiState;
-
-const createSharedRuntime = (): SharedRuntime => {
-  const runtime: SharedRuntime = {
-    apisByReducerPath: new Map<string, RegisteredApi>(),
-    endpoints: new WeakMap<object, RegisteredEndpoint>(),
-    register: (entry) => {
-      runtime.apisByReducerPath.set(entry.reducerPath, entry);
-
-      for (const [endpointName, endpoint] of Object.entries(entry.api.endpoints) as Array<[string, object]>) {
-        runtime.endpoints.set(endpoint, { entry, endpointName });
-      }
-    },
-    unregister: (entry) => {
-      runtime.apisByReducerPath.delete(entry.reducerPath);
-
-      for (const endpoint of Object.values(entry.api.endpoints) as object[]) {
-        runtime.endpoints.delete(endpoint);
-      }
-    },
-    selectApiState: undefined as unknown as SelectApiState,
+const withMountedApiRegistry = ((store) => {
+  const registryStore = store as typeof store & {
+    props: Partial<MountedApiRegistryProps>;
   };
+  const existingRegistry = registryStore.props[mountedApiRegistryKey];
 
-  runtime.selectApiState = createSelectApiState(runtime);
+  if (existingRegistry) {
+    return {
+      ...registryStore,
+      props: registryStore.props as MountedApiRegistryProps,
+    };
+  }
 
-  return runtime;
-};
+  return {
+    ...registryStore,
+    props: {
+      ...(registryStore.props ?? {}),
+      [mountedApiRegistryKey]: {
+        apis: new Set<object>(),
+        reducerPaths: new Map<string, object>(),
+      },
+    } as MountedApiRegistryProps,
+  };
+}) as SignalStoreFeature<SignalStoreFeatureResult, MountedApiRegistryFeatureResult>;
 
-const getSharedRuntime = (store: SharedRuntimeMethods): SharedRuntime => {
-  const runtime = runtimeBySelector.get(store.selectApiState);
+const registerMountedApi = (store: StoreMembersWithMountedApiRegistry, api: InitializedRuntimeApi): (() => void) => {
+  const registry = store[mountedApiRegistryKey];
 
-  if (!runtime) {
+  if (registry.apis.has(api)) {
     throw new Error(
-      `RTK Query signal-store runtime is not initialized for this host store. Add withApi(api) to the host store.`,
+      `RTK Query api instance for reducerPath "${api.reducerPath}" is already mounted in this signal store. Add withApi(api) only once per api instance.`,
     );
   }
 
-  return runtime;
-};
+  const registeredApi = registry.reducerPaths.get(api.reducerPath);
 
-const createGeneratedStateMethods = (
-  store: StoreMembersWithSharedRuntime,
-  api: InitializedRuntimeApi,
-): Record<string, GeneratedStateMethod> => {
-  const runtime = getSharedRuntime(store);
-  const methods: Record<string, GeneratedStateMethod> = {};
-
-  if (runtime.apisByReducerPath.has(api.reducerPath)) {
+  if (registeredApi && registeredApi !== api) {
     throw new Error(
       `Duplicate RTK Query reducerPath "${api.reducerPath}" in signalStore. Each withApi(api) must use a unique reducerPath.`,
     );
   }
 
-  for (const [endpointName, endpoint] of Object.entries(api.endpoints)) {
-    const generatedMethodName = `${endpointName}State`;
+  registry.apis.add(api);
+  registry.reducerPaths.set(api.reducerPath, api);
 
-    if (generatedMethodName in store || generatedMethodName in methods) {
-      throw new Error(
-        `RTK Query signal-store for reducerPath "${api.reducerPath}" cannot generate "${generatedMethodName}" because that store member already exists.`,
-      );
+  return () => {
+    registry.apis.delete(api);
+
+    if (registry.reducerPaths.get(api.reducerPath) === api) {
+      registry.reducerPaths.delete(api.reducerPath);
     }
-
-    methods[generatedMethodName] = (arg?: unknown, options?: SelectSignalOptions<unknown>) =>
-      runtime.selectApiState(endpoint as never, arg as never, options as never) as Signal<unknown>;
-  }
-
-  return methods;
+  };
 };
-
-const withGeneratedStateMethods = <TApi extends RuntimeApi<any>>(
-  api: InitializedRuntimeApi,
-): SignalStoreFeature<
-  SharedRuntimeFeatureResult,
-  {
-    state: {};
-    props: {};
-    methods: EndpointStateMethodsFromApi<TApi>;
-  }
-> =>
-  withMethods((store) =>
-    createGeneratedStateMethods(store as unknown as StoreMembersWithSharedRuntime, api),
-  ) as SignalStoreFeature<
-    SharedRuntimeFeatureResult,
-    {
-      state: {};
-      props: {};
-      methods: EndpointStateMethodsFromApi<TApi>;
-    }
-  >;
-
-const withSharedRuntimeSurface = ((store) => {
-  const runtimeStore = store as typeof store & {
-    methods: Partial<SharedRuntimeMethods>;
-  };
-  const existingSelectApiState = runtimeStore.methods.selectApiState as SelectApiState | undefined;
-
-  if (existingSelectApiState) {
-    if (!runtimeBySelector.has(existingSelectApiState)) {
-      throw new Error(
-        'Signal Store already defines a "selectApiState" method. Rename the existing method or remove withApi(api).',
-      );
-    }
-
-    return {
-      ...runtimeStore,
-      methods: runtimeStore.methods as SharedRuntimeMethods,
-    };
-  }
-
-  const runtime = createSharedRuntime();
-  runtimeBySelector.set(runtime.selectApiState, runtime);
-
-  return {
-    ...runtimeStore,
-    methods: {
-      ...runtimeStore.methods,
-      selectApiState: runtime.selectApiState,
-    } as SharedRuntimeMethods,
-  };
-}) as SignalStoreFeature<SignalStoreFeatureResult, SharedRuntimeFeatureResult>;
 
 const createSignalStoreApi = (entry: RegisteredApi): (() => AngularHooksModuleOptions) => {
   return () => {
@@ -350,18 +159,24 @@ const createSignalStoreApi = (entry: RegisteredApi): (() => AngularHooksModuleOp
 export function withApi<Input extends SignalStoreFeatureResult, TApi extends RuntimeApi<any>>(
   api: TApi,
   { setupListeners }: StoreQueryConfig = {},
-): SignalStoreFeature<Input, WithApiFeatureResult<TApi>> {
+): SignalStoreFeature<
+  Input,
+  {
+    state: {};
+    props: MountedApiRegistryProps;
+    methods: {};
+  }
+> {
   const initializedApi = api as InitializedRuntimeApi;
   const initialState = initializedApi.reducer(undefined, {
     type: '@@ngrx-rtk-query/signal-store/init',
   }) as Record<string, unknown>;
 
-  const feature = signalStoreFeature(
-    withSharedRuntimeSurface,
-    withGeneratedStateMethods<TApi>(initializedApi),
+  return signalStoreFeature(
+    withMountedApiRegistry,
     withHooks((store) => {
       const injector = inject(Injector);
-      const runtime = getSharedRuntime(store);
+      const unregisterApi = registerMountedApi(store as unknown as StoreMembersWithMountedApiRegistry, initializedApi);
       const bindingKey = {};
       const state = signal(initialState);
       let releaseApiStore: (() => void) | undefined;
@@ -373,8 +188,6 @@ export function withApi<Input extends SignalStoreFeatureResult, TApi extends Run
         state,
         selectSignal: (mapFn, options) => computed(() => mapFn({ [entry.reducerPath]: entry.state() }), options),
       };
-
-      runtime.register(entry);
 
       return {
         onInit: () => {
@@ -388,7 +201,7 @@ export function withApi<Input extends SignalStoreFeatureResult, TApi extends Run
           } catch (error) {
             teardownListeners?.();
             releaseApiStore?.();
-            runtime.unregister(entry);
+            unregisterApi();
 
             throw error;
           }
@@ -397,11 +210,16 @@ export function withApi<Input extends SignalStoreFeatureResult, TApi extends Run
           teardownListeners?.();
           initializedApi.dispatch(initializedApi.util.resetApiState());
           releaseApiStore?.();
-          runtime.unregister(entry);
+          unregisterApi();
         },
       };
     }),
-  );
-
-  return feature as unknown as SignalStoreFeature<Input, WithApiFeatureResult<TApi>>;
+  ) as SignalStoreFeature<
+    Input,
+    {
+      state: {};
+      props: MountedApiRegistryProps;
+      methods: {};
+    }
+  >;
 }
