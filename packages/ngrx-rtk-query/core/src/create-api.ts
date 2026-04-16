@@ -21,29 +21,32 @@ type ApiBindingMetadata = {
   runtimeLabel: string;
 };
 
+type ApiBinding = ApiBindingMetadata & {
+  dispatch: (action: unknown) => unknown;
+  store: AngularHooksModuleOptions;
+};
+
 export const createApi: CreateApi<typeof coreModuleName | typeof angularHooksModuleName> = (options) => {
   let resolvedReducerPath = options.reducerPath ?? 'api';
+  let activeBinding: ApiBinding | undefined;
   const getUnboundStoreError = () => {
     return new Error(
       `Provide the API (${resolvedReducerPath}) is necessary to use the queries. Did you forget to provide the queries api?`,
     );
   };
   const getBoundStore = (): AngularHooksModuleOptions => {
-    if (!store) {
+    if (!activeBinding) {
       throw getUnboundStoreError();
     }
 
-    return store;
-  };
-  const next = (action: unknown): unknown => {
-    if (typeof action === 'function') {
-      return action(dispatch, getState, { injector: getInjector() });
-    }
-
-    return getBoundStore().hooks.dispatch(action as Action);
+    return activeBinding.store;
   };
   const dispatch = (action: unknown): unknown => {
-    return middleware(next)(action);
+    if (!activeBinding) {
+      throw getUnboundStoreError();
+    }
+
+    return activeBinding.dispatch(action);
   };
 
   const getState: AngularHooksModuleOptions['hooks']['getState'] = () => getBoundStore().hooks.getState();
@@ -67,9 +70,30 @@ export const createApi: CreateApi<typeof coreModuleName | typeof angularHooksMod
   );
   const api = createApi(options);
   resolvedReducerPath = (api as unknown as { reducerPath: string }).reducerPath;
+  const runtimeApi = api as unknown as Api<any, Record<string, any>, string, string, AngularHooksModule | CoreModule>;
 
-  let store: AngularHooksModuleOptions | undefined;
-  let bindingMetadata: ApiBindingMetadata | undefined;
+  const createBinding = (setupFn: () => AngularHooksModuleOptions, bindingMetadata: ApiBindingMetadata): ApiBinding => {
+    const store = setupFn();
+    const getState: AngularHooksModuleOptions['hooks']['getState'] = () => store.hooks.getState();
+    const next = (action: unknown): unknown => {
+      if (typeof action === 'function') {
+        return action(dispatchForBinding as Dispatch, getState, { injector: store.getInjector() });
+      }
+
+      return store.hooks.dispatch(action as Action);
+    };
+    const runMiddleware = runtimeApi.middleware({ dispatch: dispatchForBinding, getState })(next);
+
+    function dispatchForBinding(action: unknown): unknown {
+      return runMiddleware(action);
+    }
+
+    return {
+      ...bindingMetadata,
+      store,
+      dispatch: dispatchForBinding,
+    };
+  };
 
   const initApiStore = (
     setupFn: () => AngularHooksModuleOptions,
@@ -78,27 +102,22 @@ export const createApi: CreateApi<typeof coreModuleName | typeof angularHooksMod
       runtimeLabel: 'unknown',
     },
   ) => {
-    if (bindingMetadata && bindingMetadata.bindingKey !== nextBindingMetadata.bindingKey) {
+    if (activeBinding && activeBinding.bindingKey !== nextBindingMetadata.bindingKey) {
       throw new Error(
-        `RTK Query api instance for reducerPath "${resolvedReducerPath}" is already bound to another host (${bindingMetadata.runtimeLabel}). Reuse one host per api instance or create a second api instance.`,
+        `RTK Query api instance for reducerPath "${resolvedReducerPath}" is already bound to another host (${activeBinding.runtimeLabel}). Reuse one host per api instance or create a second api instance.`,
       );
     }
 
-    store = setupFn();
-    bindingMetadata = nextBindingMetadata;
+    const binding = createBinding(setupFn, nextBindingMetadata);
+    activeBinding = binding;
 
     return () => {
-      if (bindingMetadata?.bindingKey === nextBindingMetadata.bindingKey) {
-        bindingMetadata = undefined;
-        store = undefined;
+      if (activeBinding?.bindingKey === nextBindingMetadata.bindingKey) {
+        activeBinding = undefined;
       }
     };
   };
   Object.assign(api, { initApiStore });
-
-  const middleware = (
-    api as unknown as Api<any, Record<string, any>, string, string, AngularHooksModule | CoreModule>
-  ).middleware({ dispatch, getState });
 
   return api;
 };
