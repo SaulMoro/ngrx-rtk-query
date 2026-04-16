@@ -1,5 +1,15 @@
 # ngrx-rtk-query
 
+## 21.2.1
+
+### Patch Changes
+
+- [#104](https://github.com/SaulMoro/ngrx-rtk-query/pull/104) [`0432c08`](https://github.com/SaulMoro/ngrx-rtk-query/commit/0432c08e04e8081f2499a362bdf0df34140e4dfe) Thanks [@SaulMoro](https://github.com/SaulMoro)! - Fix `TS4023` in consumer projects when exporting generated query hooks like `useGetXxxQuery` with declaration emit enabled.
+
+  The public `core` entry point now re-exports the `Signal`, `SignalsMap`, and `DeepSignal` helper types used by generated hook signatures so TypeScript can name those exported hook types in consumer `.d.ts` output.
+
+  This release also hardens `createApi` teardown so late RTK Query middleware timers can drain after a host store is released without throwing unbound API errors in tests or consumer runtimes.
+
 ## 21.2.0
 
 ### Minor Changes
