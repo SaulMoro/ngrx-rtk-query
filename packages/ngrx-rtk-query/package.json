@@ -33,6 +33,8 @@
   "type": "module",
   "scripts": {
     "build": "nx run ngrx-rtk-query:build --tsConfig=tsconfig.lib.prod.json",
+    "fix:dts": "node ./scripts/fix-dts-symbol-exports.mjs",
+    "prepublishOnly": "pnpm run fix:dts",
     "pub:beta": "pnpm publish --no-git-checks --tag beta",
     "pub:next": "pnpm publish --no-git-checks --tag next",
     "pub:release": "pnpm publish"
@@ -42,8 +44,8 @@
   },
   "peerDependencies": {
     "@angular/core": ">=21.0.0",
-    "@ngrx/signals": ">=21.0.0",
-    "@ngrx/store": ">=21.0.0",
+    "@ngrx/signals": ">=21.1.0",
+    "@ngrx/store": ">=21.1.0",
     "@reduxjs/toolkit": "~2.11.2"
   },
   "peerDependenciesMeta": {

@@ -1,5 +1,11 @@
 import { Injector, type Signal, type WritableSignal, computed, inject, signal } from '@angular/core';
-import { type SignalStoreFeature, type SignalStoreFeatureResult, signalStoreFeature, withHooks } from '@ngrx/signals';
+import {
+  type EmptyFeatureResult,
+  type SignalStoreFeature,
+  type SignalStoreFeatureResult,
+  signalStoreFeature,
+  withHooks,
+} from '@ngrx/signals';
 import { type Selector, type UnknownAction, createSelector } from '@reduxjs/toolkit';
 import { type Api, type EndpointDefinitions } from '@reduxjs/toolkit/query';
 
@@ -96,7 +102,7 @@ const withMountedApiRegistry = ((store) => {
       },
     } as MountedApiRegistryProps,
   };
-}) as SignalStoreFeature<SignalStoreFeatureResult, MountedApiRegistryFeatureResult>;
+}) as SignalStoreFeature<EmptyFeatureResult, MountedApiRegistryFeatureResult>;
 
 const registerMountedApi = (store: StoreMembersWithMountedApiRegistry, api: InitializedRuntimeApi): (() => void) => {
   const registry = store[mountedApiRegistryKey];
@@ -156,11 +162,11 @@ const createSignalStoreApi = (entry: RegisteredApi): (() => AngularHooksModuleOp
   };
 };
 
-export function withApi<Input extends SignalStoreFeatureResult, TApi extends RuntimeApi<any>>(
+export function withApi<TApi extends RuntimeApi<any>>(
   api: TApi,
   { setupListeners }: StoreQueryConfig = {},
 ): SignalStoreFeature<
-  Input,
+  EmptyFeatureResult,
   {
     state: {};
     props: MountedApiRegistryProps;
@@ -214,12 +220,5 @@ export function withApi<Input extends SignalStoreFeatureResult, TApi extends Run
         },
       };
     }),
-  ) as SignalStoreFeature<
-    Input,
-    {
-      state: {};
-      props: MountedApiRegistryProps;
-      methods: {};
-    }
-  >;
+  );
 }

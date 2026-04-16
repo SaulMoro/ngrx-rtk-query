@@ -36,18 +36,18 @@ If you use the Signal Store runtime, also install `@ngrx/signals`.
 
 ### Versions
 
-| Angular / NgRx |   ngrx-rtk-query   | @reduxjs/toolkit |       Support       |
-| :------------: | :----------------: | :--------------: | :-----------------: |
-|     >=21.x     | >=21.0.0 (signals) |     ~2.11.2      | Bugs / New Features |
-|     >=20.x     | >=20.0.0 (signals) |      ~2.9.0      |        Bugs         |
-|     >=18.x     | >=18.2.0 (signals) |      ~2.6.0      |        Bugs         |
-|     >=18.x     | >=18.1.0 (signals) |      ~2.5.0      |        Bugs         |
-|      18.x      | >=18.0.0 (signals) |      ~2.2.5      |    Critical bugs    |
-|      17.x      | >=17.1.x (signals) |      ~2.2.1      |    Critical bugs    |
-|      16.x      |   >=4.2.x (rxjs)   |      ~1.9.3      |    Critical bugs    |
-|      15.x      |    4.1.x (rxjs)    |      1.9.3       |        None         |
+| Angular | NgRx runtime | ngrx-rtk-query | @reduxjs/toolkit |    Support    |
+| :-----: | :----------: | :------------: | :--------------: | :-----------: |
+|  21.x   |    21.1+     |     21.1+      |     ~2.11.2      |    Active     |
+|  20.x   |     20.x     |      20.x      |      ~2.9.0      |     Bugs      |
+|  18.x   |    18.2+     |     18.2+      |      ~2.6.0      |     Bugs      |
+|  18.x   |    18.1+     |     18.1+      |      ~2.5.0      |     Bugs      |
+|  18.x   |    18.0+     |     18.0+      |      ~2.2.5      | Critical bugs |
+|  17.x   |    17.1+     |     17.1+      |      ~2.2.1      | Critical bugs |
+|  16.x   |     n/a      |      4.2+      |      ~1.9.3      | Critical bugs |
+|  15.x   |     n/a      |     4.1.x      |      1.9.3       |     None      |
 
-Only the latest version of Angular in the table above is actively supported. This is due to the fact that compilation of Angular libraries is [incompatible between major versions](https://angular.io/guide/creating-libraries#ensuring-library-version-compatibility).
+Library majors track Angular majors. Only the latest Angular major in the table above is actively supported, because Angular library compilation is [not compatible across major versions](https://angular.io/guide/creating-libraries#ensuring-library-version-compatibility).
 
 ## Basic Usage
 

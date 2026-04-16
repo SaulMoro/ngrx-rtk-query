@@ -1,10 +1,3 @@
-import {
-  type AngularHooksModuleOptions,
-  type Dispatch,
-  angularHooksModule,
-  type angularHooksModuleName,
-} from './src/module';
-
 export * from '@reduxjs/toolkit/query';
 export { fetchBaseQuery } from './src/fetch-base-query';
 export { setupRuntimeListeners } from './src/setup-runtime-listeners';
@@ -43,4 +36,10 @@ export type {
   TypedUseQuerySubscription,
   TypedUseQuerySubscriptionResult,
 } from './src/types';
-export { angularHooksModule, type AngularHooksModuleOptions, type Dispatch, type angularHooksModuleName };
+export {
+  angularHooksModule,
+  angularHooksModuleName,
+  type AngularHooksModule,
+  type AngularHooksModuleOptions,
+  type Dispatch,
+} from './src/module';
