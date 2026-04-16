@@ -1,5 +1,5 @@
 {
-  "extends": ["../../.eslintrc.json"],
+  "extends": ["../../.eslintrc.cjs"],
   "ignorePatterns": ["!**/*", "**/vite.config.*.timestamp*", "**/vitest.config.*.timestamp*"],
   "overrides": [
     {
