@@ -7,36 +7,7 @@ export { createApi } from './src/create-api';
 export { shallowEqual } from './src/utils';
 export type { DeepSignal, Signal, SignalsMap } from './src/utils';
 
-export type {
-  LazyQueryOptions,
-  QueryOptions,
-  SelectSignalOptions,
-  StoreQueryConfig,
-  TypedInfiniteQueryStateSelector,
-  TypedLazyInfiniteQueryTrigger,
-  TypedLazyQueryTrigger,
-  TypedMutationTrigger,
-  TypedQueryStateSelector,
-  TypedUseInfiniteQuery,
-  TypedUseInfiniteQueryHookResult,
-  TypedUseInfiniteQueryState,
-  TypedUseInfiniteQueryStateOptions,
-  TypedUseInfiniteQueryStateResult,
-  TypedUseInfiniteQuerySubscription,
-  TypedUseInfiniteQuerySubscriptionResult,
-  TypedUseLazyQuery,
-  TypedUseLazyQueryStateResult,
-  TypedUseLazyQuerySubscription,
-  TypedUseMutation,
-  TypedUseMutationResult,
-  TypedUseQuery,
-  TypedUseQueryHookResult,
-  TypedUseQueryState,
-  TypedUseQueryStateOptions,
-  TypedUseQueryStateResult,
-  TypedUseQuerySubscription,
-  TypedUseQuerySubscriptionResult,
-} from './src/types';
+export type * from './src/types';
 export {
   angularHooksModule,
   angularHooksModuleName,
