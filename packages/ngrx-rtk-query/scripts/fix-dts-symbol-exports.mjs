@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Promote exported local `declare const X: unique symbol;` declarations to
+// Promote local `declare const X: unique symbol;` declarations to
 // `export declare const X: unique symbol;` inside the bundled `.d.ts` files
 // emitted by ng-packagr.
 //
@@ -9,8 +9,10 @@
 // re-export when serializing inferred types in consumer code, and fails with:
 //   TS2527: The inferred type of '...' references an inaccessible
 //   'unique symbol' type. A type annotation is necessary.
-// Promoting only symbols that are actually value-exported keeps the patch aligned
-// with the runtime module surface and leaves internal unique symbols untouched.
+// Promote every `declare const X: unique symbol;` — including symbols that are
+// only used as property keys inside exported type members (e.g. registry keys
+// in signal-store features). Those keys are not present in the grouped value
+// export but still leak through inferred consumer types.
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -29,39 +31,15 @@ if (files.length === 0) {
 
 let totalPromoted = 0;
 
-const getGroupedValueExports = (source) => {
-  const exportedNames = new Set();
-
-  for (const match of source.matchAll(GROUPED_EXPORT_RE)) {
-    const entries = match[1].split(',');
-
-    for (const entry of entries) {
-      const trimmedEntry = entry.trim();
-
-      if (!trimmedEntry || trimmedEntry.startsWith('type ')) {
-        continue;
-      }
-
-      const bareName = trimmedEntry.split(/\s+as\s+/i)[0].trim();
-      exportedNames.add(bareName);
-    }
-  }
-
-  return exportedNames;
-};
-
 for (const file of files) {
   const path = resolve(distTypesDir, file);
   const original = readFileSync(path, 'utf8');
-  const groupedValueExports = getGroupedValueExports(original);
-  const promotedNames = new Set(
-    [...original.matchAll(UNIQUE_SYMBOL_RE)].map((match) => match[1]).filter((name) => groupedValueExports.has(name)),
-  );
+  const promotedNames = new Set([...original.matchAll(UNIQUE_SYMBOL_RE)].map((match) => match[1]));
 
   if (promotedNames.size === 0) continue;
 
-  let next = original.replace(UNIQUE_SYMBOL_RE, (match, name) => {
-    return promotedNames.has(name) ? `export declare const ${name}: unique symbol;` : match;
+  let next = original.replace(UNIQUE_SYMBOL_RE, (_match, name) => {
+    return `export declare const ${name}: unique symbol;`;
   });
 
   // Remove now-duplicated value-export entries from grouped `export { ... };`
