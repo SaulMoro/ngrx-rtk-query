@@ -2,7 +2,6 @@ import { type Signal } from '@angular/core';
 import { type ThunkAction, type UnknownAction } from '@reduxjs/toolkit';
 import {
   type BaseQueryFn,
-  DefinitionType,
   type EndpointDefinition,
   type InfiniteData,
   type InfiniteQueryActionCreatorResult,
@@ -1124,6 +1123,17 @@ export type GenericPrefetchThunk = (
   arg: any,
   options: PrefetchOptions,
 ) => ThunkAction<void, any, any, UnknownAction>;
+
+// Local runtime enum: `@reduxjs/toolkit/query` declares `DefinitionType` only
+// as an ambient type (no value emitted in the runtime bundle), so we must keep
+// our own value enum for the type guards below. Not exported so it does not
+// clash with RTK's type re-export when the public barrel does
+// `export * from '@reduxjs/toolkit/query'` plus `export type * from './src/types'`.
+enum DefinitionType {
+  query = 'query',
+  mutation = 'mutation',
+  infinitequery = 'infinitequery',
+}
 
 export function isQueryDefinition(e: EndpointDefinition<any, any, any, any>): e is QueryDefinition<any, any, any, any> {
   return e.type === DefinitionType.query;
