@@ -1,5 +1,11 @@
 import { type Signal } from '@angular/core';
-import { type SignalStoreFeature, type SignalStoreFeatureResult, signalStoreFeature, withMethods } from '@ngrx/signals';
+import {
+  type EmptyFeatureResult,
+  type SignalStoreFeature,
+  type SignalStoreFeatureResult,
+  signalStoreFeature,
+  withMethods,
+} from '@ngrx/signals';
 import {
   type Api,
   type ApiEndpointInfiniteQuery,
@@ -75,7 +81,7 @@ const withApiStateRegistry = ((store) => {
       },
     } as ApiStateRegistryProps,
   };
-}) as SignalStoreFeature<SignalStoreFeatureResult, ApiStateRegistryFeatureResult>;
+}) as SignalStoreFeature<EmptyFeatureResult, ApiStateRegistryFeatureResult>;
 
 // Defer selector creation so generated state methods can be captured during store composition
 // before any runtime has mounted the API instance.
@@ -156,10 +162,10 @@ const createGeneratedStateMethods = (
   return methods;
 };
 
-export function withApiState<Input extends SignalStoreFeatureResult, TApi extends RuntimeApi<any>>(
+export function withApiState<TApi extends RuntimeApi<any>>(
   api: TApi,
 ): SignalStoreFeature<
-  Input,
+  EmptyFeatureResult,
   {
     state: {};
     props: ApiStateRegistryProps;
@@ -170,7 +176,7 @@ export function withApiState<Input extends SignalStoreFeatureResult, TApi extend
     withApiStateRegistry,
     withMethods((store) => createGeneratedStateMethods(store as unknown as StoreMembersWithApiStateRegistry, api)),
   ) as unknown as SignalStoreFeature<
-    Input,
+    EmptyFeatureResult,
     {
       state: {};
       props: ApiStateRegistryProps;
