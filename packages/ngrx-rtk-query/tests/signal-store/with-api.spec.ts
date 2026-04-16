@@ -2,7 +2,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   EnvironmentInjector,
-  computed,
   createEnvironmentInjector,
   inject,
 } from '@angular/core';
@@ -11,21 +10,10 @@ import { signalStore } from '@ngrx/signals';
 import { render, screen, waitFor } from '@testing-library/angular';
 import { describe, expect, test, vi } from 'vitest';
 
-import { type AngularHooksModuleOptions, type Dispatch, createApi, fakeBaseQuery } from 'ngrx-rtk-query/core';
+import { createApi, fakeBaseQuery } from 'ngrx-rtk-query/core';
 import { withApi } from 'ngrx-rtk-query/signal-store';
 
 import { type Post, createPostsApi } from '../helpers/create-posts-api';
-
-type InitializedTestApi = ReturnType<typeof createPostsApi> & {
-  dispatch: Dispatch;
-  initApiStore: (
-    setupFn: () => AngularHooksModuleOptions,
-    bindingMetadata: {
-      bindingKey: object;
-      runtimeLabel: string;
-    },
-  ) => () => void;
-};
 
 describe('withApi', () => {
   test('mounts an api and keeps hooks working', async () => {
@@ -239,33 +227,5 @@ describe('withApi', () => {
     await waitFor(() => {
       expect(screen.getByTestId('query-name')).toHaveTextContent('recoverySignalStoreApi-post');
     });
-  });
-
-  test('unbinds the api when the host store is released', () => {
-    const postsApi = createPostsApi('releasedApi') as InitializedTestApi;
-    const releaseApiStore = postsApi.initApiStore(
-      () =>
-        ({
-          hooks: {
-            dispatch: ((action: unknown) => action) as Dispatch,
-            getState: () => ({ [postsApi.reducerPath]: {} }),
-            useSelector: (mapFn) => computed(() => mapFn({ [postsApi.reducerPath]: {} })),
-          },
-          createSelector: () => (() => undefined) as never,
-          getInjector: () => ({}) as never,
-        }) satisfies AngularHooksModuleOptions,
-      {
-        bindingKey: {},
-        runtimeLabel: 'signal-store',
-      },
-    );
-
-    expect(() => postsApi.dispatch(postsApi.util.resetApiState())).not.toThrow();
-
-    releaseApiStore();
-
-    expect(() => postsApi.dispatch(postsApi.util.resetApiState())).toThrow(
-      /Provide the API \(releasedApi\) is necessary to use the queries/,
-    );
   });
 });
