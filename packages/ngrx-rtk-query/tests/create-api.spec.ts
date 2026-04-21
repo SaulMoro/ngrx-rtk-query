@@ -53,12 +53,10 @@ describe('createApi', () => {
     vi.useRealTimers();
   });
 
-  test('throws when resetting the api before any host store is bound', () => {
+  test('allows resetting the api before any host store is bound', () => {
     const postsApi = createPostsApi('unboundApi') as InitializedTestApi;
 
-    expect(() => postsApi.dispatch(postsApi.util.resetApiState())).toThrow(
-      /Provide the API \(unboundApi\) is necessary to use the queries/,
-    );
+    expect(() => postsApi.dispatch(postsApi.util.resetApiState())).not.toThrow();
   });
 
   test('unbinds the api when the host store is released', () => {
