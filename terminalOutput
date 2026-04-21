@@ -1,0 +1,55 @@
+[34mBuilding Angular Package[39m
+[37m[39m
+[37m------------------------------------------------------------------------------[39m
+[37mBuilding entry point 'ngrx-rtk-query/core'[39m
+[37m------------------------------------------------------------------------------[39m
+- Compiling with Angular sources in partial compilation mode.
+[32m✔[39m Compiling with Angular sources in partial compilation mode.
+[32m✔[39m Generating FESM and DTS bundles
+[32m✔[39m Built ngrx-rtk-query/core
+[37m[39m
+[37m------------------------------------------------------------------------------[39m
+[37mBuilding entry point 'ngrx-rtk-query/store'[39m
+[37m------------------------------------------------------------------------------[39m
+- Compiling with Angular sources in partial compilation mode.
+[32m✔[39m Compiling with Angular sources in partial compilation mode.
+[32m✔[39m Generating FESM and DTS bundles
+[32m✔[39m Built ngrx-rtk-query/store
+[37m[39m
+[37m------------------------------------------------------------------------------[39m
+[37mBuilding entry point 'ngrx-rtk-query'[39m
+[37m------------------------------------------------------------------------------[39m
+- Compiling with Angular sources in partial compilation mode.
+[32m✔[39m Compiling with Angular sources in partial compilation mode.
+[32m✔[39m Generating FESM and DTS bundles
+- Copying assets
+[32m✔[39m Copying assets
+- Writing package manifest
+[34mℹ[39m Removing scripts section in package.json as it's considered a potential security vulnerability.
+[32m✔[39m Writing package manifest
+[32m✔[39m Built ngrx-rtk-query
+[37m[39m
+[37m------------------------------------------------------------------------------[39m
+[37mBuilding entry point 'ngrx-rtk-query/noop-store'[39m
+[37m------------------------------------------------------------------------------[39m
+- Compiling with Angular sources in partial compilation mode.
+[32m✔[39m Compiling with Angular sources in partial compilation mode.
+[32m✔[39m Generating FESM and DTS bundles
+[32m✔[39m Built ngrx-rtk-query/noop-store
+[37m[39m
+[37m------------------------------------------------------------------------------[39m
+[37mBuilding entry point 'ngrx-rtk-query/signal-store'[39m
+[37m------------------------------------------------------------------------------[39m
+- Compiling with Angular sources in partial compilation mode.
+[32m✔[39m Compiling with Angular sources in partial compilation mode.
+[32m✔[39m Generating FESM and DTS bundles
+[32m✔[39m Built ngrx-rtk-query/signal-store
+[32m[39m
+[32m------------------------------------------------------------------------------[39m
+[32mBuilt Angular Package[39m
+[32m- from: /home/runner/work/ngrx-rtk-query/ngrx-rtk-query/packages/ngrx-rtk-query[39m
+[32m- to:   /home/runner/work/ngrx-rtk-query/ngrx-rtk-query/dist/packages/ngrx-rtk-query[39m
+[32m------------------------------------------------------------------------------[39m
+[37m[37m[39m[37m[39m
+[37m[37mBuild at: [1m2026-04-21T12:18:37.456Z[22m - Time: [1m4546[22mms[39m[37m[39m
+[37m[37m[39m[37m[39m

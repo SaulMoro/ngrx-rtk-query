@@ -1,5 +1,11 @@
 # ngrx-rtk-query
 
+## 21.2.3
+
+### Patch Changes
+
+- [#108](https://github.com/SaulMoro/ngrx-rtk-query/pull/108) [`6ba22ba`](https://github.com/SaulMoro/ngrx-rtk-query/commit/6ba22baabc7b7495468d165f5541f74e4e548098) Thanks [@SaulMoro](https://github.com/SaulMoro)! - Allow `resetApiState` to be dispatched after an API store has been released while still preserving the unbound-store error for other actions.
+
 ## 21.2.2
 
 ### Patch Changes
