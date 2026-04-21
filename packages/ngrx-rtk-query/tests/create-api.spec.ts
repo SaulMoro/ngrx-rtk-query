@@ -53,6 +53,14 @@ describe('createApi', () => {
     vi.useRealTimers();
   });
 
+  test('throws when resetting the api before any host store is bound', () => {
+    const postsApi = createPostsApi('unboundApi') as InitializedTestApi;
+
+    expect(() => postsApi.dispatch(postsApi.util.resetApiState())).toThrow(
+      /Provide the API \(unboundApi\) is necessary to use the queries/,
+    );
+  });
+
   test('unbinds the api when the host store is released', () => {
     const postsApi = createPostsApi('releasedApi') as InitializedTestApi;
     const { releaseApiStore } = initBoundTestApiStore(postsApi);
@@ -61,12 +69,14 @@ describe('createApi', () => {
 
     releaseApiStore();
 
-    expect(() => postsApi.dispatch(postsApi.util.resetApiState())).toThrow(
+    expect(() => postsApi.dispatch(postsApi.util.resetApiState())).not.toThrow();
+
+    expect(() => postsApi.dispatch({ type: 'releasedApi/customAction' })).toThrow(
       /Provide the API \(releasedApi\) is necessary to use the queries/,
     );
   });
 
-  test('ignores delayed middleware next work after reset and release', async () => {
+  test('allows resetting the api after the host store is released even with pending middleware work', async () => {
     vi.useFakeTimers();
 
     const postsApi = createPostsApi('releasedTimerApi') as InitializedTestApi;
@@ -78,7 +88,9 @@ describe('createApi', () => {
 
     await vi.advanceTimersByTimeAsync(500);
 
-    expect(() => postsApi.dispatch(postsApi.util.resetApiState())).toThrow(
+    expect(() => postsApi.dispatch(postsApi.util.resetApiState())).not.toThrow();
+
+    expect(() => postsApi.dispatch({ type: 'releasedTimerApi/customAction' })).toThrow(
       /Provide the API \(releasedTimerApi\) is necessary to use the queries/,
     );
   });

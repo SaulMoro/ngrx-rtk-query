@@ -1,4 +1,4 @@
-import { type Action } from '@reduxjs/toolkit';
+import { type Action, type UnknownAction } from '@reduxjs/toolkit';
 import {
   type Api,
   type CoreModule,
@@ -26,9 +26,12 @@ type ApiBinding = ApiBindingMetadata & {
   store: AngularHooksModuleOptions;
 };
 
+type RuntimeApi = Api<any, Record<string, any>, string, string, AngularHooksModule | CoreModule>;
+
 export const createApi: CreateApi<typeof coreModuleName | typeof angularHooksModuleName> = (options) => {
   let resolvedReducerPath = options.reducerPath ?? 'api';
   let activeBinding: ApiBinding | undefined;
+  let isResetApiStateAction = (_action: unknown): _action is UnknownAction => false;
   const getUnboundStoreError = () => {
     return new Error(
       `Provide the API (${resolvedReducerPath}) is necessary to use the queries. Did you forget to provide the queries api?`,
@@ -43,6 +46,10 @@ export const createApi: CreateApi<typeof coreModuleName | typeof angularHooksMod
   };
   const dispatch = (action: unknown): unknown => {
     if (!activeBinding) {
+      if (isResetApiStateAction(action)) {
+        return action;
+      }
+
       throw getUnboundStoreError();
     }
 
@@ -69,8 +76,8 @@ export const createApi: CreateApi<typeof coreModuleName | typeof angularHooksMod
     }),
   );
   const api = createApi(options);
+  const runtimeApi = api as unknown as RuntimeApi;
   resolvedReducerPath = (api as unknown as { reducerPath: string }).reducerPath;
-  const runtimeApi = api as unknown as Api<any, Record<string, any>, string, string, AngularHooksModule | CoreModule>;
 
   const createBinding = (setupFn: () => AngularHooksModuleOptions, bindingMetadata: ApiBindingMetadata): ApiBinding => {
     const store = setupFn();
@@ -110,6 +117,7 @@ export const createApi: CreateApi<typeof coreModuleName | typeof angularHooksMod
 
     const binding = createBinding(setupFn, nextBindingMetadata);
     activeBinding = binding;
+    isResetApiStateAction = (action: unknown): action is UnknownAction => runtimeApi.util.resetApiState.match(action);
 
     return () => {
       if (activeBinding?.bindingKey === nextBindingMetadata.bindingKey) {
