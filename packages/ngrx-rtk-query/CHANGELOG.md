@@ -1,5 +1,11 @@
 # ngrx-rtk-query
 
+## 21.2.4
+
+### Patch Changes
+
+- [#110](https://github.com/SaulMoro/ngrx-rtk-query/pull/110) [`1a98692`](https://github.com/SaulMoro/ngrx-rtk-query/commit/1a98692ac95549f8fa197a7bb1f38d8998614b0e) Thanks [@SaulMoro](https://github.com/SaulMoro)! - Allow `resetApiState` to be dispatched even before an API store has been bound so it behaves as a safe no-op cleanup step.
+
 ## 21.2.3
 
 ### Patch Changes

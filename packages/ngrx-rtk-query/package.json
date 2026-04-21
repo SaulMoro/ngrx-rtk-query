@@ -1,6 +1,6 @@
 {
   "name": "ngrx-rtk-query",
-  "version": "21.2.3",
+  "version": "21.2.4",
   "description": "Angular RTK Query",
   "keywords": [
     "angular query",
