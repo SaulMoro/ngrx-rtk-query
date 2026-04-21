@@ -78,6 +78,7 @@ export const createApi: CreateApi<typeof coreModuleName | typeof angularHooksMod
   const api = createApi(options);
   const runtimeApi = api as unknown as RuntimeApi;
   resolvedReducerPath = (api as unknown as { reducerPath: string }).reducerPath;
+  isResetApiStateAction = (action: unknown): action is UnknownAction => runtimeApi.util.resetApiState.match(action);
 
   const createBinding = (setupFn: () => AngularHooksModuleOptions, bindingMetadata: ApiBindingMetadata): ApiBinding => {
     const store = setupFn();
@@ -117,7 +118,6 @@ export const createApi: CreateApi<typeof coreModuleName | typeof angularHooksMod
 
     const binding = createBinding(setupFn, nextBindingMetadata);
     activeBinding = binding;
-    isResetApiStateAction = (action: unknown): action is UnknownAction => runtimeApi.util.resetApiState.match(action);
 
     return () => {
       if (activeBinding?.bindingKey === nextBindingMetadata.bindingKey) {
