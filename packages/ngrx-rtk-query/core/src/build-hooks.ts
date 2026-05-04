@@ -49,7 +49,7 @@ import {
   isInfiniteQueryDefinition,
 } from './types';
 import { useStableQueryArgs } from './useSerializedStableValue';
-import { mergeSignalProxy, shallowEqual, signalProxy, toDeepSignal, toLazySignal } from './utils';
+import { mergeSignalProxy, readSignal, shallowEqual, signalProxy, toDeepSignal } from './utils';
 
 /**
  * Wrapper around `defaultQueryStateSelector` to be used in `useQuery`.
@@ -235,9 +235,9 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       QueryDefinition<any, any, any, any, any>,
       Definitions
     >;
-    // We need to use `toLazySignal` here to prevent 'signal required inputs' errors
-    const lazyArg = typeof arg === 'function' ? toLazySignal(arg, { initialValue: skipToken }) : () => arg;
-    const lazyOptions = typeof options === 'function' ? toLazySignal(options, { initialValue: {} }) : () => options;
+    // We need to defer function inputs here to prevent 'signal required inputs' errors
+    const lazyArg = readSignal(arg, { initialValue: skipToken });
+    const lazyOptions = readSignal(options, { initialValue: {} });
 
     const subscriptionOptions = computed(() => {
       const {
@@ -369,12 +369,9 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         QueryDefinition<any, any, any, any, any>,
         Definitions
       >;
-      // We need to use `toLazySignal` here to prevent 'signal required inputs' errors
-      const lazyArg = typeof arg === 'function' ? toLazySignal(arg, { initialValue: skipToken }) : () => arg;
-      const lazyOptions =
-        typeof options === 'function'
-          ? toLazySignal(options, { initialValue: { selectFromResult: noPendingQueryStateSelector } })
-          : () => options;
+      // We need to defer function inputs here to prevent 'signal required inputs' errors
+      const lazyArg = readSignal(arg, { initialValue: skipToken });
+      const lazyOptions = readSignal(options, { initialValue: { selectFromResult: noPendingQueryStateSelector } });
 
       const stateOptions = computed(() => {
         const { skip = false, selectFromResult } = lazyOptions();
@@ -447,7 +444,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
     };
 
     const readLazyQueryOptions = <R extends Record<string, any>>(options: LazyQueryOptionsInput<R>) =>
-      typeof options === 'function' ? toLazySignal(options, { initialValue: {} }) : () => options;
+      readSignal(options, { initialValue: {} });
 
     const useLazyQuerySubscriptionImpl = <R extends Record<string, any>>(
       options: LazyQueryOptionsInput<R> = {},
@@ -552,8 +549,8 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       useQuery(arg, options) {
         const querySubscriptionResults = useQuerySubscription(arg, options);
         const subscriptionOptions = computed(() => {
-          const subscriptionArg = typeof arg === 'function' ? arg() : arg;
-          const subscriptionOptions = typeof options === 'function' ? options() : options;
+          const subscriptionArg = readSignal(arg);
+          const subscriptionOptions = readSignal(options);
           return {
             selectFromResult:
               subscriptionArg === skipToken || subscriptionOptions?.skip ? undefined : noPendingQueryStateSelector,
@@ -638,8 +635,8 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       useInfiniteQuery(arg, options) {
         const { refetch, fetchNextPage, fetchPreviousPage } = useInfiniteQuerySubscription(arg, options);
         const subscriptionOptions = computed(() => {
-          const subscriptionArg = typeof arg === 'function' ? arg() : arg;
-          const subscriptionOptions = typeof options === 'function' ? options() : options;
+          const subscriptionArg = readSignal(arg);
+          const subscriptionOptions = readSignal(options);
           return {
             selectFromResult:
               subscriptionArg === skipToken || subscriptionOptions?.skip ? undefined : noPendingQueryStateSelector,
@@ -662,8 +659,8 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
     >;
 
     const useMutation: UseMutation<any> = (options = {}) => {
-      const readMutationOptions = () => (typeof options === 'function' ? options() : options);
-      const lazyOptions = typeof options === 'function' ? toLazySignal(options, { initialValue: {} }) : () => options;
+      const readMutationOptions = () => readSignal(options);
+      const lazyOptions = readSignal(options, { initialValue: {} });
       const promiseRef = signal<MutationActionCreatorResult<any> | undefined>(undefined);
       const mutationOptions = computed(
         () => {
