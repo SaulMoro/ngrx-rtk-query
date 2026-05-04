@@ -447,7 +447,9 @@ export type UseQueryStateOptions<D extends QueryDefinition<any, any, any, any>, 
    * item has changed.
    * If the selected item is one element in a larger collection, it will disregard changes to elements in
    * the same collection.
-   * Note that this should always return an object (not a primitive), as RTKQ adds fields to the return value.
+   * This replaces the query state result with the object you return. Return base query fields explicitly
+   * when you need them in the hook result.
+   * Note that this should always return an object (not a primitive).
    *
    * @example
    * ```ts

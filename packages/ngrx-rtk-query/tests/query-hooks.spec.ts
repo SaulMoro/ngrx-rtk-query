@@ -6,7 +6,7 @@ import { describe, expect, test } from 'vitest';
 import { skipToken } from 'ngrx-rtk-query/core';
 import { provideNoopStoreApi } from 'ngrx-rtk-query/noop-store';
 
-import { createPostsApi } from './helpers/create-posts-api';
+import { createDeferredPostsApi, createPostsApi } from './helpers/create-posts-api';
 
 describe('query hooks', () => {
   test('loads a query from a static arg', async () => {
@@ -164,6 +164,72 @@ describe('query hooks', () => {
     });
 
     expect(await screen.findByText('querySelectedFunctionPropertyApi-post')).toBeInTheDocument();
+  });
+
+  test('keeps the query signal value limited to the selected query result', async () => {
+    const postsApi = createPostsApi('querySelectedResultContractApi');
+
+    @Component({
+      standalone: true,
+      changeDetection: ChangeDetectionStrategy.OnPush,
+      template: `
+        <p>{{ postQuery.selectedName() }}</p>
+      `,
+    })
+    class HostComponent {
+      readonly postQuery = postsApi.useGetPostsQuery(undefined, {
+        selectFromResult: ({ data }) => ({
+          selectedName: data?.[0]?.name ?? 'empty',
+        }),
+      });
+    }
+
+    const { fixture } = await render(HostComponent, {
+      providers: [provideNoopStoreApi(postsApi)],
+    });
+
+    expect(await screen.findByText('querySelectedResultContractApi-post')).toBeInTheDocument();
+
+    const result = fixture.componentInstance.postQuery();
+    expect(Reflect.has(result, 'selectedName')).toBe(true);
+    expect(Reflect.has(result, 'isLoading')).toBe(false);
+    expect(Reflect.has(result, 'data')).toBe(false);
+  });
+
+  test('exposes base query flags as fine-grained signals when selectFromResult returns them', async () => {
+    const { postsApi, resolvePosts } = createDeferredPostsApi('querySelectedBaseFlagsApi');
+
+    @Component({
+      standalone: true,
+      changeDetection: ChangeDetectionStrategy.OnPush,
+      template: `
+        <p>{{ postQuery.selectedName() }}</p>
+        <p>{{ postQuery.isLoading() ? 'loading' : 'not loading' }}</p>
+        <p>{{ postQuery.isFetching() ? 'fetching' : 'not fetching' }}</p>
+      `,
+    })
+    class HostComponent {
+      readonly postQuery = postsApi.useGetPostsQuery(undefined, {
+        selectFromResult: ({ data, isFetching, isLoading }) => ({
+          selectedName: data?.[0]?.name ?? 'empty',
+          isFetching,
+          isLoading,
+        }),
+      });
+    }
+
+    await render(HostComponent, {
+      providers: [provideNoopStoreApi(postsApi)],
+    });
+
+    expect(await screen.findByText('loading')).toBeInTheDocument();
+    expect(screen.getByText('fetching')).toBeInTheDocument();
+
+    resolvePosts([{ id: 1, name: 'querySelectedBaseFlagsApi-post' }]);
+
+    expect(await screen.findByText('querySelectedBaseFlagsApi-post')).toBeInTheDocument();
+    expect(screen.getByText('not loading')).toBeInTheDocument();
+    expect(screen.getByText('not fetching')).toBeInTheDocument();
   });
 
   test('tracks query options from a signal', async () => {

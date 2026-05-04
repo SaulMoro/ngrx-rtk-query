@@ -27,3 +27,28 @@ export const createPostsApi = (reducerPath: string) =>
       }),
     }),
   });
+
+export const createDeferredPostsApi = (reducerPath: string) => {
+  const deferred: { resolvePosts?: (posts: Post[]) => void } = {};
+  const posts = new Promise<Post[]>((resolve) => {
+    deferred.resolvePosts = resolve;
+  });
+  const resolvePosts = (nextPosts: Post[]) => {
+    if (!deferred.resolvePosts) throw new Error('Deferred posts resolver was not initialized.');
+    deferred.resolvePosts(nextPosts);
+  };
+
+  const postsApi = createApi({
+    reducerPath,
+    baseQuery: fakeBaseQuery(),
+    endpoints: (build) => ({
+      getPosts: build.query<Post[], void>({
+        queryFn: async () => ({
+          data: await posts,
+        }),
+      }),
+    }),
+  });
+
+  return { postsApi, resolvePosts };
+};

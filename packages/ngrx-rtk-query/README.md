@@ -215,10 +215,23 @@ postQuery = useGetPostsQuery(
 );
 
 // Use query with static params or options (can be mixed)
-postQuery = useGetPostsQuery(2, {
-  selectFromResult: ({ data: post, isLoading }) => ({ post, isLoading }),
+postQuery = useGetPostsQuery(undefined, {
+  selectFromResult: ({ data }) => ({
+    post: data?.find((post) => post.id === 2),
+  }),
+});
+
+// Return base query fields explicitly when you also need them as signals
+postQuery = useGetPostsQuery(undefined, {
+  selectFromResult: ({ data, isFetching, isLoading }) => ({
+    post: data?.find((post) => post.id === 2),
+    isFetching,
+    isLoading,
+  }),
 });
 ```
+
+`selectFromResult` follows RTK Query semantics: it replaces the query state result with the object you return. The returned keys are still exposed as fine-grained signals, so `postQuery.post()` works, and `postQuery.isLoading()` works when `isLoading` is returned from `selectFromResult`. Fields such as `data`, `error`, or `isLoading` are not added automatically.
 
 A good use case is to work with router inputs.
 
@@ -263,9 +276,22 @@ options = signal(...);
 postQuery = useLazyGetPostsQuery(options);
 // Use query with static options
 postQuery = useLazyGetPostsQuery({
-  selectFromResult: ({ data: post, isLoading }) => ({ post, isLoading }),
+  selectFromResult: ({ data }) => ({
+    post: data?.find((post) => post.id === 2),
+  }),
+});
+
+// Return base query fields explicitly when you also need them as signals
+postQuery = useLazyGetPostsQuery({
+  selectFromResult: ({ data, isFetching, isLoading }) => ({
+    post: data?.find((post) => post.id === 2),
+    isFetching,
+    isLoading,
+  }),
 });
 ```
+
+`selectFromResult` follows the same contract for lazy queries: only the returned result keys are exposed as query-state signals. The trigger function still keeps lazy-query methods such as `lastArg()` and `reset()`.
 
 Use when data needs to be loaded on demand
 

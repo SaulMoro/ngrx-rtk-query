@@ -5,7 +5,7 @@ import { describe, expect, test } from 'vitest';
 
 import { provideNoopStoreApi } from 'ngrx-rtk-query/noop-store';
 
-import { createPostsApi } from './helpers/create-posts-api';
+import { createDeferredPostsApi, createPostsApi } from './helpers/create-posts-api';
 
 describe('lazy query hooks', () => {
   test('starts without data until manually triggered', async () => {
@@ -155,6 +155,86 @@ describe('lazy query hooks', () => {
     await user.click(screen.getByRole('button', { name: 'load posts' }));
 
     expect(await screen.findByText('lazyQuerySelectedFunctionPropertyApi-post')).toBeInTheDocument();
+  });
+
+  test('keeps the lazy query result properties limited to the selected query result', async () => {
+    const postsApi = createPostsApi('lazyQuerySelectedResultContractApi');
+    const user = userEvent.setup();
+
+    @Component({
+      standalone: true,
+      changeDetection: ChangeDetectionStrategy.OnPush,
+      template: `
+        <button (click)="postsQuery()">load posts</button>
+        <p>{{ postsQuery.selectedName() }}</p>
+      `,
+    })
+    class HostComponent {
+      readonly postsQuery = postsApi.useLazyGetPostsQuery({
+        selectFromResult: ({ data }) => ({
+          selectedName: data?.[0]?.name ?? 'empty',
+        }),
+      });
+    }
+
+    const { fixture } = await render(HostComponent, {
+      providers: [provideNoopStoreApi(postsApi)],
+    });
+
+    expect(screen.getByText('empty')).toBeInTheDocument();
+    expect(Reflect.has(fixture.componentInstance.postsQuery, 'selectedName')).toBe(true);
+    expect(Reflect.has(fixture.componentInstance.postsQuery, 'isLoading')).toBe(false);
+    expect(Reflect.has(fixture.componentInstance.postsQuery, 'data')).toBe(false);
+
+    await user.click(screen.getByRole('button', { name: 'load posts' }));
+
+    expect(await screen.findByText('lazyQuerySelectedResultContractApi-post')).toBeInTheDocument();
+    expect(Reflect.has(fixture.componentInstance.postsQuery, 'selectedName')).toBe(true);
+    expect(Reflect.has(fixture.componentInstance.postsQuery, 'isLoading')).toBe(false);
+    expect(Reflect.has(fixture.componentInstance.postsQuery, 'data')).toBe(false);
+  });
+
+  test('exposes base lazy query flags as fine-grained signals when selectFromResult returns them', async () => {
+    const { postsApi, resolvePosts } = createDeferredPostsApi('lazyQuerySelectedBaseFlagsApi');
+    const user = userEvent.setup();
+
+    @Component({
+      standalone: true,
+      changeDetection: ChangeDetectionStrategy.OnPush,
+      template: `
+        <button (click)="postsQuery()">load posts</button>
+        <p>{{ postsQuery.selectedName() }}</p>
+        <p>{{ postsQuery.isLoading() ? 'loading' : 'not loading' }}</p>
+        <p>{{ postsQuery.isFetching() ? 'fetching' : 'not fetching' }}</p>
+      `,
+    })
+    class HostComponent {
+      readonly postsQuery = postsApi.useLazyGetPostsQuery({
+        selectFromResult: ({ data, isFetching, isLoading }) => ({
+          selectedName: data?.[0]?.name ?? 'empty',
+          isFetching,
+          isLoading,
+        }),
+      });
+    }
+
+    await render(HostComponent, {
+      providers: [provideNoopStoreApi(postsApi)],
+    });
+
+    expect(screen.getByText('empty')).toBeInTheDocument();
+    expect(screen.getByText('not loading')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'load posts' }));
+
+    expect(await screen.findByText('loading')).toBeInTheDocument();
+    expect(screen.getByText('fetching')).toBeInTheDocument();
+
+    resolvePosts([{ id: 1, name: 'lazyQuerySelectedBaseFlagsApi-post' }]);
+
+    expect(await screen.findByText('lazyQuerySelectedBaseFlagsApi-post')).toBeInTheDocument();
+    expect(screen.getByText('not loading')).toBeInTheDocument();
+    expect(screen.getByText('not fetching')).toBeInTheDocument();
   });
 
   test('tracks lazy query options from a signal', async () => {
