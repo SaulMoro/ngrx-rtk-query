@@ -379,6 +379,12 @@ Like in the original library, a mutation is a object (not array) with each of it
 // Use mutation hook
 addPost = useAddPostMutation();
 
+// Mutation options can be static, a Signal, or a function.
+// This is useful for route-scoped fixedCacheKey values.
+updatePost = useUpdatePostMutation(() => ({
+  fixedCacheKey: `updatePost:${this.postId()}`,
+}));
+
 // Mutation trigger
 this.addPost({ params });
 

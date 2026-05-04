@@ -38,6 +38,7 @@ import {
   type UseInfiniteQueryStateOptions,
   type UseInfiniteQuerySubscription,
   type UseInfiniteQuerySubscriptionOptions,
+  type UseLazyQueryOptions,
   type UseLazyQuerySubscription,
   type UseMutation,
   type UseQueryState,
@@ -48,7 +49,7 @@ import {
   isInfiniteQueryDefinition,
 } from './types';
 import { useStableQueryArgs } from './useSerializedStableValue';
-import { shallowEqual, signalProxy, toDeepSignal, toLazySignal } from './utils';
+import { mergeSignalProxy, shallowEqual, signalProxy, toDeepSignal, toLazySignal } from './utils';
 
 /**
  * Wrapper around `defaultQueryStateSelector` to be used in `useQuery`.
@@ -428,6 +429,10 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
   }
 
   function buildQueryHooks(endpointName: string): QueryHooks<any> {
+    type LazyQueryOptionsInput<R extends Record<string, any>> =
+      | UseLazyQueryOptions<any, R>
+      | (() => UseLazyQueryOptions<any, R>);
+
     const useQuerySubscription: UseQuerySubscription<any> = (arg: any, options = {}) => {
       const [promiseRef] = useQuerySubscriptionCommonImpl<QueryActionCreatorResult<any>>(endpointName, arg, options);
 
@@ -441,7 +446,13 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       };
     };
 
-    const useLazyQuerySubscription: UseLazyQuerySubscription<any> = (options = {}) => {
+    const readLazyQueryOptions = <R extends Record<string, any>>(options: LazyQueryOptionsInput<R>) =>
+      typeof options === 'function' ? toLazySignal(options, { initialValue: {} }) : () => options;
+
+    const useLazyQuerySubscriptionImpl = <R extends Record<string, any>>(
+      options: LazyQueryOptionsInput<R> = {},
+      lazyOptions = readLazyQueryOptions(options),
+    ) => {
       const { initiate } = api.endpoints[endpointName] as ApiEndpointQuery<
         QueryDefinition<any, any, any, any, any>,
         Definitions
@@ -456,7 +467,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
             refetchOnFocus,
             pollingInterval = 0,
             skipPollingIfUnfocused = false,
-          } = typeof options === 'function' ? options() : options;
+          } = lazyOptions();
           return { refetchOnReconnect, refetchOnFocus, pollingInterval, skipPollingIfUnfocused };
         },
         { equal: shallowEqual },
@@ -516,6 +527,8 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
 
       return [trigger, lastArg, { reset }] as const;
     };
+    const useLazyQuerySubscription: UseLazyQuerySubscription<any> = (options = {}) =>
+      useLazyQuerySubscriptionImpl(options);
 
     const useQueryState: UseQueryState<any> = buildUseQueryState(endpointName, queryStatePreSelector);
 
@@ -523,18 +536,18 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       useQueryState,
       useQuerySubscription,
       useLazyQuerySubscription,
-      useLazyQuery(options) {
-        const [trigger, arg, { reset }] = useLazyQuerySubscription(options);
+      useLazyQuery(options = {}) {
+        const lazyOptions = readLazyQueryOptions(options);
+        const [trigger, arg, { reset }] = useLazyQuerySubscriptionImpl(options, lazyOptions);
         const subscriptionOptions = computed(() => ({
-          ...options,
+          ...lazyOptions(),
           skip: arg() === UNINITIALIZED_VALUE,
         }));
         const queryStateResults = useQueryState(arg, subscriptionOptions);
         const signalsMap = signalProxy(queryStateResults);
         Object.assign(trigger, { lastArg: arg, reset });
-        Object.assign(trigger, signalsMap);
 
-        return trigger as any;
+        return mergeSignalProxy(trigger, signalsMap, ['lastArg', 'reset']) as any;
       },
       useQuery(arg, options) {
         const querySubscriptionResults = useQuerySubscription(arg, options);
@@ -648,8 +661,17 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       Definitions
     >;
 
-    const useMutation: UseMutation<any> = ({ selectFromResult, fixedCacheKey } = {}) => {
+    const useMutation: UseMutation<any> = (options = {}) => {
+      const readMutationOptions = () => (typeof options === 'function' ? options() : options);
+      const lazyOptions = typeof options === 'function' ? toLazySignal(options, { initialValue: {} }) : () => options;
       const promiseRef = signal<MutationActionCreatorResult<any> | undefined>(undefined);
+      const mutationOptions = computed(
+        () => {
+          const { selectFromResult, fixedCacheKey } = lazyOptions();
+          return { selectFromResult, fixedCacheKey };
+        },
+        { equal: shallowEqual },
+      );
 
       effect((onCleanup) => {
         const currentPromise = promiseRef();
@@ -661,6 +683,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       });
 
       const triggerMutation = (arg: Parameters<typeof initiate>['0']) => {
+        const { fixedCacheKey } = readMutationOptions();
         const promise = dispatch(initiate(arg, { fixedCacheKey }));
         promiseRef.set(promise);
         return promise;
@@ -681,18 +704,25 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       };
 
       const requestId = computed(() => promiseRef()?.requestId);
-      const selectDefaultResult = (requestId?: string) => fixedSelect({ fixedCacheKey, requestId });
-      const mutationSelector = (requestId?: string): Selector<RootState<Definitions, any, any>, any> =>
+      const selectDefaultResult = (requestId?: string, fixedCacheKey?: string) =>
+        fixedSelect({ fixedCacheKey, requestId });
+      const mutationSelector = (
+        requestId?: string,
+        { selectFromResult, fixedCacheKey } = mutationOptions(),
+      ): Selector<RootState<Definitions, any, any>, any> =>
         selectFromResult
-          ? createSelector(selectDefaultResult(requestId), selectFromResult)
-          : selectDefaultResult(requestId);
+          ? createSelector(selectDefaultResult(requestId, fixedCacheKey), selectFromResult)
+          : selectDefaultResult(requestId, fixedCacheKey);
 
       const currentState = computed(() => useSelector(mutationSelector(requestId()), { equal: shallowEqual }));
-      const originalArgs = computed(() => (fixedCacheKey == null ? promiseRef()?.arg.originalArgs : undefined));
+      const originalArgs = computed(() =>
+        mutationOptions().fixedCacheKey == null ? promiseRef()?.arg.originalArgs : undefined,
+      );
       const reset = () => {
         if (promiseRef()) {
           promiseRef.set(undefined);
         }
+        const { fixedCacheKey } = readMutationOptions();
         if (fixedCacheKey) {
           dispatch(
             api.internalActions.removeMutationResult({
@@ -707,9 +737,8 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       const signalsMap = signalProxy(finalState);
       Object.assign(triggerMutation, { originalArgs });
       Object.assign(triggerMutation, { reset });
-      Object.assign(triggerMutation, signalsMap);
 
-      return triggerMutation as any;
+      return mergeSignalProxy(triggerMutation, signalsMap, ['originalArgs', 'reset']) as any;
     };
 
     return { useMutation };

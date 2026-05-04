@@ -15,6 +15,11 @@ export const createPostsApi = (reducerPath: string) =>
           data: [{ id: 1, name: `${reducerPath}-post` }],
         }),
       }),
+      getPost: build.query<Post, number>({
+        queryFn: async (id) => ({
+          data: { id, name: `${reducerPath}-post-${id}` },
+        }),
+      }),
       addPost: build.mutation<Post, { name: string }>({
         queryFn: async ({ name }) => ({
           data: { id: 1, name },

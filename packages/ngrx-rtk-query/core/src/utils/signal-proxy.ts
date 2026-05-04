@@ -47,21 +47,56 @@ export function signalProxy<T extends Record<string | symbol, any>>(signal: Sign
       return (target[prop] = computed(() => signal()[prop]));
     },
     has(_, prop) {
-      return !!untracked(signal)[prop];
+      return Reflect.ownKeys(untracked(signal)).includes(prop);
     },
     ownKeys() {
       return Reflect.ownKeys(untracked(signal));
     },
-    getOwnPropertyDescriptor() {
-      return {
-        enumerable: true,
-        configurable: true,
-      };
+    getOwnPropertyDescriptor(_, prop) {
+      return Reflect.ownKeys(untracked(signal)).includes(prop)
+        ? {
+            enumerable: true,
+            configurable: true,
+          }
+        : undefined;
     },
   });
 }
 
+export function mergeSignalProxy<TTarget extends object, TSignals extends Record<string | symbol, unknown>>(
+  target: TTarget,
+  signalsMap: TSignals,
+  targetProps: readonly (string | symbol)[] = [],
+): TTarget & TSignals {
+  const targetPropsSet = new Set<string | symbol>(targetProps);
+  const isNonConfigurableTargetProp = (prop: string | symbol) => {
+    const targetDescriptor = Reflect.getOwnPropertyDescriptor(target, prop);
+    return targetDescriptor ? !targetDescriptor.configurable : false;
+  };
+  const hasSignalProp = (prop: string | symbol) =>
+    !targetPropsSet.has(prop) && !isNonConfigurableTargetProp(prop) && Reflect.has(signalsMap, prop);
+
+  return new Proxy(target, {
+    get(target, prop, receiver) {
+      if (hasSignalProp(prop)) return Reflect.get(signalsMap, prop, receiver);
+      return Reflect.get(target, prop, receiver);
+    },
+    getOwnPropertyDescriptor(target, prop) {
+      const targetDescriptor = Reflect.getOwnPropertyDescriptor(target, prop);
+      if (targetDescriptor && !targetDescriptor.configurable) return targetDescriptor;
+      if (hasSignalProp(prop)) return Reflect.getOwnPropertyDescriptor(signalsMap, prop);
+      return targetDescriptor;
+    },
+    has(target, prop) {
+      return prop in target || hasSignalProp(prop);
+    },
+    ownKeys(target) {
+      return Array.from(new Set([...Reflect.ownKeys(target), ...Reflect.ownKeys(signalsMap)]));
+    },
+  }) as TTarget & TSignals;
+}
+
 export function toDeepSignal<T extends Record<string | symbol, any>>(signal: Signal<T>): DeepSignal<T> {
   const deepSignal = signalProxy(signal);
-  return Object.assign(signal, deepSignal);
+  return mergeSignalProxy(signal, deepSignal);
 }

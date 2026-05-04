@@ -1078,7 +1078,10 @@ export type TypedUseMutationResult<
 export type UseMutation<D extends MutationDefinition<any, any, any, any>> = <
   R extends Record<string, any> = MutationResultSelectorResult<D>,
 >(
-  options?: UseMutationStateOptions<D, R>,
+  options?:
+    | UseMutationStateOptions<D, R>
+    | Signal<UseMutationStateOptions<D, R>>
+    | (() => UseMutationStateOptions<D, R>),
 ) => MutationTrigger<D> & UseMutationStateResult<D, R>;
 
 export type TypedUseMutation<ResultType, QueryArg, BaseQuery extends BaseQueryFn> = UseMutation<
