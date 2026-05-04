@@ -1,5 +1,11 @@
 # ngrx-rtk-query
 
+## 21.2.5
+
+### Patch Changes
+
+- [#112](https://github.com/SaulMoro/ngrx-rtk-query/pull/112) [`dd9b425`](https://github.com/SaulMoro/ngrx-rtk-query/commit/dd9b425308a72e9a3ddf5aa185fd5750e6a2e5c0) Thanks [@SaulMoro](https://github.com/SaulMoro)! - Support reactive mutation options and callable query result signal keys.
+
 ## 21.2.4
 
 ### Patch Changes
