@@ -9,6 +9,8 @@ Store-agnostic secondary entrypoint for the public library.
 - Generated hook types and core utilities used by the public runtime entrypoints.
 - RTK Query exports re-exposed by the package surface, such as `skipToken`, when available from the core API.
 
+`ɵ`-prefixed exports are internal runtime plumbing for sibling entrypoints. They are not user-facing API.
+
 ## Dependency Boundary
 
 `core` must not require `@ngrx/store` or `@ngrx/signals`. Keep store-specific runtime wiring in `store`, `noop-store`, or `signal-store`.
