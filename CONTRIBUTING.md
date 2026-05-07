@@ -1,109 +1,83 @@
-# Contribution Guidelines
+# Contributing
 
-When contributing to `ngrx-rtk-query`, whether on GitHub or in other community spaces:
+Thanks for contributing to `ngrx-rtk-query`. This repository publishes an Angular library, so public API, types, peer dependencies, runtime behavior, and documentation examples are package contracts.
 
-- Be respectful, civil, and open-minded.
-- Before opening a new pull request, try searching through the [issue tracker](https://github.com/SaulMoro/ngrx-rtk-query/issues) for known issues or fixes.
-- If you want to make code changes based on your personal opinion(s), make sure you open an issue first describing the changes you want to make, and open a pull request only when your suggestions get approved by maintainers.
+## Setup
 
-## How to Contribute
+- Use the Node.js and `pnpm` versions declared in `package.json#engines`.
+- Install dependencies with `pnpm install`.
+- Use `pnpm` for repository commands.
+- Fork the repository before opening external pull requests.
 
-### Prerequisites
+## Before Implementing
 
-In order to not waste your time implementing a change that has already been declined, or is generally not needed, start by [opening an issue](https://github.com/SaulMoro/ngrx-rtk-query/issues/new/choose) describing the problem you would like to solve.
+- Search existing issues before starting large work.
+- Open an issue first for broad design changes, public API changes, or opinion-driven rewrites.
+- Read `docs/ARCHITECTURE.md` before changing entrypoints, runtime hosts, or public exports.
+- Read `docs/TESTING.md` before changing hooks, runtime lifecycle, examples, or tests.
+- Read `docs/RELEASE.md` before changing dependencies, versions, changesets, or release behavior.
 
-### Contributing via Codesandbox
+## Common Commands
 
-You can contribute to this documentation on codesandbox which will automatically run all the setup command for you. [![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/github/SaulMoro/ngrx-rtk-query).
-
-### Setup your environment locally
-
-_Some commands will assume you have the Github CLI installed, if you haven't, consider [installing it](https://github.com/cli/cli#installation), but you can always use the Web UI if you prefer that instead._
-
-In order to contribute to this project, you will need to fork the repository:
-
-```bash
-gh repo fork SaulMoro/ngrx-rtk-query
-```
-
-then, clone it to your local machine:
-
-```bash
-gh repo clone <your-github-name>/ngrx-rtk-query
-```
-
-This project uses [pnpm](https://pnpm.io) as its package manager. Install it if you haven't already:
-
-```bash
-npm install -g pnpm
-```
-
-Then, install the project's dependencies:
-
-```bash
-pnpm install
-```
-
-### Implement your changes
-
-This project is a [Nx](https://nx.dev/) monorepo. The code for the CLI is in the `cli` directory, and the docs is in the `docs` directory. Now you're all setup and can start implementing your changes.
-
-Here are some useful scripts for when you are developing:
-
-| Command                     | Description                                             |
+| Command                     | Purpose                                                 |
 | --------------------------- | ------------------------------------------------------- |
-| `pnpm dev:[example]`        | Builds and starts the [example] app                     |
-| `pnpm dev:docs`             | Starts the development server for the docs with HMR     |
-| `pnpm build:ngrx-rtk-query` | Builds ngrx-rtk-query package                           |
-| `pnpm build:docs`           | Builds the docs                                         |
-| `pnpm affected:build`       | Builds affected packages                                |
-| `pnpm affected:lint`        | Lints affected packages                                 |
-| `pnpm affected:test`        | Test affected packages                                  |
-| `pnpm affected:e2e`         | Test e2e affected packages                              |
-| `pnpm affected:e2e:watch`   | Test e2e affected packages with watch                   |
-| `pnpm affected:check`       | Checks your code for typeerrors, formatting and linting |
-| `pnpm format`               | Formats the code                                        |
+| `pnpm dev:basic-store`      | Run the NgRx Store example                              |
+| `pnpm dev:noop-store`       | Run the Noop Store example                              |
+| `pnpm dev:signal-store`     | Run the Signal Store example                            |
+| `pnpm build:ngrx-rtk-query` | Build the public package                                |
+| `pnpm docs:check`           | Validate durable docs and README contracts              |
+| `pnpm verify`               | Default local handoff check                             |
+| `pnpm verify:full`          | Full local handoff check with affected tests and format |
+| `pnpm verify:branch:full`   | Branch-scoped pre-push check                            |
+| `pnpm affected:test`        | Lower-level affected test command                       |
+| `pnpm affected:e2e`         | Lower-level affected E2E command                        |
 
-When making commits, make sure to follow the [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/) guidelines, i.e. prepending the message with `feat:`, `fix:`, `chore:`, `docs:`, etc... You can use `git status` to double check which files have not yet been staged for commit:
+## Change Types
 
-```bash
-git add <file> && git commit -m "feat/fix/chore/docs: commit message"
-```
+| Change type                  | Use when                                                                                                     | Required validation                                                                                              |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| Routine scoped change        | Small implementation or doc changes without public behavior or contract impact                               | Targeted check plus `pnpm verify`                                                                                |
+| Behavior change              | Hook behavior, runtime state, example behavior, or user-visible output changes                               | Failing repro or targeted test, then `pnpm verify:full`                                                          |
+| Public contract change       | Public exports, hook types, runtime provider contracts, README usage contract, or package entrypoints change | Targeted public-surface tests, `pnpm build:ngrx-rtk-query`, `pnpm verify:full`, and a changeset when user-facing |
+| Harness change               | `AGENTS.md`, `CONTRIBUTING.md`, `docs/*.md`, `tools/verify`, package scripts, or git hooks change            | `pnpm docs:check` and `pnpm verify`                                                                              |
+| Release or dependency change | Changesets, release workflows, Angular/Nx/RTK versions, lockfile, or package metadata change                 | `pnpm verify:full`, `pnpm build:ngrx-rtk-query`, and release-specific checks                                     |
 
-### When you're done
+## Review Evidence
 
-Check that your code follows the project's style guidelines by running:
+Every handoff should state:
 
-```bash
-pnpm affected:check
-```
+- Problem: what changed or failed.
+- Scope: files, package surfaces, runtimes, or examples affected.
+- Change type: one row from the table above.
+- Validation: exact commands or browser checks run.
+- Risk: required for public contract, runtime, dependency, release, or harness changes.
+- Follow-up: known gaps or next work if any risk remains.
 
-Please also make a manual, functional test of your changes.
+## Changesets
 
-If your change should appear in the changelog, i.e. it changes some behavior of either the CLI or the outputted application, it must be captured by `changeset` which is done by running
+Run `pnpm changeset` when the published package contract changes:
 
-```bash
-pnpm changeset
-```
+- public behavior,
+- public types,
+- public exports or entrypoints,
+- peer dependencies,
+- package metadata that users consume,
+- user-facing documentation corrections that should appear in release notes.
 
-and filling out the form with the appropriate information. Then, add the generated changeset to git:
+Do not add a changeset for maintainer-only docs, tests, internal specs, or harness changes unless explicitly requested.
 
-```bash
-git add .changeset/*.md && git commit -m "chore: add changeset"
-```
+## Git
 
-When all that's done, it's time to file a pull request to upstream:
+- Use conventional commits.
+- The repository installs `.githooks` through `pnpm prepare`.
+- `pre-commit` runs `lint-staged`; staged docs and harness files trigger `pnpm docs:check`.
+- `commit-msg` runs commitlint.
+- `pre-push` runs `pnpm verify:branch:full`.
 
-```bash
-gh pr create --web
-```
+## Ask Before Continuing
 
-and fill out the title and body appropriately. Again, make sure to follow the [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/) guidelines for your title.
+Ask before deleting a published export, changing package entrypoints, changing peer dependencies, altering release workflows, introducing dependencies, or making destructive git changes.
 
-## Translations
+## Pull Requests
 
-Coming soon...
-
-## Credits
-
-This documented was inspired by the contributing guidelines for [t3-oss/create-t3-ap](https://github.com/t3-oss/create-t3-ap/blob/main/CONTRIBUTING.md).
+Before opening a PR, run the validation required by the change type and include the review evidence in the PR body. Use `gh pr create --web` if you prefer the GitHub UI.

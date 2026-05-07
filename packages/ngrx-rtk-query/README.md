@@ -1,41 +1,101 @@
 <p align="center">
- <img width="20%" height="20%" src="./logo.svg">
+  <img width="20%" height="20%" src="./logo.svg" alt="ngrx-rtk-query logo">
 </p>
-
-<br />
 
 [![MIT](https://img.shields.io/packagist/l/doctrine/orm.svg?style=flat-square)]()
 [![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
 
-**ngrx-rtk-query** is a plugin to make RTK Query (**including auto-generated hooks**) works in Angular applications with NgRx!! Mix the power of RTK Query + NgRx + **Signals** to achieve the same functionality as in the [RTK Query guide with hooks](https://redux-toolkit.js.org/rtk-query/overview).
+# ngrx-rtk-query
 
-## Table of Contents
+`ngrx-rtk-query` brings RTK Query to Angular applications with signal-based generated hooks. It keeps RTK Query endpoint definitions, caching, invalidation, lazy queries, mutations, and infinite queries, then exposes Angular-friendly APIs for components and NgRx Signal Store.
 
-- [Table of Contents](#table-of-contents)
-- [Installation](#installation)
-  - [Versions](#versions)
-- [Import paths](#import-paths)
-- [Basic Usage](#basic-usage)
-- [Usage](#usage)
-  - [**Queries**](#queries)
-  - [**Lazy Queries**](#lazy-queries)
-  - [**Infinite Queries**](#infinite-queries)
-  - [**Mutations**](#mutations)
-  - [**Code-splitted/Lazy feature/Lazy modules**](#code-splittedlazy-featurelazy-modules)
-- [Usage with HttpClient or injectable service](#usage-with-httpclient-or-injectable-service)
-- [FAQ](#faq)
-- [Contributors ✨](#contributors-)
+Use it when you want RTK Query's data-fetching model in Angular without writing React hooks or RxJS wrappers.
 
-## Installation
+## Contents
+
+- [Quick Start](#quick-start)
+- [Install](#install)
+- [Version Compatibility](#version-compatibility)
+- [Core Concepts](#core-concepts)
+- [Runtime Choices](#runtime-choices)
+- [Import Paths](#import-paths)
+- [Define an API](#define-an-api)
+- [Cache Tags and Invalidation](#cache-tags-and-invalidation)
+- [Mount the API](#mount-the-api)
+- [Use Queries](#use-queries)
+- [Query Options and Refetching](#query-options-and-refetching)
+- [Use Lazy Queries](#use-lazy-queries)
+- [Use Prefetch](#use-prefetch)
+- [Use Infinite Queries](#use-infinite-queries)
+- [Use Mutations](#use-mutations)
+- [Use Signal Store Readers](#use-signal-store-readers)
+- [Use Angular DI in Base Queries](#use-angular-di-in-base-queries)
+- [Code Splitting and Lazy Routes](#code-splitting-and-lazy-routes)
+- [Testing](#testing)
+- [Examples](#examples)
+- [Troubleshooting](#troubleshooting)
+- [Maintainers](#maintainers)
+- [Contributors](#contributors-)
+
+## Quick Start
+
+1. Install `ngrx-rtk-query` and `@reduxjs/toolkit`.
+2. Install `@ngrx/store` only for the NgRx Store runtime, or `@ngrx/signals` only for the Signal Store runtime. Noop Store has no extra NgRx peer.
+3. Define one RTK Query API with `createApi(...)`.
+4. Mount that API once with `provideStoreApi(api)`, `provideNoopStoreApi(api)`, or `withApi(api)`.
+5. Use the generated Angular hooks from the API: `useGetPostsQuery`, `useLazyGetPostsQuery`, `useAddPostMutation`, or `useGetPostsInfiniteQuery`.
+
+For most Angular apps, the shortest setup is:
+
+```ts
+import { createApi, fetchBaseQuery } from 'ngrx-rtk-query';
+
+type Post = { id: number; name: string };
+
+export const postsApi = createApi({
+  reducerPath: 'postsApi',
+  baseQuery: fetchBaseQuery({ baseUrl: '/api' }),
+  endpoints: (build) => ({
+    getPosts: build.query<Post[], void>({
+      query: () => '/posts',
+    }),
+  }),
+});
+
+export const { useGetPostsQuery } = postsApi;
+```
+
+Then mount it with the runtime that matches the app:
+
+```ts
+import { provideNoopStoreApi } from 'ngrx-rtk-query/noop-store';
+
+providers: [provideNoopStoreApi(postsApi)];
+```
+
+## Install
+
+Install the package and RTK Query:
 
 ```bash
 npm install ngrx-rtk-query @reduxjs/toolkit
 ```
 
-If you use the NgRx Store runtime, also install `@ngrx/store`.
-If you use the Signal Store runtime, also install `@ngrx/signals`.
+Install the runtime peer you use:
 
-### Versions
+```bash
+# NgRx Store runtime
+npm install @ngrx/store
+
+# NgRx Signal Store runtime
+npm install @ngrx/signals
+```
+
+`@ngrx/store` and `@ngrx/signals` are optional peer dependencies. Install only the runtime you use.
+
+## Version Compatibility
+
+Library majors track Angular majors.
 
 | Angular | NgRx runtime | ngrx-rtk-query | @reduxjs/toolkit |    Support    |
 | :-----: | :----------: | :------------: | :--------------: | :-----------: |
@@ -48,336 +108,350 @@ If you use the Signal Store runtime, also install `@ngrx/signals`.
 |  16.x   |     n/a      |      4.2+      |      ~1.9.3      | Critical bugs |
 |  15.x   |     n/a      |     4.1.x      |      1.9.3       |     None      |
 
-Library majors track Angular majors. Only the latest Angular major in the table above is actively supported, because Angular library compilation is [not compatible across major versions](https://angular.io/guide/creating-libraries#ensuring-library-version-compatibility).
+Only the latest Angular major in this table is actively supported. Angular libraries are compiled against Angular's major-version compatibility contract.
 
-## Import paths
+## Core Concepts
 
-Core APIs such as `createApi` and `fetchBaseQuery` remain available from the root entrypoint:
+- **API instance:** the object returned by `createApi(...)`. It owns endpoint definitions, cache identity, generated hooks, selectors, utilities, and dispatch.
+- **Runtime host:** the Angular integration that mounts an API instance. Use exactly one host per API instance.
+- **Generated hook:** an Angular-friendly function generated from an endpoint name, such as `useGetPostsQuery` or `useAddPostMutation`.
+- **Fine-grained signals:** hook result fields are callable signals. Prefer `query.data()` or `query.isLoading()` when reading one field.
+- **Endpoint injection:** use `api.injectEndpoints(...)` for lazy routes or feature-owned endpoints that share the same base API and cache.
+
+Most RTK Query endpoint features still come from `@reduxjs/toolkit/query`: `query`, `queryFn`, tags, cache keys, `transformResponse`, `onQueryStarted`, `onCacheEntryAdded`, polling, refetch options, and invalidation semantics. This package adapts the hook and runtime layer to Angular.
+
+## Runtime Choices
+
+Choose one runtime host per API instance.
+
+| Runtime           | Use when                                                                    | Mount with                                                  |
+| ----------------- | --------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| NgRx Store        | The application already uses NgRx Store or wants Redux DevTools integration | `provideStoreApi(api)` from `ngrx-rtk-query/store`          |
+| Noop Store        | The application does not use NgRx Store                                     | `provideNoopStoreApi(api)` from `ngrx-rtk-query/noop-store` |
+| NgRx Signal Store | You want an API mounted inside a Signal Store feature                       | `withApi(api)` from `ngrx-rtk-query/signal-store`           |
+
+Signal Store readers can be composed separately with `withApiState(api)` as long as the same API instance is mounted somewhere in the app.
+
+## Import Paths
+
+Core APIs:
 
 ```ts
-import { createApi, fetchBaseQuery } from 'ngrx-rtk-query';
+import { createApi, fetchBaseQuery, skipToken } from 'ngrx-rtk-query';
 ```
 
-NgRx Store runtime providers should be imported from the store entrypoint:
+Store-agnostic core entrypoint:
+
+```ts
+import { createApi, fetchBaseQuery, skipToken } from 'ngrx-rtk-query/core';
+```
+
+NgRx Store runtime:
 
 ```ts
 import { provideStoreApi } from 'ngrx-rtk-query/store';
 ```
 
-Importing `provideStoreApi` from `ngrx-rtk-query` is deprecated and will be removed in a future major version.
-
-Noop Store runtime providers should be imported from the noop-store entrypoint:
+Noop Store runtime:
 
 ```ts
 import { provideNoopStoreApi } from 'ngrx-rtk-query/noop-store';
 ```
 
-NgRx Signal Store runtime features should be imported from the signal-store entrypoint:
+NgRx Signal Store runtime:
 
 ```ts
 import { withApi, withApiState } from 'ngrx-rtk-query/signal-store';
 ```
 
-The signal-store entrypoint requires `@ngrx/signals`.
+`provideStoreApi` is still available from `ngrx-rtk-query` during a deprecation window. Prefer `ngrx-rtk-query/store` for new code. Applications that do not install `@ngrx/store` can import core APIs from `ngrx-rtk-query/core` to avoid resolving the deprecated root store-provider export.
 
-During the deprecation window, applications that do not install `@ngrx/store` can import core APIs from `ngrx-rtk-query/core` to avoid resolving the deprecated root store provider export.
+## Define an API
 
-## Basic Usage
-
-You can follow the official [RTK Query guide with hooks](https://redux-toolkit.js.org/rtk-query/overview), with slight variations.
-You can see the application of this repository for more examples.
-
-Start by importing createApi and defining an "API slice" that lists the server's base URL and which endpoints we want to interact with:
+Define endpoints with RTK Query's `createApi` model:
 
 ```ts
 import { createApi, fetchBaseQuery } from 'ngrx-rtk-query';
 
-export interface CountResponse {
-  count: number;
+export interface Post {
+  id: number;
+  name: string;
 }
 
-export const counterApi = createApi({
-  reducerPath: 'counterApi',
-  baseQuery: fetchBaseQuery({ baseUrl: '/' }),
-  tagTypes: ['Counter'],
+export const postsApi = createApi({
+  reducerPath: 'postsApi',
+  baseQuery: fetchBaseQuery({ baseUrl: 'https://example.com/api' }),
+  tagTypes: ['Posts'],
   endpoints: (build) => ({
-    getCount: build.query<CountResponse, void>({
-      query: () => ({
-        url: `count`,
-      }),
-      providesTags: ['Counter'],
+    getPosts: build.query<Post[], void>({
+      query: () => '/posts',
+      providesTags: (result) =>
+        result
+          ? [...result.map(({ id }) => ({ type: 'Posts' as const, id })), { type: 'Posts', id: 'LIST' }]
+          : [{ type: 'Posts', id: 'LIST' }],
     }),
-    incrementCount: build.mutation<CountResponse, number>({
-      query: (amount) => ({
-        url: `increment`,
-        method: 'PUT',
-        body: { amount },
-      }),
-      invalidatesTags: ['Counter'],
+    getPost: build.query<Post, number>({
+      query: (id) => `/posts/${id}`,
+      providesTags: (_result, _error, id) => [{ type: 'Posts', id }],
     }),
-    decrementCount: build.mutation<CountResponse, number>({
-      query: (amount) => ({
-        url: `decrement`,
-        method: 'PUT',
-        body: { amount },
-      }),
-      invalidatesTags: ['Counter'],
+    addPost: build.mutation<Post, Partial<Post>>({
+      query: (body) => ({ url: '/posts', method: 'POST', body }),
+      invalidatesTags: [{ type: 'Posts', id: 'LIST' }],
     }),
   }),
 });
 
-export const { useGetCountQuery, useIncrementCountMutation, useDecrementCountMutation } = counterApi;
+export const { useGetPostsQuery, useGetPostQuery, useAddPostMutation } = postsApi;
 ```
 
-Add the api to one runtime in your `app` or in a `lazy route`.
+## Cache Tags and Invalidation
 
-```typescript
+Use RTK Query tags the same way you would in Redux Toolkit. Queries provide tags; mutations invalidate tags; invalidated active queries refetch through the mounted runtime host.
+
+```ts
+export const postsApi = createApi({
+  reducerPath: 'postsApi',
+  baseQuery: fetchBaseQuery({ baseUrl: '/api' }),
+  tagTypes: ['Posts'],
+  endpoints: (build) => ({
+    getPosts: build.query<Post[], void>({
+      query: () => '/posts',
+      providesTags: (result) =>
+        result
+          ? [...result.map(({ id }) => ({ type: 'Posts' as const, id })), { type: 'Posts', id: 'LIST' }]
+          : [{ type: 'Posts', id: 'LIST' }],
+    }),
+    updatePost: build.mutation<Post, Partial<Post> & Pick<Post, 'id'>>({
+      query: ({ id, ...patch }) => ({ url: `/posts/${id}`, method: 'PATCH', body: patch }),
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: 'Posts', id },
+        { type: 'Posts', id: 'LIST' },
+      ],
+    }),
+  }),
+});
+```
+
+Use one API instance when endpoints share a cache and tag model. Create another API only for a different base URL, cache identity, or runtime host requirement.
+
+## Mount the API
+
+### NgRx Store
+
+Use this when the app already uses NgRx Store:
+
+```ts
+import { bootstrapApplication } from '@angular/platform-browser';
+import { provideStore } from '@ngrx/store';
+
 import { provideStoreApi } from 'ngrx-rtk-query/store';
-import { counterApi } from './route/to/counterApi.ts';
+
+import { AppComponent } from './app/app.component';
+import { postsApi } from './app/posts/api';
 
 bootstrapApplication(AppComponent, {
-  providers: [
-    ...
-
-    provideStoreApi(counterApi),
-    // Or to disable setupListeners:
-    // provideStoreApi(counterApi, { setupListeners: false })
-
-    ...
-  ],
-}).catch((err) => console.error(err));
+  providers: [provideStore(), provideStoreApi(postsApi)],
+});
 ```
 
-Or mount the API in an NgRx Signal Store feature:
+Pass `{ setupListeners: false }` when you do not want RTK Query focus and reconnect listeners.
+
+```ts
+provideStoreApi(postsApi, { setupListeners: false });
+```
+
+### Noop Store
+
+Use this when the app does not use NgRx Store:
+
+```ts
+import { bootstrapApplication } from '@angular/platform-browser';
+
+import { provideNoopStoreApi } from 'ngrx-rtk-query/noop-store';
+
+import { AppComponent } from './app/app.component';
+import { postsApi } from './app/posts/api';
+
+bootstrapApplication(AppComponent, {
+  providers: [provideNoopStoreApi(postsApi)],
+});
+```
+
+### Signal Store Host
+
+Use `withApi(api)` to mount an API inside a Signal Store:
+
+```ts
+import { signalStore } from '@ngrx/signals';
+
+import { withApi } from 'ngrx-rtk-query/signal-store';
+
+import { postsApi } from './posts/api';
+
+export const PostsApiStore = signalStore({ providedIn: 'root' }, withApi(postsApi));
+```
+
+Each API instance must be mounted once. Do not mount the same API instance in multiple runtime hosts.
+
+## Use Queries
+
+Generated query hooks return a signal-like object with fine-grained signal properties.
+
+```ts
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+
+import { useGetPostsQuery } from './api';
+
+@Component({
+  selector: 'app-posts-list',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    @if (postsQuery.isLoading()) {
+      <p>Loading...</p>
+    }
+
+    @if (postsQuery.data(); as posts) {
+      @for (post of posts; track post.id) {
+        <a [routerLink]="['/posts', post.id]">{{ post.name }}</a>
+      }
+    }
+  `,
+})
+export class PostsListComponent {
+  postsQuery = useGetPostsQuery();
+}
+```
+
+Arguments and options can be static values, Angular signals, or functions.
+
+```ts
+postQuery = useGetPostQuery(this.postId);
+
+postQuery = useGetPostQuery(() => this.postId());
+
+postQuery = useGetPostQuery(
+  () => this.postId(),
+  () => ({ pollingInterval: this.pollingEnabled() ? 5000 : 0 }),
+);
+```
+
+Use `skipToken` for conditional queries.
+
+```ts
+import { input } from '@angular/core';
+import { skipToken } from 'ngrx-rtk-query';
+
+export class PostDetailsComponent {
+  postId = input<number | undefined>();
+
+  postQuery = useGetPostQuery(() => this.postId() ?? skipToken);
+}
+```
+
+Use `selectFromResult` when a component needs a selected view of cached state. It follows RTK Query semantics: only the fields you return are exposed.
+
+```ts
+selectedPostQuery = useGetPostsQuery(undefined, {
+  selectFromResult: ({ data, isFetching }) => ({
+    post: data?.find((post) => post.id === this.postId()),
+    isFetching,
+  }),
+});
+
+selectedPostQuery.post();
+selectedPostQuery.isFetching();
+```
+
+Prefer `query.isLoading()` over `query().isLoading` when you only need one field. Fine-grained signals reduce unnecessary Angular change detection work.
+
+## Query Options and Refetching
+
+Query, lazy query, infinite query, and mutation options can be plain objects, Angular signals, or functions. Use the reactive forms when route params, component inputs, or local signals control cache subscription behavior.
+
+Common query options:
+
+| Option                      | Use when                                                                                       |
+| --------------------------- | ---------------------------------------------------------------------------------------------- |
+| `skip`                      | A query should stay unsubscribed until a condition is true.                                    |
+| `skipToken`                 | The query argument itself is unavailable yet.                                                  |
+| `pollingInterval`           | Active subscribers should poll on an interval.                                                 |
+| `skipPollingIfUnfocused`    | Polling should pause while the browser window is unfocused.                                    |
+| `refetchOnMountOrArgChange` | A subscriber should refetch on mount or after the cached value is older than a threshold.      |
+| `refetchOnFocus`            | A subscriber should refetch after window focus. Requires runtime listeners to be enabled.      |
+| `refetchOnReconnect`        | A subscriber should refetch after network reconnect. Requires runtime listeners to be enabled. |
+| `selectFromResult`          | A component only needs a selected subset of cached state.                                      |
+
+Manual refetch is available on query hooks:
+
+```ts
+postsQuery = useGetPostsQuery();
+
+refresh() {
+  this.postsQuery.refetch();
+}
+```
+
+Focus and reconnect refetching use RTK Query runtime listeners. They are enabled by default in runtime providers and can be disabled with `{ setupListeners: false }`.
+
+## Use Lazy Queries
+
+Lazy query hooks return a trigger object instead of a tuple.
+
+```ts
+export class SearchComponent {
+  searchPosts = useLazyGetPostsQuery();
+
+  runSearch() {
+    this.searchPosts(undefined).unwrap();
+  }
+
+  reset() {
+    this.searchPosts.reset();
+  }
+}
+```
+
+Lazy query options can also be static values, signals, or functions.
+
+```ts
+searchPosts = useLazyGetPostsQuery(() => ({
+  selectFromResult: ({ data, isFetching }) => ({
+    firstPost: data?.[0],
+    isFetching,
+  }),
+}));
+```
+
+Use `preferCacheValue` to avoid dispatching a request when the same arg is already cached.
+
+```ts
+this.searchPosts(undefined, { preferCacheValue: true });
+```
+
+Lazy query trigger objects expose query-state signals and lazy-query helpers such as `lastArg()` and `reset()`.
+
+## Use Prefetch
+
+Every API exposes `usePrefetch(endpointName, options?)`. It returns a function that dispatches RTK Query prefetch for the selected endpoint.
+
+```ts
+export class PostsLinkComponent {
+  prefetchPost = postsApi.usePrefetch('getPost', { ifOlderThan: 60 });
+
+  warmPost(id: number) {
+    this.prefetchPost(id);
+  }
+}
+```
+
+Use prefetch for hover, viewport, or navigation preparation. Use a query hook when the component needs subscribed state.
+
+## Use Infinite Queries
+
+Infinite queries cache multiple pages inside one cache entry.
 
 ```ts
 import { computed } from '@angular/core';
-import { signalStore, withComputed, withProps } from '@ngrx/signals';
-
-import { withApi, withApiState } from 'ngrx-rtk-query/signal-store';
-
-export const CounterStore = signalStore(
-  { providedIn: 'root' },
-  withApi(counterApi),
-  withApiState(counterApi),
-  withProps((store) => ({
-    selectedCountState: store.getCountState(),
-  })),
-  withComputed(({ selectedCountState }) => ({
-    selectedCountValue: computed(() => selectedCountState().data?.count ?? 0),
-  })),
-);
-```
-
-Mount each api once, then compose `withApiState(api)` in any Signal Store that needs generated `...State()` methods. The reader store does not have to share the host: `withApiState(api)` only requires the same api instance to be mounted by `withApi(api)`, `provideStoreApi(api)`, or `provideNoopStoreApi(api)`.
-
-```ts
-export const CounterReaderStore = signalStore(
-  { providedIn: 'root' },
-  withApiState(counterApi),
-  withProps((store) => ({
-    selectedCountState: store.getCountState(),
-  })),
-  withComputed(({ selectedCountState }) => ({
-    selectedCountValue: computed(() => selectedCountState().data?.count ?? 0),
-  })),
-);
-```
-
-The reader pattern also works when the api is mounted by `provideStoreApi(counterApi)` (the NgRx Store bootstrap shown earlier). The same `CounterReaderStore` picks up the api from that provider — no host Signal Store required. To mount the api without NgRx Store, use `provideNoopStoreApi(api)` at the app root:
-
-```ts
-import { provideNoopStoreApi } from 'ngrx-rtk-query/noop-store';
-
-bootstrapApplication(AppComponent, {
-  providers: [provideNoopStoreApi(counterApi)],
-});
-```
-
-Generated `...State()` methods return the same signal as `api.selectSignal(endpoint.select(...))` and can be called directly inside `withComputed(...)` and `withProps(...)`. They capture the endpoints available when `withApiState(api)` is composed; if the api is later extended with `api.injectEndpoints(...)`, compose `withApiState(extendedApi)` in a new store to pick up the new endpoints.
-
-Each api instance must be bound to a single host store.
-
-Use the query in a component
-
-```ts
-import { useDecrementCountMutation, useGetCountQuery, useIncrementCountMutation } from '@app/core/api';
-
-@Component({
-  selector: 'app-counter-manager',
-  template: `
-    <section>
-      <button [disabled]="increment.isLoading()" (click)="increment(1)">+</button>
-
-      <span>{{ countQuery.data()?.count ?? 0 }}</span>
-
-      <button [disabled]="decrement.isLoading()" (click)="decrement(1)">-</button>
-    </section>
-  `,
-})
-export class CounterManagerComponent {
-  countQuery = useGetCountQuery();
-  increment = useIncrementCountMutation();
-  decrement = useDecrementCountMutation();
-}
-```
-
-<br/>
-
-## Usage
-
-### **Queries**
-
-The use of queries is a bit different compared to the original [Queries - RTK Query guide](https://redux-toolkit.js.org/rtk-query/usage/queries). You can look at the examples from this repository.
-
-The parameters and options of the Query can be **signals** or static. You can update the signal to change the parameter/option.
-
-The hook `useXXXQuery()` returns a signal with all the information indicated in the official documentation (including `refetch()` function). Can be used as an object with each of its properties acting like a signal. For example, 'isLoading' can be accessed as `xxxQuery.isLoading()` or `xxxQuery().isLoading()`. The first case offers a more fine-grained change detection.
-
-```ts
-// Use query without params or options
-postsQuery = useGetPostsQuery();
-
-// Use query with signals params or options (can be mixed with static)
-postQuery = useGetPostsQuery(myArgSignal, myOptionsSignal);
-
-// Use query with function (similar to a computed), detect changes in the function (can be mixed)
-postQuery = useGetPostsQuery(
-  () => id(),
-  () => ({ skip: id() <= 5 }),
-);
-
-// Use query with static params or options (can be mixed)
-postQuery = useGetPostsQuery(undefined, {
-  selectFromResult: ({ data }) => ({
-    post: data?.find((post) => post.id === 2),
-  }),
-});
-
-// Return base query fields explicitly when you also need them as signals
-postQuery = useGetPostsQuery(undefined, {
-  selectFromResult: ({ data, isFetching, isLoading }) => ({
-    post: data?.find((post) => post.id === 2),
-    isFetching,
-    isLoading,
-  }),
-});
-```
-
-`selectFromResult` follows RTK Query semantics: it replaces the query state result with the object you return. The returned keys are still exposed as fine-grained signals, so `postQuery.post()` works, and `postQuery.isLoading()` works when `isLoading` is returned from `selectFromResult`. Fields such as `data`, `error`, or `isLoading` are not added automatically.
-
-A good use case is to work with router inputs.
-
-```ts
-// ...
-<span>{{ locationQuery.isLoading() }}</span>
-<span>{{ locationQuery.data() }}</span>
-// ...
-
-export class CharacterCardComponent {
-  characterParamId = input.required<number>();
-  characterQuery = useGetCharacterQuery(this.characterParamId);
-
-// ...
-```
-
-Another good use case is with signals inputs not required and use skipToken
-
-```ts
-// ...
-<span>{{ locationQuery.data() }}</span>
-// ...
-
-export class CharacterCardComponent implements OnInit {
-  character = input<Character | undefined>(undefined);
-  locationQuery = useGetLocationQuery(() => this.character()?.currentLocation ?? skipToken);
-
-// ...
-```
-
-### **Lazy Queries**
-
-The use of lazy queries is a bit different compared to the original. As in the case of queries, the parameters and options of the Query can be signal or static. You can look at lazy feature example from this repository.
-
-Like in the original library, a lazy query returns a object (not array) with each of its properties acting like a signal.
-
-```ts
-// Use query without options
-postsQuery = useLazyGetPostsQuery();
-// Use query with signal options
-options = signal(...);
-postQuery = useLazyGetPostsQuery(options);
-// Use query with static options
-postQuery = useLazyGetPostsQuery({
-  selectFromResult: ({ data }) => ({
-    post: data?.find((post) => post.id === 2),
-  }),
-});
-
-// Return base query fields explicitly when you also need them as signals
-postQuery = useLazyGetPostsQuery({
-  selectFromResult: ({ data, isFetching, isLoading }) => ({
-    post: data?.find((post) => post.id === 2),
-    isFetching,
-    isLoading,
-  }),
-});
-```
-
-`selectFromResult` follows the same contract for lazy queries: only the returned result keys are exposed as query-state signals. The trigger function still keeps lazy-query methods such as `lastArg()` and `reset()`.
-
-Use when data needs to be loaded on demand
-
-```ts
-//...
-<span>{{ xxxQuery.data() }}</span>
-<span>{{ xxxQuery.lastArg() }}</span>
-//...
-
-export class XxxComponent {
-  xxxQuery = useLazyGetXxxQuery();
-
-// ...
-  xxx(id: string) {
-    this.xxxQuery(id).unwrap();
-  }
-// ...
-  reset() {
-     this.xxxQuery.reset();
-  }
-// ...
-}
-```
-
-Another use case is to work with nested or relational data.
-
-> [!TIP]
-> We advise using 'query' instead of 'lazy query' for these cases for more declarative code.
-
-```ts
-<span>{{ locationQuery.data() }}</span>
-
-export class CharacterCardComponent implements OnInit {
-  character = input.required<Character>();
-  locationQuery = useLazyGetLocationQuery();
-
-  ngOnInit(): void {
-    this.locationQuery(this.character().currentLocation, { preferCacheValue: true });
-  }
-
-// ...
-```
-
-`preferCacheValue` is `false` by default. When `true`, if the request exists in cache, it will not be dispatched again.
-Perfect for ngOnInit cases. You can look at pagination feature example from this repository.
-
-### **Infinite Queries**
-
-Infinite queries cache multiple "pages" within a single cache entry, enabling "load more" and infinite scroll patterns. You can follow the official [Infinite Queries - RTK Query guide](https://redux-toolkit.js.org/rtk-query/usage/infinite-queries) for detailed concepts.
-
-Define an infinite query endpoint using `build.infiniteQuery()`:
-
-```ts
 import { createApi, fetchBaseQuery } from 'ngrx-rtk-query';
 
 type Pokemon = { id: string; name: string };
@@ -389,8 +463,8 @@ export const pokemonApi = createApi({
     getPokemon: build.infiniteQuery<Pokemon[], string, number>({
       infiniteQueryOptions: {
         initialPageParam: 1,
-        getNextPageParam: (lastPage, allPages, lastPageParam) => lastPageParam + 1,
-        getPreviousPageParam: (firstPage, allPages, firstPageParam) =>
+        getNextPageParam: (_lastPage, _allPages, lastPageParam) => lastPageParam + 1,
+        getPreviousPageParam: (_firstPage, _allPages, firstPageParam) =>
           firstPageParam > 1 ? firstPageParam - 1 : undefined,
       },
       query: ({ queryArg, pageParam }) => `/type/${queryArg}?page=${pageParam}`,
@@ -399,22 +473,7 @@ export const pokemonApi = createApi({
 });
 
 export const { useGetPokemonInfiniteQuery } = pokemonApi;
-```
 
-Use in a component with `fetchNextPage` and `fetchPreviousPage`:
-
-```ts
-@Component({
-  template: `
-    @if (pokemonQuery.isLoading()) {
-      <p>Loading...</p>
-    }
-    @for (pokemon of allResults(); track pokemon.id) {
-      <div>{{ pokemon.name }}</div>
-    }
-    <button [disabled]="pokemonQuery.isFetching()" (click)="loadMore()">Load More</button>
-  `,
-})
 export class PokemonListComponent {
   pokemonQuery = useGetPokemonInfiniteQuery('fire');
 
@@ -426,106 +485,123 @@ export class PokemonListComponent {
 }
 ```
 
-The hook returns `data` with a `{ pages, pageParams }` structure, plus `hasNextPage`, `hasPreviousPage`, `isFetchingNextPage`, `isFetchingPreviousPage`, and pagination methods.
+The hook exposes RTK Query infinite-query state including `data.pages`, `data.pageParams`, `hasNextPage`, `hasPreviousPage`, `isFetchingNextPage`, `isFetchingPreviousPage`, `fetchNextPage()`, and `fetchPreviousPage()`.
 
-### **Mutations**
+## Use Mutations
 
-The use of mutations is a bit different compared to the original [Mutations - RTK Query guide](https://redux-toolkit.js.org/rtk-query/usage/mutations). You can look at the examples from this repository.
-
-Like in the original library, a mutation is a object (not array) with each of its properties acting like a signal.
+Mutation hooks return a trigger object with mutation-state signals.
 
 ```ts
-// Use mutation hook
-addPost = useAddPostMutation();
+export class AddPostComponent {
+  addPost = useAddPostMutation();
 
-// Mutation options can be static, a Signal, or a function.
-// This is useful for route-scoped fixedCacheKey values.
+  async save() {
+    const createdPost = await this.addPost({ name: 'New post' }).unwrap();
+    console.log(createdPost.id);
+  }
+}
+```
+
+Read mutation state directly:
+
+```ts
+this.addPost.isLoading();
+this.addPost.isSuccess();
+this.addPost.isError();
+this.addPost.data();
+this.addPost.error();
+```
+
+Mutation options can be static values, signals, or functions. This is useful for route-scoped `fixedCacheKey` values.
+
+```ts
 updatePost = useUpdatePostMutation(() => ({
   fixedCacheKey: `updatePost:${this.postId()}`,
 }));
-
-// Mutation trigger
-this.addPost({ params });
-
-// Can unwrap the mutation to do a action
-
-this.addPost({ params })
-  .unwrap()
-  .then((data) => {
-    // Do something with data
-  })
-  .catch((error) => {
-    // Do something with error
-  });
-
-// Or
-
-try {
-  const data = await this.addPost({ params }).unwrap();
-  // Do something with data
-} catch (error) {
-  // Do something with error
-}
-
-// Signal with the state of mutation to use in the template or component (isLoading, data, error, isSuccess, etc)
-addPost.isLoading();
-addPost.data();
 ```
 
-### **Code-splitted/Lazy feature/Lazy modules**
-
-**Important:** Only for cases with differents base API url. **With same base API url, it's preferable to use [code splitting](https://redux-toolkit.js.org/rtk-query/usage/code-splitting)**
-
-To introduce a lazy/feature/code-splitted query, you must export it through an angular mule.
-Import this module where needed. You can look at posts feature example from this repository.
+Without `fixedCacheKey`, mutation state is scoped to the trigger instance and exposes its own `originalArgs`. Use `reset()` to clear local mutation state.
 
 ```ts
-// ...
-export const postsApi = createApi({
-  reducerPath: 'postsApi',
-  baseQuery: baseQueryWithRetry,
-  tagTypes: ['Posts'],
-  endpoints: (build) => ({
-    // ...
-  }),
-});
-// ...
-
-import { provideStoreApi } from 'ngrx-rtk-query/store';
-
-// ...
-  providers: [
-    // ...
-    provideStoreApi(postsApi),
-    // ...
-  ],
-// ...
+this.addPost.reset();
 ```
 
-<br />
+Mutation hooks also support `selectFromResult`. Returned keys are exposed as signals while trigger methods such as `unwrap()` and `reset()` remain available on the trigger object.
 
-## Usage with HttpClient or injectable service
+## Use Signal Store Readers
 
-You can use the `fetchBaseQuery` function to create a base query that uses the Angular `HttpClient` to make requests or any injectable service. Basic HttpClient example:
+Use `withApiState(api)` to expose generated state-reader methods in an NgRx Signal Store. The API can be mounted by `withApi(api)`, `provideStoreApi(api)`, or `provideNoopStoreApi(api)`.
 
 ```ts
+import { computed } from '@angular/core';
+import { signalStore, withComputed, withProps } from '@ngrx/signals';
 
-const httpClientBaseQuery = fetchBaseQuery((http = inject(HttpClient), enviroment = inject(ENVIRONMENT)) => {
-  return async (args, { signal }) => {
-    const {
-      url,
-      method = 'get',
-      body = undefined,
-      params = undefined,
-    } = typeof args === 'string' ? { url: args } : args;
-    const fullUrl = `${enviroment.baseAPI}${url}`;
+import { withApi, withApiState } from 'ngrx-rtk-query/signal-store';
 
-    const request$ = http.request(method, fullUrl, { body, params });
+import { postsApi } from './posts/api';
+
+export const PostsStore = signalStore(
+  { providedIn: 'root' },
+  withApi(postsApi),
+  withApiState(postsApi),
+  withProps((store) => ({
+    selectedPostsState: store.getPostsState(),
+  })),
+  withComputed(({ selectedPostsState }) => ({
+    selectedPostsCount: computed(() => selectedPostsState().data?.length ?? 0),
+  })),
+);
+```
+
+Reader stores can be separate from the host:
+
+```ts
+export const PostsReaderStore = signalStore(
+  { providedIn: 'root' },
+  withApiState(postsApi),
+  withProps((store) => ({
+    selectedPostsState: store.getPostsState(),
+  })),
+  withComputed(({ selectedPostsState }) => ({
+    selectedPostsCount: computed(() => selectedPostsState().data?.length ?? 0),
+  })),
+);
+```
+
+Generated `...State()` methods return the same signal as `api.selectSignal(endpoint.select(...))`. They capture the endpoints available when `withApiState(api)` is composed. If the API is later extended with `api.injectEndpoints(...)`, compose `withApiState(extendedApi)` in a new store to expose the new endpoint readers.
+
+Rules:
+
+- Mount each API instance once.
+- Each `withApi(api)` in the same Signal Store host must use a unique `reducerPath`.
+- Add `withApiState(api)` only once per API instance in a store.
+- Distinct APIs in the same store must not generate the same `...State()` method name.
+- Mutation reader methods require a non-empty `fixedCacheKey`, because RTK Query mutation state is otherwise scoped to a trigger request.
+
+## Use Angular DI in Base Queries
+
+`fetchBaseQuery` can receive a factory function. Use it when a base query needs Angular injection.
+
+```ts
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { createApi, fetchBaseQuery } from 'ngrx-rtk-query';
+import { lastValueFrom } from 'rxjs';
+
+const httpClientBaseQuery = fetchBaseQuery((http = inject(HttpClient)) => {
+  return async (args) => {
+    const request = typeof args === 'string' ? { url: args } : args;
+    const { url, method = 'GET', body, params } = request;
+
     try {
-      const data = await lastValueFrom(request$);
+      const data = await lastValueFrom(http.request(method, url, { body, params }));
       return { data };
     } catch (error) {
-      return { error: { status: (error as HttpErrorResponse).status, data: (error as HttpErrorResponse).message } };
+      const httpError =
+        error instanceof HttpErrorResponse
+          ? error
+          : new HttpErrorResponse({ error, status: 0, statusText: 'Unknown Error' });
+      return { error: { status: httpError.status, data: httpError.message } };
     }
   };
 });
@@ -533,15 +609,114 @@ const httpClientBaseQuery = fetchBaseQuery((http = inject(HttpClient), enviromen
 export const api = createApi({
   reducerPath: 'api',
   baseQuery: httpClientBaseQuery,
-//...
-
+  endpoints: (build) => ({
+    // endpoints
+  }),
+});
 ```
 
-<br/>
+Keep boundary error shapes explicit. RTK Query expects base queries to return `{ data }` or `{ error }`.
 
-## FAQ
+## Code Splitting and Lazy Routes
 
-<br/>
+For the same base API, prefer RTK Query endpoint injection:
+
+```ts
+export const baseApi = createApi({
+  reducerPath: 'api',
+  baseQuery: fetchBaseQuery({ baseUrl: '/api' }),
+  endpoints: () => ({}),
+});
+
+export const postsApi = baseApi.injectEndpoints({
+  endpoints: (build) => ({
+    getPosts: build.query<Post[], void>({
+      query: () => '/posts',
+    }),
+  }),
+});
+
+export const { useGetPostsQuery } = postsApi;
+```
+
+Mount the base API once near the app shell. Lazy routes can import the extended API and generated hooks for their endpoints.
+
+Create a separate API only when the feature has a different base URL, cache identity, or runtime host requirement.
+
+## Testing
+
+Test library behavior through public APIs:
+
+```ts
+import { provideStore } from '@ngrx/store';
+import { render, screen } from '@testing-library/angular';
+
+import { provideStoreApi } from 'ngrx-rtk-query/store';
+
+await render(PostsListComponent, {
+  providers: [provideStore(), provideStoreApi(postsApi)],
+});
+
+expect(await screen.findByRole('link', { name: /sample/i })).toBeInTheDocument();
+```
+
+Reset RTK Query cache between tests when a test shares an API instance:
+
+```ts
+afterEach(() => {
+  postsApi.dispatch(postsApi.util.resetApiState());
+});
+```
+
+Use the repository examples as consumer-style references:
+
+- `examples/basic-ngrx-store`
+- `examples/basic-noop-store`
+- `examples/basic-signal-store`
+
+## Examples
+
+Run the example apps from the repository root:
+
+```bash
+pnpm dev:basic-store
+pnpm dev:noop-store
+pnpm dev:signal-store
+```
+
+Example coverage:
+
+| Example              | Demonstrates                                                     |
+| -------------------- | ---------------------------------------------------------------- |
+| `basic-ngrx-store`   | NgRx Store provider, generated hooks, MSW-backed component tests |
+| `basic-noop-store`   | Noop Store provider without NgRx Store                           |
+| `basic-signal-store` | `withApi(api)` and `withApiState(api)`                           |
+| `*-e2e` examples     | Playwright runtime smoke coverage                                |
+
+## Troubleshooting
+
+| Symptom                                                    | Check                                                                                                                   |
+| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `Provide the API is necessary`                             | Mount the API with `provideStoreApi(api)`, `provideNoopStoreApi(api)`, or `withApi(api)` before using hooks or readers. |
+| NgRx middleware error                                      | Add `provideStore()` before `provideStoreApi(api)` in NgRx Store apps.                                                  |
+| Query does not refetch when input changes                  | Pass a signal or function argument, not a one-time value.                                                               |
+| Conditional query fires too early                          | Return `skipToken` until the argument is ready.                                                                         |
+| `selectFromResult` result is missing `data` or `isLoading` | Return every field you want to read. The selection replaces the query state shape.                                      |
+| Focus or reconnect refetching does not run                 | Keep runtime listeners enabled, or remove `{ setupListeners: false }` from the API provider.                            |
+| Signal Store reader does not expose an injected endpoint   | Compose `withApiState(extendedApi)` from the extended API that includes the endpoint.                                   |
+| Mutation Signal Store reader throws about `fixedCacheKey`  | Pass the same non-empty `fixedCacheKey` used by the mutation hook.                                                      |
+| App without NgRx Store fails to resolve store imports      | Import core APIs from `ngrx-rtk-query/core` and runtime provider from `ngrx-rtk-query/noop-store`.                      |
+
+## Maintainers
+
+Maintainer workflow, harness, validation, and release policy live in repository docs:
+
+- [`CONTRIBUTING.md`](../../CONTRIBUTING.md)
+- [`docs/HARNESS.md`](../../docs/HARNESS.md)
+- [`docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md)
+- [`docs/TESTING.md`](../../docs/TESTING.md)
+- [`docs/VALIDATION.md`](../../docs/VALIDATION.md)
+- [`docs/RELEASE.md`](../../docs/RELEASE.md)
 
 ## Contributors ✨
 
@@ -564,6 +739,6 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
-This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification.
 
 <div>Icons made by <a href="http://www.freepik.com/" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>

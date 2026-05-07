@@ -1,6 +1,13 @@
 # ngrx-rtk-query/signal-store
 
-Signal Store features for `ngrx-rtk-query`.
+NgRx Signal Store secondary entrypoint.
+
+## Public Surface
+
+- `withApi(api)` mounts an RTK Query API in a Signal Store host.
+- `withApiState(api)` exposes typed generated `...State()` reader methods.
+
+Use this entrypoint when Signal Stores need to host an API or derive view state from RTK Query cache state.
 
 Use `withApi(api)` to mount an RTK Query API in an NgRx Signal Store host, and `withApiState(api)` to expose typed `...State()` reader methods.
 
@@ -83,3 +90,7 @@ Rules:
 - Each `withApi(api)` in the same host store must use a unique `reducerPath`. Duplicates fail fast during store initialization.
 - Add `withApiState(api)` only once per api instance in a store.
 - Two distinct apis in the same store must not generate the same `...State()` method name.
+
+## Validation
+
+Run `pnpm nx run ngrx-rtk-query:test` for feature behavior and `pnpm nx run basic-signal-store:test` for consumer-style coverage when this runtime changes.

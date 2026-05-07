@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"${CLAUDE_PROJECT_DIR:-.}\" && ./tools/verify/verify-on-stop.sh",
+            "timeout": 120,
+            "statusMessage": "Verifying lint, typecheck, and docs..."
+          }
+        ]
+      }
+    ]
+  }
+}

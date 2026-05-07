@@ -37,7 +37,7 @@
   ],
   "scripts": {
     "affected:build": "nx affected:build",
-    "affected:check": "nx affected --targets=lint,type-check,format:check",
+    "affected:check": "nx affected --targets=lint,typecheck && pnpm format:check",
     "affected:dep-graph": "nx affected:dep-graph",
     "affected:e2e": "nx affected:e2e",
     "affected:e2e:watch": "nx affected:e2e --watch",
@@ -51,16 +51,22 @@
     "dev:basic-store": "nx run basic-ngrx-store:serve -o",
     "dev:noop-store": "nx run basic-noop-store:serve -o",
     "dev:signal-store": "nx run basic-signal-store:serve -o",
+    "docs:check": "node tools/verify/check-docs.mjs",
     "format": "prettier --check . --ignore-unknown --no-error-on-unmatched-pattern",
-    "format:check": "nx format:check && prettier --check . --ignore-unknown --no-error-on-unmatched-pattern",
+    "format:check": "prettier --check . --ignore-unknown --no-error-on-unmatched-pattern",
     "preinstall": "npx only-allow pnpm",
     "prepare": "git config core.hookspath .githooks",
     "pub:beta": "pnpm build:ngrx-rtk-query && cd packages/ngrx-rtk-query && pnpm pub:beta",
     "pub:release": "pnpm build:ngrx-rtk-query && cd packages/ngrx-rtk-query && pnpm pub:release",
     "release": "changeset version",
-    "update": "nx migrate latest"
+    "update": "nx migrate latest",
+    "verify": "tools/verify/verify.sh",
+    "verify:branch": "tools/verify/verify.sh --base=origin/main --head=HEAD",
+    "verify:branch:full": "tools/verify/verify.sh --full --format --base=origin/main --head=HEAD",
+    "verify:full": "tools/verify/verify.sh --full --format"
   },
   "lint-staged": {
+    "{*.md,docs/**/*.md,packages/ngrx-rtk-query/**/README.md,tools/verify/**/*,.githooks/*,.codex/**/*,.claude/**/*,.opencode/plugins/**/*,package.json}": "pnpm docs:check",
     "*.{ts,html}": "eslint --cache --fix",
     "*.{js,json,css,scss,ts,html}": "prettier --write --ignore-unknown"
   },
