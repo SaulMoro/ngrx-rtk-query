@@ -3,9 +3,10 @@ import { provideStore } from '@ngrx/store';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { HttpResponse, http } from 'msw';
-import { provideStoreApi } from 'ngrx-rtk-query';
 import { createApi, fetchBaseQuery } from 'ngrx-rtk-query';
 import { describe, expect, test, vi } from 'vitest';
+
+import { provideStoreApi } from 'ngrx-rtk-query/store';
 
 import { server } from '../../mocks/node';
 

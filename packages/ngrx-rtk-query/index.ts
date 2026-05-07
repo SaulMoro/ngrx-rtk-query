@@ -1,2 +1,6 @@
+import { provideStoreApi as provideStoreApiFromStore } from 'ngrx-rtk-query/store';
+
 export * from 'ngrx-rtk-query/core';
-export * from 'ngrx-rtk-query/store';
+
+/** @deprecated Import provideStoreApi from 'ngrx-rtk-query/store'. */
+export const provideStoreApi = provideStoreApiFromStore;
