@@ -18,7 +18,8 @@ import {
   type AngularHooksModuleOptions,
   type Dispatch,
   type StoreQueryConfig,
-  setupRuntimeListeners,
+  type ɵInternalRuntimeMountApi,
+  ɵinternalMountRuntimeApi,
 } from 'ngrx-rtk-query/core';
 
 @Injectable()
@@ -50,8 +51,10 @@ const createNoopStoreApi = (
     const reducerPath = api.reducerPath;
     const reducer = api.reducer as Reducer<any>;
 
-    // Initialize the store with the initial state
-    store.state.update((state) => ({ ...state, [reducerPath]: {} }));
+    const initialState = reducer(undefined, {
+      type: '@@ngrx-rtk-query/noop-store/init',
+    });
+    store.state.update((state) => ({ ...state, [reducerPath]: initialState }));
 
     const dispatch = (action: UnknownAction) => {
       store.dispatch(action, { reducerPath, reducer });
@@ -83,29 +86,17 @@ export function provideNoopStoreApi(
       multi: true,
       useValue() {
         const destroyRef = inject(DestroyRef);
-        const bindingMetadata = {
-          bindingKey: {},
+        const bindingKey = {};
+        const releaseRuntime = ɵinternalMountRuntimeApi({
+          api: api as unknown as ɵInternalRuntimeMountApi,
+          setupFn: createNoopStoreApi(api),
+          bindingKey,
           runtimeLabel: 'noop-store',
-        };
-        let releaseApiStore: (() => void) | undefined;
-        let teardownListeners: (() => void) | undefined;
-
-        try {
-          releaseApiStore = api.initApiStore(createNoopStoreApi(api), bindingMetadata);
-          teardownListeners = setupRuntimeListeners(api.dispatch as Dispatch, setupListeners);
-
-          api.dispatch(api.util.resetApiState());
-        } catch (error) {
-          teardownListeners?.();
-          releaseApiStore?.();
-
-          throw error;
-        }
+          setupListeners,
+        });
 
         destroyRef.onDestroy(() => {
-          teardownListeners?.();
-          api.dispatch(api.util.resetApiState());
-          releaseApiStore?.();
+          releaseRuntime();
         });
       },
     },

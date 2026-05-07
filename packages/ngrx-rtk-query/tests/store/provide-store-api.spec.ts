@@ -7,6 +7,7 @@ import { describe, expect, test, vi } from 'vitest';
 import { provideStoreApi } from 'ngrx-rtk-query/store';
 
 import { createPostsApi } from '../helpers/create-posts-api';
+import { recordRuntimeLifecycle } from '../helpers/record-runtime-lifecycle';
 
 describe('provideStoreApi', () => {
   test('allocates a distinct binding key per environment injector when providers are reused', () => {
@@ -89,5 +90,47 @@ describe('provideStoreApi', () => {
     });
 
     expect(screen.getByTestId('selected-status')).toHaveTextContent('uninitialized');
+  });
+
+  test('resets api state only on destroy', () => {
+    const postsApi = createPostsApi('storeResetTimingApi');
+    const { events, setupListeners } = recordRuntimeLifecycle(postsApi);
+
+    TestBed.configureTestingModule({});
+    const parent = TestBed.inject(EnvironmentInjector);
+    const environment = createEnvironmentInjector(
+      [provideStore(), provideStoreApi(postsApi, { setupListeners })],
+      parent,
+    );
+
+    expect(setupListeners).toHaveBeenCalledTimes(1);
+    expect(events).toEqual(['listeners']);
+
+    environment.destroy();
+
+    expect(events).toEqual(['listeners', 'teardown', 'reset']);
+  });
+
+  test('releases api binding when destroy reset fails', () => {
+    const postsApi = createPostsApi('storeResetFailureApi');
+    const resetApiState = postsApi.util.resetApiState;
+    const dispatch = postsApi.dispatch;
+    const dispatchSpy = vi.spyOn(postsApi, 'dispatch').mockImplementation((action) => {
+      if (resetApiState.match(action)) {
+        throw new Error('reset failed');
+      }
+
+      return dispatch(action);
+    });
+
+    TestBed.configureTestingModule({});
+    const parent = TestBed.inject(EnvironmentInjector);
+    const firstEnvironment = createEnvironmentInjector([provideStore(), provideStoreApi(postsApi)], parent);
+
+    expect(() => firstEnvironment.destroy()).toThrow(/reset failed/);
+
+    dispatchSpy.mockImplementation((action) => dispatch(action));
+    const secondEnvironment = createEnvironmentInjector([provideStore(), provideStoreApi(postsApi)], parent);
+    secondEnvironment.destroy();
   });
 });

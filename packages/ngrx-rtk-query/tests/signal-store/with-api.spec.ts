@@ -14,6 +14,7 @@ import { createApi, fakeBaseQuery } from 'ngrx-rtk-query/core';
 import { withApi } from 'ngrx-rtk-query/signal-store';
 
 import { type Post, createPostsApi } from '../helpers/create-posts-api';
+import { recordRuntimeLifecycle } from '../helpers/record-runtime-lifecycle';
 
 describe('withApi', () => {
   test('mounts an api and keeps hooks working', async () => {
@@ -227,5 +228,22 @@ describe('withApi', () => {
     await waitFor(() => {
       expect(screen.getByTestId('query-name')).toHaveTextContent('recoverySignalStoreApi-post');
     });
+  });
+
+  test('resets api state only on destroy', () => {
+    const postsApi = createPostsApi('signalStoreResetTimingApi');
+    const { events, setupListeners } = recordRuntimeLifecycle(postsApi);
+    const SignalStoreRuntime = signalStore(withApi(postsApi, { setupListeners }));
+
+    const parent = TestBed.inject(EnvironmentInjector);
+    const environment = createEnvironmentInjector([SignalStoreRuntime], parent);
+    environment.get(SignalStoreRuntime);
+
+    expect(setupListeners).toHaveBeenCalledTimes(1);
+    expect(events).toEqual(['listeners']);
+
+    environment.destroy();
+
+    expect(events).toEqual(['listeners', 'teardown', 'reset']);
   });
 });
