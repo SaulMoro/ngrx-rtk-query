@@ -10,7 +10,7 @@ import { createPostsApi } from '../helpers/create-posts-api';
 import { recordRuntimeLifecycle } from '../helpers/record-runtime-lifecycle';
 
 describe('provideStoreApi', () => {
-  test('allocates a distinct binding key per environment injector when providers are reused', () => {
+  test('rejects concurrent host reuse and allows reuse after destroy', () => {
     const postsApi = createPostsApi('storeSharedProvidersApi');
     const providers = [provideStore(), provideStoreApi(postsApi)];
 

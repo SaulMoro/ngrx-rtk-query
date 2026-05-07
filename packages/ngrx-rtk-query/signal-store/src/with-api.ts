@@ -174,7 +174,6 @@ export function withApi<TApi extends RuntimeApi<any>>(
     withHooks((store) => {
       const injector = inject(Injector);
       const unregisterApi = registerMountedApi(store as unknown as StoreMembersWithMountedApiRegistry, initializedApi);
-      const bindingKey = {};
       const state = signal(initialState);
       let releaseRuntime: (() => void) | undefined;
       const entry: RegisteredApi = {
@@ -191,7 +190,6 @@ export function withApi<TApi extends RuntimeApi<any>>(
             releaseRuntime = ɵinternalMountRuntimeApi({
               api: initializedApi,
               setupFn: createSignalStoreApi(entry),
-              bindingKey,
               runtimeLabel: 'signal-store',
               setupListeners,
             });

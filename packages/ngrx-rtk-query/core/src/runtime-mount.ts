@@ -10,7 +10,6 @@ export type ɵInternalRuntimeMountApi = {
   initApiStore: (
     setupFn: () => AngularHooksModuleOptions,
     bindingMetadata: {
-      bindingKey: object;
       runtimeLabel: string;
     },
   ) => () => void;
@@ -23,7 +22,6 @@ export type ɵInternalRuntimeMountApi = {
 export type ɵInternalRuntimeMountOptions = {
   api: ɵInternalRuntimeMountApi;
   setupFn: () => AngularHooksModuleOptions;
-  bindingKey: object;
   runtimeLabel: string;
   setupListeners?: StoreQueryConfig['setupListeners'];
 };
@@ -31,15 +29,15 @@ export type ɵInternalRuntimeMountOptions = {
 export function ɵinternalMountRuntimeApi({
   api,
   setupFn,
-  bindingKey,
   runtimeLabel,
   setupListeners,
 }: ɵInternalRuntimeMountOptions): () => void {
   let releaseApiStore: (() => void) | undefined;
   let teardownListeners: (() => void) | undefined;
+  let released = false;
 
   try {
-    releaseApiStore = api.initApiStore(setupFn, { bindingKey, runtimeLabel });
+    releaseApiStore = api.initApiStore(setupFn, { runtimeLabel });
     teardownListeners = setupRuntimeListeners(api.dispatch, setupListeners);
   } catch (error) {
     teardownListeners?.();
@@ -49,6 +47,11 @@ export function ɵinternalMountRuntimeApi({
   }
 
   return () => {
+    if (released) {
+      return;
+    }
+    released = true;
+
     let cleanupError: unknown;
     let hasCleanupError = false;
     const runCleanup = (cleanup: (() => void) | undefined) => {

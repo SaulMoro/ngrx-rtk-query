@@ -17,7 +17,6 @@ import {
 } from './module';
 
 type ApiBindingMetadata = {
-  bindingKey: object;
   runtimeLabel: string;
 };
 
@@ -106,11 +105,10 @@ export const createApi: CreateApi<typeof coreModuleName | typeof angularHooksMod
   const initApiStore = (
     setupFn: () => AngularHooksModuleOptions,
     nextBindingMetadata: ApiBindingMetadata = {
-      bindingKey: {},
       runtimeLabel: 'unknown',
     },
   ) => {
-    if (activeBinding && activeBinding.bindingKey !== nextBindingMetadata.bindingKey) {
+    if (activeBinding) {
       throw new Error(
         `RTK Query api instance for reducerPath "${resolvedReducerPath}" is already bound to another host (${activeBinding.runtimeLabel}). Reuse one host per api instance or create a second api instance.`,
       );
@@ -120,7 +118,7 @@ export const createApi: CreateApi<typeof coreModuleName | typeof angularHooksMod
     activeBinding = binding;
 
     return () => {
-      if (activeBinding?.bindingKey === nextBindingMetadata.bindingKey) {
+      if (activeBinding === binding) {
         activeBinding = undefined;
       }
     };

@@ -1,11 +1,11 @@
 import {
   DestroyRef,
-  ENVIRONMENT_INITIALIZER,
   type EnvironmentProviders,
   Injector,
   type Signal,
   inject,
   makeEnvironmentProviders,
+  provideEnvironmentInitializer,
 } from '@angular/core';
 import { type Action, Store, createSelectorFactory, defaultMemoize, provideState } from '@ngrx/store';
 import { type Api } from '@reduxjs/toolkit/query';
@@ -51,25 +51,19 @@ export function provideStoreApi(
   { setupListeners }: StoreQueryConfig = {},
 ): EnvironmentProviders {
   return makeEnvironmentProviders([
-    {
-      provide: ENVIRONMENT_INITIALIZER,
-      multi: true,
-      useValue() {
-        const destroyRef = inject(DestroyRef);
-        const bindingKey = {};
-        const releaseRuntime = ɵinternalMountRuntimeApi({
-          api: api as unknown as ɵInternalRuntimeMountApi,
-          setupFn: createStoreApi(api),
-          bindingKey,
-          runtimeLabel: 'store',
-          setupListeners,
-        });
+    provideEnvironmentInitializer(() => {
+      const destroyRef = inject(DestroyRef);
+      const releaseRuntime = ɵinternalMountRuntimeApi({
+        api: api as unknown as ɵInternalRuntimeMountApi,
+        setupFn: createStoreApi(api),
+        runtimeLabel: 'store',
+        setupListeners,
+      });
 
-        destroyRef.onDestroy(() => {
-          releaseRuntime();
-        });
-      },
-    },
+      destroyRef.onDestroy(() => {
+        releaseRuntime();
+      });
+    }),
     provideState(api.reducerPath, api.reducer),
   ]);
 }

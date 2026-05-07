@@ -1,7 +1,6 @@
 import {
   type CreateComputedOptions,
   DestroyRef,
-  ENVIRONMENT_INITIALIZER,
   type EnvironmentProviders,
   Injectable,
   Injector,
@@ -9,6 +8,7 @@ import {
   computed,
   inject,
   makeEnvironmentProviders,
+  provideEnvironmentInitializer,
   signal,
 } from '@angular/core';
 import { type Reducer, type Selector, type UnknownAction } from '@reduxjs/toolkit';
@@ -81,24 +81,18 @@ export function provideNoopStoreApi(
 ): EnvironmentProviders {
   return makeEnvironmentProviders([
     ApiStore,
-    {
-      provide: ENVIRONMENT_INITIALIZER,
-      multi: true,
-      useValue() {
-        const destroyRef = inject(DestroyRef);
-        const bindingKey = {};
-        const releaseRuntime = ɵinternalMountRuntimeApi({
-          api: api as unknown as ɵInternalRuntimeMountApi,
-          setupFn: createNoopStoreApi(api),
-          bindingKey,
-          runtimeLabel: 'noop-store',
-          setupListeners,
-        });
+    provideEnvironmentInitializer(() => {
+      const destroyRef = inject(DestroyRef);
+      const releaseRuntime = ɵinternalMountRuntimeApi({
+        api: api as unknown as ɵInternalRuntimeMountApi,
+        setupFn: createNoopStoreApi(api),
+        runtimeLabel: 'noop-store',
+        setupListeners,
+      });
 
-        destroyRef.onDestroy(() => {
-          releaseRuntime();
-        });
-      },
-    },
+      destroyRef.onDestroy(() => {
+        releaseRuntime();
+      });
+    }),
   ]);
 }

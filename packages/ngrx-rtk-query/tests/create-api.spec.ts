@@ -1,16 +1,21 @@
 import { type UnknownAction } from '@reduxjs/toolkit';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 
-import { type AngularHooksModuleOptions, type Dispatch } from 'ngrx-rtk-query/core';
+import {
+  type AngularHooksModuleOptions,
+  type Dispatch,
+  type ɵInternalRuntimeMountApi,
+  ɵinternalMountRuntimeApi,
+} from 'ngrx-rtk-query/core';
 
 import { createPostsApi } from './helpers/create-posts-api';
+import { recordRuntimeLifecycle } from './helpers/record-runtime-lifecycle';
 
 type InitializedTestApi = ReturnType<typeof createPostsApi> & {
   dispatch: Dispatch;
   initApiStore: (
     setupFn: () => AngularHooksModuleOptions,
     bindingMetadata: {
-      bindingKey: object;
       runtimeLabel: string;
     },
   ) => () => void;
@@ -20,31 +25,31 @@ const unusedUseSelector = (() => {
   throw new Error('useSelector should not be called in create-api tests');
 }) as AngularHooksModuleOptions['hooks']['useSelector'];
 
-const initBoundTestApiStore = (postsApi: InitializedTestApi) => {
+const createTestStoreSetup = (postsApi: InitializedTestApi) => {
   let currentState = postsApi.reducer(undefined, {
     type: '@@ngrx-rtk-query/test/init',
   });
 
-  return {
-    releaseApiStore: postsApi.initApiStore(
-      () =>
-        ({
-          hooks: {
-            dispatch: ((action: UnknownAction) => {
-              currentState = postsApi.reducer(currentState, action);
-              return action;
-            }) as Dispatch,
-            getState: () => ({ [postsApi.reducerPath]: currentState }),
-            useSelector: unusedUseSelector,
-          },
-          createSelector: () => (() => undefined) as never,
-          getInjector: () => ({}) as never,
-        }) satisfies AngularHooksModuleOptions,
-      {
-        bindingKey: {},
-        runtimeLabel: 'create-api-test',
+  return () =>
+    ({
+      hooks: {
+        dispatch: ((action: UnknownAction) => {
+          currentState = postsApi.reducer(currentState, action);
+          return action;
+        }) as Dispatch,
+        getState: () => ({ [postsApi.reducerPath]: currentState }),
+        useSelector: unusedUseSelector,
       },
-    ),
+      createSelector: () => (() => undefined) as never,
+      getInjector: () => ({}) as never,
+    }) satisfies AngularHooksModuleOptions;
+};
+
+const initBoundTestApiStore = (postsApi: InitializedTestApi) => {
+  return {
+    releaseApiStore: postsApi.initApiStore(createTestStoreSetup(postsApi), {
+      runtimeLabel: 'create-api-test',
+    }),
   };
 };
 
@@ -91,5 +96,42 @@ describe('createApi', () => {
     expect(() => postsApi.dispatch({ type: 'releasedTimerApi/customAction' })).toThrow(
       /Provide the API \(releasedTimerApi\) is necessary to use the queries/,
     );
+  });
+
+  test('does not let a stale release clear a newer binding', () => {
+    const postsApi = createPostsApi('staleReleaseApi') as InitializedTestApi;
+    const releaseFirst = postsApi.initApiStore(createTestStoreSetup(postsApi), {
+      runtimeLabel: 'first-test-host',
+    });
+    releaseFirst();
+    const releaseSecond = postsApi.initApiStore(createTestStoreSetup(postsApi), {
+      runtimeLabel: 'second-test-host',
+    });
+
+    releaseFirst();
+
+    expect(() => postsApi.dispatch({ type: 'staleReleaseApi/customAction' })).not.toThrow();
+
+    releaseSecond();
+
+    expect(() => postsApi.dispatch({ type: 'staleReleaseApi/customAction' })).toThrow(
+      /Provide the API \(staleReleaseApi\) is necessary to use the queries/,
+    );
+  });
+
+  test('does not reset again when runtime release is called more than once', () => {
+    const postsApi = createPostsApi('idempotentRuntimeReleaseApi') as InitializedTestApi & ɵInternalRuntimeMountApi;
+    const { events, setupListeners } = recordRuntimeLifecycle(postsApi);
+    const releaseRuntime = ɵinternalMountRuntimeApi({
+      api: postsApi,
+      setupFn: createTestStoreSetup(postsApi),
+      runtimeLabel: 'create-api-test',
+      setupListeners,
+    });
+
+    releaseRuntime();
+    releaseRuntime();
+
+    expect(events).toEqual(['listeners', 'teardown', 'reset']);
   });
 });
