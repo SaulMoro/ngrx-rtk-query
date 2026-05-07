@@ -185,12 +185,13 @@ describe('infinite query hooks', () => {
   });
 
   test.each([
-    ['hook option', true],
-    ['refetch option', false],
-  ])('%s refetchCachedPages false refetches only the first cached page', async (_label, useHookOption) => {
+    ['hook option', 'hook-option'],
+    ['refetch option', 'refetch-option'],
+    ['reactive hook option', 'reactive-hook-option'],
+  ] as const)('%s refetchCachedPages false refetches only the first cached page', async (_label, optionMode) => {
     const fetchLog: number[] = [];
     const postsApi = createApi({
-      reducerPath: useHookOption ? 'infiniteQueryHookRefetchCachedPagesApi' : 'infiniteQueryCallRefetchCachedPagesApi',
+      reducerPath: `infiniteQuery${optionMode}RefetchCachedPagesApi`,
       baseQuery: fakeBaseQuery(),
       endpoints: (build) => ({
         getPostPages: build.infiniteQuery<Post[], string, number>({
@@ -221,18 +222,29 @@ describe('infinite query hooks', () => {
       `,
     })
     class HostComponent {
+      readonly refetchCachedPages = signal(true);
       readonly postPagesQuery = postsApi.useGetPostPagesInfiniteQuery(
         'feed',
-        useHookOption ? { refetchCachedPages: false } : {},
+        optionMode === 'hook-option'
+          ? { refetchCachedPages: false }
+          : optionMode === 'reactive-hook-option'
+            ? () => ({ refetchCachedPages: this.refetchCachedPages() })
+            : {},
       );
 
       refetchFirstPage() {
-        if (useHookOption) {
+        if (optionMode === 'refetch-option') {
+          this.postPagesQuery.refetch({ refetchCachedPages: false });
+          return;
+        }
+
+        if (optionMode === 'reactive-hook-option') {
+          this.refetchCachedPages.set(false);
           this.postPagesQuery.refetch();
           return;
         }
 
-        this.postPagesQuery.refetch({ refetchCachedPages: false });
+        this.postPagesQuery.refetch();
       }
     }
 
