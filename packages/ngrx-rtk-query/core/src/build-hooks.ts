@@ -1,5 +1,5 @@
 import { DestroyRef, computed, effect, inject, isDevMode, signal, untracked } from '@angular/core';
-import { type Action, type Selector } from '@reduxjs/toolkit';
+import { type Action } from '@reduxjs/toolkit';
 import {
   type Api,
   type ApiContext,
@@ -77,13 +77,12 @@ const noPendingQueryStateSelector: QueryStateSelector<any, any> = (selected) => 
  * @param opts.api - An API with defined endpoints to create hooks for
  * @param opts.moduleOptions.dispatch - The version of the `dispatch` to be used
  * @param opts.moduleOptions.useSelector - The version of the `useSelector` hook to be used
- * @param opts.moduleOptions.getState - The version of the `getState` to be used
  * @returns An object containing functions to generate hooks based on an endpoint
  */
 export function buildHooks<Definitions extends EndpointDefinitions>({
   api,
   moduleOptions: {
-    hooks: { dispatch, useSelector, getState },
+    hooks: { dispatch, useSelector },
     createSelector,
   },
   serializeQueryArgs,
@@ -239,26 +238,29 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
     const lazyArg = readSignal(arg, { initialValue: skipToken });
     const lazyOptions = readSignal(options, { initialValue: {} });
 
-    const subscriptionOptions = computed(() => {
-      const {
-        refetchOnReconnect,
-        refetchOnFocus,
-        refetchOnMountOrArgChange,
-        skip = false,
-        pollingInterval = 0,
-        skipPollingIfUnfocused = false,
-        ...rest
-      } = lazyOptions();
-      return {
-        refetchOnReconnect,
-        refetchOnFocus,
-        refetchOnMountOrArgChange,
-        skip,
-        pollingInterval,
-        skipPollingIfUnfocused,
-        ...rest,
-      };
-    });
+    const subscriptionOptions = computed(
+      () => {
+        const {
+          refetchOnReconnect,
+          refetchOnFocus,
+          refetchOnMountOrArgChange,
+          skip = false,
+          pollingInterval = 0,
+          skipPollingIfUnfocused = false,
+          ...rest
+        } = lazyOptions();
+        return {
+          refetchOnReconnect,
+          refetchOnFocus,
+          refetchOnMountOrArgChange,
+          skip,
+          pollingInterval,
+          skipPollingIfUnfocused,
+          ...rest,
+        };
+      },
+      { equal: shallowEqual },
+    );
     const subscriptionArg = computed(() => {
       const subscriptionArg = lazyArg();
       return subscriptionOptions().skip ? skipToken : subscriptionArg;
@@ -386,23 +388,28 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
 
       let lastValue: any;
 
-      const currentState = computed(() => {
-        const selectDefaultResult = createSelector(select(stableArg()), (subState: any) =>
-          preSelector(subState, lastValue, stableArg()),
+      const selectDefaultResult = computed(() => {
+        const stableArgValue = stableArg();
+        return createSelector(select(stableArgValue), (subState: any) =>
+          preSelector(subState, lastValue, stableArgValue),
         );
-        const { selectFromResult } = stateOptions();
-
-        const querySelector = selectFromResult
-          ? createSelector(selectDefaultResult, selectFromResult)
-          : selectDefaultResult;
-
-        const currentState = useSelector((state: RootState<Definitions, any, any>) => querySelector(state), {
-          equal: shallowEqual,
-        });
-
-        lastValue = selectDefaultResult(getState());
-        return currentState();
       });
+      const querySelector = computed(() => {
+        const { selectFromResult } = stateOptions();
+        const selectDefaultResultValue = selectDefaultResult();
+
+        return selectFromResult ? createSelector(selectDefaultResultValue, selectFromResult) : selectDefaultResultValue;
+      });
+
+      const currentState = useSelector(
+        (state: RootState<Definitions, any, any>) => {
+          const selectDefaultResultValue = selectDefaultResult();
+          const selectedState = querySelector()(state);
+          lastValue = selectDefaultResultValue(state);
+          return selectedState;
+        },
+        { equal: shallowEqual },
+      );
       const deepSignal = toDeepSignal(currentState);
 
       return deepSignal as any;
@@ -472,9 +479,10 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
 
       effect(() => {
         const lastSubscriptionOptions = promiseRef?.subscriptionOptions;
+        const stableSubscriptionOptionsValue = stableSubscriptionOptions();
 
-        if (stableSubscriptionOptions() !== lastSubscriptionOptions) {
-          promiseRef?.updateSubscriptionOptions(stableSubscriptionOptions());
+        if (stableSubscriptionOptionsValue !== lastSubscriptionOptions) {
+          promiseRef?.updateSubscriptionOptions(stableSubscriptionOptionsValue);
         }
       });
 
@@ -570,14 +578,12 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       const [promiseRef, dispatch, initiate, stableSubscriptionOptions, stableArg] = useQuerySubscriptionCommonImpl<
         InfiniteQueryActionCreatorResult<any>
       >(endpointName, arg, options);
+      const readInfiniteQueryOptions = () => readSignal(options);
 
       let subscriptionOptionsRef = stableSubscriptionOptions();
       effect(() => {
         subscriptionOptionsRef = stableSubscriptionOptions();
       });
-
-      // Extract and stabilize the hook-level refetchCachedPages option
-      const hookRefetchCachedPages = (options as UseInfiniteQuerySubscriptionOptions<any>).refetchCachedPages;
 
       const trigger: LazyInfiniteQueryTrigger<any> = (arg: unknown, direction: 'forward' | 'backward') => {
         let promise: InfiniteQueryActionCreatorResult<any>;
@@ -598,7 +604,8 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
 
       const refetch = (options?: Pick<UseInfiniteQuerySubscriptionOptions<any>, 'refetchCachedPages'>) => {
         if (!promiseRef.current) throw new Error('Cannot refetch a query that has not been started yet.');
-        // Merge per-call options with hook-level default
+        const hookRefetchCachedPages = (readInfiniteQueryOptions() as UseInfiniteQuerySubscriptionOptions<any>)
+          ?.refetchCachedPages;
         const mergedOptions = {
           refetchCachedPages: options?.refetchCachedPages ?? hookRefetchCachedPages,
         };
@@ -703,15 +710,15 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
       const requestId = computed(() => promiseRef()?.requestId);
       const selectDefaultResult = (requestId?: string, fixedCacheKey?: string) =>
         fixedSelect({ fixedCacheKey, requestId });
-      const mutationSelector = (
-        requestId?: string,
-        { selectFromResult, fixedCacheKey } = mutationOptions(),
-      ): Selector<RootState<Definitions, any, any>, any> =>
-        selectFromResult
-          ? createSelector(selectDefaultResult(requestId, fixedCacheKey), selectFromResult)
-          : selectDefaultResult(requestId, fixedCacheKey);
+      const mutationSelector = computed(() => {
+        const { selectFromResult, fixedCacheKey } = mutationOptions();
+        const selectDefaultResultValue = selectDefaultResult(requestId(), fixedCacheKey);
 
-      const currentState = computed(() => useSelector(mutationSelector(requestId()), { equal: shallowEqual }));
+        return selectFromResult ? createSelector(selectDefaultResultValue, selectFromResult) : selectDefaultResultValue;
+      });
+      const currentState = useSelector((state: RootState<Definitions, any, any>) => mutationSelector()(state), {
+        equal: shallowEqual,
+      });
       const originalArgs = computed(() =>
         mutationOptions().fixedCacheKey == null ? promiseRef()?.arg.originalArgs : undefined,
       );
@@ -730,7 +737,7 @@ export function buildHooks<Definitions extends EndpointDefinitions>({
         }
       };
 
-      const finalState = computed(() => currentState()());
+      const finalState = computed(() => currentState());
       const signalsMap = signalProxy(finalState);
       Object.assign(triggerMutation, { originalArgs });
       Object.assign(triggerMutation, { reset });
