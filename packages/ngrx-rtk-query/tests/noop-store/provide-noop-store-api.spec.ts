@@ -7,9 +7,10 @@ import { ApiStore } from 'ngrx-rtk-query/noop-store';
 import { provideNoopStoreApi } from 'ngrx-rtk-query/noop-store';
 
 import { createPostsApi } from '../helpers/create-posts-api';
+import { recordRuntimeLifecycle } from '../helpers/record-runtime-lifecycle';
 
 describe('provideNoopStoreApi', () => {
-  test('allocates a distinct binding key per environment injector when providers are reused', () => {
+  test('rejects concurrent host reuse and allows reuse after destroy', () => {
     const postsApi = createPostsApi('noopSharedProvidersApi');
     const providers = [provideNoopStoreApi(postsApi)];
 
@@ -103,5 +104,21 @@ describe('provideNoopStoreApi', () => {
     });
 
     expect(screen.getByTestId('selected-status')).toHaveTextContent('uninitialized');
+  });
+
+  test('resets api state only on destroy', () => {
+    const postsApi = createPostsApi('noopResetTimingApi');
+    const { events, setupListeners } = recordRuntimeLifecycle(postsApi);
+
+    TestBed.configureTestingModule({});
+    const parent = TestBed.inject(EnvironmentInjector);
+    const environment = createEnvironmentInjector([provideNoopStoreApi(postsApi, { setupListeners })], parent);
+
+    expect(setupListeners).toHaveBeenCalledTimes(1);
+    expect(events).toEqual(['listeners']);
+
+    environment.destroy();
+
+    expect(events).toEqual(['listeners', 'teardown', 'reset']);
   });
 });

@@ -1,11 +1,11 @@
 import {
   DestroyRef,
-  ENVIRONMENT_INITIALIZER,
   type EnvironmentProviders,
   Injector,
   type Signal,
   inject,
   makeEnvironmentProviders,
+  provideEnvironmentInitializer,
 } from '@angular/core';
 import { type Action, Store, createSelectorFactory, defaultMemoize, provideState } from '@ngrx/store';
 import { type Api } from '@reduxjs/toolkit/query';
@@ -15,8 +15,9 @@ import {
   type Dispatch,
   type SelectSignalOptions,
   type StoreQueryConfig,
-  setupRuntimeListeners,
   shallowEqual,
+  type ɵInternalRuntimeMountApi,
+  ɵinternalMountRuntimeApi,
 } from 'ngrx-rtk-query/core';
 
 const createStoreApi = (
@@ -50,35 +51,19 @@ export function provideStoreApi(
   { setupListeners }: StoreQueryConfig = {},
 ): EnvironmentProviders {
   return makeEnvironmentProviders([
-    {
-      provide: ENVIRONMENT_INITIALIZER,
-      multi: true,
-      useValue() {
-        const destroyRef = inject(DestroyRef);
-        const bindingMetadata = {
-          bindingKey: {},
-          runtimeLabel: 'store',
-        };
-        let releaseApiStore: (() => void) | undefined;
-        let teardownListeners: (() => void) | undefined;
+    provideEnvironmentInitializer(() => {
+      const destroyRef = inject(DestroyRef);
+      const releaseRuntime = ɵinternalMountRuntimeApi({
+        api: api as unknown as ɵInternalRuntimeMountApi,
+        setupFn: createStoreApi(api),
+        runtimeLabel: 'store',
+        setupListeners,
+      });
 
-        try {
-          releaseApiStore = api.initApiStore(createStoreApi(api), bindingMetadata);
-          teardownListeners = setupRuntimeListeners(api.dispatch as Dispatch, setupListeners);
-        } catch (error) {
-          teardownListeners?.();
-          releaseApiStore?.();
-
-          throw error;
-        }
-
-        destroyRef.onDestroy(() => {
-          teardownListeners?.();
-          api.dispatch(api.util.resetApiState());
-          releaseApiStore?.();
-        });
-      },
-    },
+      destroyRef.onDestroy(() => {
+        releaseRuntime();
+      });
+    }),
     provideState(api.reducerPath, api.reducer),
   ]);
 }

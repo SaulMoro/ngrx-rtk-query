@@ -1,7 +1,6 @@
 import {
   type CreateComputedOptions,
   DestroyRef,
-  ENVIRONMENT_INITIALIZER,
   type EnvironmentProviders,
   Injectable,
   Injector,
@@ -9,6 +8,7 @@ import {
   computed,
   inject,
   makeEnvironmentProviders,
+  provideEnvironmentInitializer,
   signal,
 } from '@angular/core';
 import { type Reducer, type Selector, type UnknownAction } from '@reduxjs/toolkit';
@@ -18,7 +18,8 @@ import {
   type AngularHooksModuleOptions,
   type Dispatch,
   type StoreQueryConfig,
-  setupRuntimeListeners,
+  type ɵInternalRuntimeMountApi,
+  ɵinternalMountRuntimeApi,
 } from 'ngrx-rtk-query/core';
 
 @Injectable()
@@ -50,8 +51,10 @@ const createNoopStoreApi = (
     const reducerPath = api.reducerPath;
     const reducer = api.reducer as Reducer<any>;
 
-    // Initialize the store with the initial state
-    store.state.update((state) => ({ ...state, [reducerPath]: {} }));
+    const initialState = reducer(undefined, {
+      type: '@@ngrx-rtk-query/noop-store/init',
+    });
+    store.state.update((state) => ({ ...state, [reducerPath]: initialState }));
 
     const dispatch = (action: UnknownAction) => {
       store.dispatch(action, { reducerPath, reducer });
@@ -78,36 +81,18 @@ export function provideNoopStoreApi(
 ): EnvironmentProviders {
   return makeEnvironmentProviders([
     ApiStore,
-    {
-      provide: ENVIRONMENT_INITIALIZER,
-      multi: true,
-      useValue() {
-        const destroyRef = inject(DestroyRef);
-        const bindingMetadata = {
-          bindingKey: {},
-          runtimeLabel: 'noop-store',
-        };
-        let releaseApiStore: (() => void) | undefined;
-        let teardownListeners: (() => void) | undefined;
+    provideEnvironmentInitializer(() => {
+      const destroyRef = inject(DestroyRef);
+      const releaseRuntime = ɵinternalMountRuntimeApi({
+        api: api as unknown as ɵInternalRuntimeMountApi,
+        setupFn: createNoopStoreApi(api),
+        runtimeLabel: 'noop-store',
+        setupListeners,
+      });
 
-        try {
-          releaseApiStore = api.initApiStore(createNoopStoreApi(api), bindingMetadata);
-          teardownListeners = setupRuntimeListeners(api.dispatch as Dispatch, setupListeners);
-
-          api.dispatch(api.util.resetApiState());
-        } catch (error) {
-          teardownListeners?.();
-          releaseApiStore?.();
-
-          throw error;
-        }
-
-        destroyRef.onDestroy(() => {
-          teardownListeners?.();
-          api.dispatch(api.util.resetApiState());
-          releaseApiStore?.();
-        });
-      },
-    },
+      destroyRef.onDestroy(() => {
+        releaseRuntime();
+      });
+    }),
   ]);
 }

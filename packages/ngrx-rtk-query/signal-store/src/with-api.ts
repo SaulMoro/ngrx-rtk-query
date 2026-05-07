@@ -14,7 +14,8 @@ import {
   type Dispatch,
   type SelectSignalOptions,
   type StoreQueryConfig,
-  setupRuntimeListeners,
+  type ɵInternalRuntimeMountApi,
+  ɵinternalMountRuntimeApi,
 } from 'ngrx-rtk-query/core';
 
 type RuntimeApi<Definitions extends EndpointDefinitions = Record<string, any>> = Api<
@@ -25,21 +26,11 @@ type RuntimeApi<Definitions extends EndpointDefinitions = Record<string, any>> =
   any
 >;
 
-type InitializedRuntimeApi<Definitions extends EndpointDefinitions = Record<string, any>> = RuntimeApi<Definitions> & {
-  dispatch: Dispatch;
-  initApiStore: (
-    setupFn: () => AngularHooksModuleOptions,
-    bindingMetadata: {
-      bindingKey: object;
-      runtimeLabel: string;
-    },
-  ) => () => void;
-  reducer: (state: unknown, action: UnknownAction) => unknown;
-  reducerPath: string;
-  util: {
-    resetApiState: () => UnknownAction;
+type InitializedRuntimeApi<Definitions extends EndpointDefinitions = Record<string, any>> = RuntimeApi<Definitions> &
+  ɵInternalRuntimeMountApi & {
+    reducer: (state: unknown, action: UnknownAction) => unknown;
+    reducerPath: string;
   };
-};
 
 type RegisteredApi = {
   api: InitializedRuntimeApi;
@@ -183,10 +174,8 @@ export function withApi<TApi extends RuntimeApi<any>>(
     withHooks((store) => {
       const injector = inject(Injector);
       const unregisterApi = registerMountedApi(store as unknown as StoreMembersWithMountedApiRegistry, initializedApi);
-      const bindingKey = {};
       const state = signal(initialState);
-      let releaseApiStore: (() => void) | undefined;
-      let teardownListeners: (() => void) | undefined;
+      let releaseRuntime: (() => void) | undefined;
       const entry: RegisteredApi = {
         api: initializedApi,
         injector,
@@ -198,24 +187,20 @@ export function withApi<TApi extends RuntimeApi<any>>(
       return {
         onInit: () => {
           try {
-            releaseApiStore = initializedApi.initApiStore(createSignalStoreApi(entry), {
-              bindingKey,
+            releaseRuntime = ɵinternalMountRuntimeApi({
+              api: initializedApi,
+              setupFn: createSignalStoreApi(entry),
               runtimeLabel: 'signal-store',
+              setupListeners,
             });
-            initializedApi.dispatch(initializedApi.util.resetApiState());
-            teardownListeners = setupRuntimeListeners(initializedApi.dispatch, setupListeners);
           } catch (error) {
-            teardownListeners?.();
-            releaseApiStore?.();
             unregisterApi();
 
             throw error;
           }
         },
         onDestroy: () => {
-          teardownListeners?.();
-          initializedApi.dispatch(initializedApi.util.resetApiState());
-          releaseApiStore?.();
+          releaseRuntime?.();
           unregisterApi();
         },
       };
