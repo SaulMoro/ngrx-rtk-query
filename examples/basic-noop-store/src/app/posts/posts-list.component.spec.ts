@@ -13,12 +13,10 @@ describe('PostsListComponent', () => {
   beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
   afterEach(() => {
     server.resetHandlers();
-    // ⬇️ Not required with Noop store
-    // postsApi.dispatch(postsApi.util.resetApiState());
   });
   afterAll(() => server.close());
 
-  test('should show default posts and add new posts', async () => {
+  test('shows default posts and adds new posts', async () => {
     const user = userEvent.setup();
     await render(PostsListComponent, {
       providers: [provideNoopStoreApi(postsApi)],
@@ -46,7 +44,7 @@ describe('PostsListComponent', () => {
     expect(newPostControl).toHaveValue('');
   });
 
-  test('should show empty if not posts', async () => {
+  test('shows the empty state when no posts are returned', async () => {
     server.use(http.get('http://api.localhost.com/posts', async () => HttpResponse.json([])));
 
     await render(PostsListComponent, {
@@ -58,7 +56,7 @@ describe('PostsListComponent', () => {
     expect(await screen.findByText(/No posts/i)).toBeInTheDocument();
   });
 
-  test('should show error if fetch fails', async () => {
+  test('shows the error state when posts fail to load', async () => {
     server.use(
       http.get(
         'http://api.localhost.com/posts',

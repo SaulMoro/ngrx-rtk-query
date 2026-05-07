@@ -18,7 +18,7 @@ import { provideNoopStoreApi } from 'ngrx-rtk-query/noop-store';
 import { withApi, withApiState } from 'ngrx-rtk-query/signal-store';
 import { provideStoreApi } from 'ngrx-rtk-query/store';
 
-import { type Post, createPostsApi } from '../helpers/create-posts-api';
+import { type Post, createFailingPostsApi, createPostsApi } from '../helpers/create-posts-api';
 
 describe('withApiState', () => {
   test('supports deriving query state inside the same store', async () => {
@@ -441,6 +441,156 @@ describe('withApiState', () => {
         providers: [ReaderStore],
       }),
     ).rejects.toThrow(/Provide the API \(unboundReaderApi\) is necessary to use the queries/);
+  });
+
+  test('exposes query error state through generated state methods', async () => {
+    const postsApi = createFailingPostsApi('readerErrorApi');
+    const SignalStoreRuntime = signalStore(
+      withApi(postsApi),
+      withApiState(postsApi),
+      withComputed((store) => {
+        const selectedPostsState = store.getPostsState();
+
+        return {
+          selectedPostsStatus: computed(() => (selectedPostsState().isError ? 'error' : 'not error')),
+        };
+      }),
+    );
+
+    @Component({
+      standalone: true,
+      changeDetection: ChangeDetectionStrategy.OnPush,
+      template: `
+        <p data-testid="query-state">{{ postsQuery.isError() ? 'error' : 'not error' }}</p>
+        <p data-testid="selected-state">{{ runtime.selectedPostsStatus() }}</p>
+      `,
+    })
+    class HostComponent {
+      readonly runtime = inject(SignalStoreRuntime);
+      readonly postsQuery = postsApi.useGetPostsQuery();
+    }
+
+    await render(HostComponent, {
+      providers: [SignalStoreRuntime],
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('query-state')).toHaveTextContent('error');
+      expect(screen.getByTestId('selected-state')).toHaveTextContent('error');
+    });
+  });
+
+  test('observes query state updates after refetch', async () => {
+    let fetchCount = 0;
+    const postsApi = createApi({
+      reducerPath: 'readerRefetchApi',
+      baseQuery: fakeBaseQuery(),
+      endpoints: (build) => ({
+        getPosts: build.query<Post[], void>({
+          queryFn: async () => {
+            fetchCount += 1;
+            return {
+              data: [{ id: fetchCount, name: `readerRefetchApi-post-${fetchCount}` }],
+            };
+          },
+        }),
+      }),
+    });
+    const SignalStoreRuntime = signalStore(
+      withApi(postsApi),
+      withApiState(postsApi),
+      withComputed((store) => {
+        const selectedPostsState = store.getPostsState();
+
+        return {
+          selectedPostName: computed(() => selectedPostsState().data?.[0]?.name ?? 'empty'),
+        };
+      }),
+    );
+    const user = userEvent.setup();
+
+    @Component({
+      standalone: true,
+      changeDetection: ChangeDetectionStrategy.OnPush,
+      template: `
+        <button (click)="postsQuery.refetch()">refetch</button>
+        <p data-testid="query-name">{{ postsQuery.data()?.[0]?.name ?? 'empty' }}</p>
+        <p data-testid="selected-post-name">{{ runtime.selectedPostName() }}</p>
+      `,
+    })
+    class HostComponent {
+      readonly runtime = inject(SignalStoreRuntime);
+      readonly postsQuery = postsApi.useGetPostsQuery();
+    }
+
+    await render(HostComponent, {
+      providers: [SignalStoreRuntime],
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('query-name')).toHaveTextContent('readerRefetchApi-post-1');
+      expect(screen.getByTestId('selected-post-name')).toHaveTextContent('readerRefetchApi-post-1');
+    });
+
+    await user.click(screen.getByRole('button', { name: 'refetch' }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('query-name')).toHaveTextContent('readerRefetchApi-post-2');
+      expect(screen.getByTestId('selected-post-name')).toHaveTextContent('readerRefetchApi-post-2');
+    });
+  });
+
+  test('observes query state cleanup after api reset', async () => {
+    const postsApi = createPostsApi('readerResetApi');
+    const SignalStoreRuntime = signalStore(
+      withApi(postsApi),
+      withApiState(postsApi),
+      withComputed((store) => {
+        const selectedPostsState = store.getPostsState();
+
+        return {
+          selectedPostsStatus: computed(() => selectedPostsState().status),
+          selectedPostName: computed(() => selectedPostsState().data?.[0]?.name ?? 'empty'),
+        };
+      }),
+    );
+    const user = userEvent.setup();
+
+    @Component({
+      standalone: true,
+      changeDetection: ChangeDetectionStrategy.OnPush,
+      template: `
+        <button (click)="resetApi()">reset api</button>
+        <p data-testid="query-name">{{ postsQuery.data()?.[0]?.name ?? 'empty' }}</p>
+        <p data-testid="selected-status">{{ runtime.selectedPostsStatus() }}</p>
+        <p data-testid="selected-post-name">{{ runtime.selectedPostName() }}</p>
+      `,
+    })
+    class HostComponent {
+      readonly runtime = inject(SignalStoreRuntime);
+      readonly postsQuery = postsApi.useGetPostsQuery();
+
+      resetApi() {
+        postsApi.dispatch(postsApi.util.resetApiState());
+      }
+    }
+
+    await render(HostComponent, {
+      providers: [SignalStoreRuntime],
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('query-name')).toHaveTextContent('readerResetApi-post');
+      expect(screen.getByTestId('selected-status')).toHaveTextContent('fulfilled');
+      expect(screen.getByTestId('selected-post-name')).toHaveTextContent('readerResetApi-post');
+    });
+
+    await user.click(screen.getByRole('button', { name: 'reset api' }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('selected-status')).toHaveTextContent('uninitialized');
+      expect(screen.getByTestId('selected-post-name')).toHaveTextContent('empty');
+    });
   });
 
   test('fails fast when the same api instance is added twice with withApiState', async () => {

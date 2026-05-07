@@ -14,7 +14,7 @@ describe('PostsListComponent', () => {
   });
   afterAll(() => server.close());
 
-  test('should show default posts and add new posts', async () => {
+  test('shows default posts, adds new posts, and updates selected store state', async () => {
     const user = userEvent.setup();
     const { fixture } = await render(PostsListComponent, {
       providers: [PostsSignalStore],
@@ -48,7 +48,7 @@ describe('PostsListComponent', () => {
     expect(newPostControl).toHaveValue('');
   });
 
-  test('should show empty if not posts', async () => {
+  test('shows the empty state when no posts are returned', async () => {
     server.use(http.get('http://api.localhost.com/posts', async () => HttpResponse.json([])));
 
     const { fixture } = await render(PostsListComponent, {
@@ -61,7 +61,7 @@ describe('PostsListComponent', () => {
     expect(fixture.componentInstance.postsStore.selectedPostsCount()).toBe(0);
   });
 
-  test('should show error if fetch fails', async () => {
+  test('shows the error state when posts fail to load', async () => {
     server.use(
       http.get(
         'http://api.localhost.com/posts',

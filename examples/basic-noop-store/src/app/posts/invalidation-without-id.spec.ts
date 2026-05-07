@@ -9,12 +9,6 @@ import { provideNoopStoreApi } from 'ngrx-rtk-query/noop-store';
 
 import { server } from '../../mocks/node';
 
-/**
- * Regression test for https://github.com/SaulMoro/ngrx-rtk-query/issues/99
- *
- * Verifies that `invalidatesTags` without `id` causes exactly one refetch,
- * not two.
- */
 describe('invalidatesTags without id (#99)', () => {
   const queryFn = vi.fn();
 
@@ -65,7 +59,7 @@ describe('invalidatesTags without id (#99)', () => {
   });
   afterAll(() => server.close());
 
-  test('mutation invalidation without id should refetch the query exactly once', async () => {
+  test('refetches the query exactly once after invalidating a tag type without id', async () => {
     let callCount = 0;
 
     server.use(
@@ -84,18 +78,12 @@ describe('invalidatesTags without id (#99)', () => {
       providers: [provideNoopStoreApi(api)],
     });
 
-    // Wait for initial query to complete
     expect(await screen.findByTestId('value')).toHaveTextContent('1');
     expect(queryFn).toHaveBeenCalledTimes(1);
 
-    // Trigger mutation that invalidates ['Resource'] (no id)
     await user.click(screen.getByRole('button', { name: /Delete/i }));
 
-    // Wait for the refetch to complete — value should update to 2
     expect(await screen.findByText('2')).toBeInTheDocument();
-
-    // The query should have been called exactly twice: initial + one refetch
-    // If this is 3, the query was refetched twice (the reported bug)
     expect(queryFn).toHaveBeenCalledTimes(2);
   });
 });
