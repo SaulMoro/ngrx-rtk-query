@@ -2,9 +2,9 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { HttpResponse, http } from 'msw';
-import { createApi, fetchBaseQuery } from 'ngrx-rtk-query';
 import { describe, expect, test, vi } from 'vitest';
 
+import { createApi, fetchBaseQuery } from 'ngrx-rtk-query/core';
 import { provideNoopStoreApi } from 'ngrx-rtk-query/noop-store';
 
 import { server } from '../../mocks/node';

@@ -1,4 +1,4 @@
-import { createApi, fetchBaseQuery } from 'ngrx-rtk-query';
+import { createApi, fetchBaseQuery } from 'ngrx-rtk-query/core';
 
 import { type Post } from './post.model';
 

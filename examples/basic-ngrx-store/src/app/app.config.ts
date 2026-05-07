@@ -8,7 +8,8 @@ import {
 } from '@angular/router';
 import { provideStore } from '@ngrx/store';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
-import { provideStoreApi } from 'ngrx-rtk-query';
+
+import { provideStoreApi } from 'ngrx-rtk-query/store';
 
 import { appRoutes } from './app.routes';
 import { postsApi } from './posts/api';

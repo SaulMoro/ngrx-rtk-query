@@ -14,6 +14,7 @@
 - [Table of Contents](#table-of-contents)
 - [Installation](#installation)
   - [Versions](#versions)
+- [Import paths](#import-paths)
 - [Basic Usage](#basic-usage)
 - [Usage](#usage)
   - [**Queries**](#queries)
@@ -49,6 +50,38 @@ If you use the Signal Store runtime, also install `@ngrx/signals`.
 
 Library majors track Angular majors. Only the latest Angular major in the table above is actively supported, because Angular library compilation is [not compatible across major versions](https://angular.io/guide/creating-libraries#ensuring-library-version-compatibility).
 
+## Import paths
+
+Core APIs such as `createApi` and `fetchBaseQuery` remain available from the root entrypoint:
+
+```ts
+import { createApi, fetchBaseQuery } from 'ngrx-rtk-query';
+```
+
+NgRx Store runtime providers should be imported from the store entrypoint:
+
+```ts
+import { provideStoreApi } from 'ngrx-rtk-query/store';
+```
+
+Importing `provideStoreApi` from `ngrx-rtk-query` is deprecated and will be removed in a future major version.
+
+Noop Store runtime providers should be imported from the noop-store entrypoint:
+
+```ts
+import { provideNoopStoreApi } from 'ngrx-rtk-query/noop-store';
+```
+
+NgRx Signal Store runtime features should be imported from the signal-store entrypoint:
+
+```ts
+import { withApi, withApiState } from 'ngrx-rtk-query/signal-store';
+```
+
+The signal-store entrypoint requires `@ngrx/signals`.
+
+During the deprecation window, applications that do not install `@ngrx/store` can import core APIs from `ngrx-rtk-query/core` to avoid resolving the deprecated root store provider export.
+
 ## Basic Usage
 
 You can follow the official [RTK Query guide with hooks](https://redux-toolkit.js.org/rtk-query/overview), with slight variations.
@@ -57,7 +90,7 @@ You can see the application of this repository for more examples.
 Start by importing createApi and defining an "API slice" that lists the server's base URL and which endpoints we want to interact with:
 
 ```ts
-import { createApi, fetchBaseQuery } from 'ngrx-rtk-query/core';
+import { createApi, fetchBaseQuery } from 'ngrx-rtk-query';
 
 export interface CountResponse {
   count: number;
@@ -99,7 +132,7 @@ export const { useGetCountQuery, useIncrementCountMutation, useDecrementCountMut
 Add the api to one runtime in your `app` or in a `lazy route`.
 
 ```typescript
-import { provideStoreApi } from 'ngrx-rtk-query';
+import { provideStoreApi } from 'ngrx-rtk-query/store';
 import { counterApi } from './route/to/counterApi.ts';
 
 bootstrapApplication(AppComponent, {
@@ -458,7 +491,7 @@ export const postsApi = createApi({
 });
 // ...
 
-import { provideStoreApi } from 'ngrx-rtk-query';
+import { provideStoreApi } from 'ngrx-rtk-query/store';
 
 // ...
   providers: [
