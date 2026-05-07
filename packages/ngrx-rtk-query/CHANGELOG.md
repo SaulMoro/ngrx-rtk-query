@@ -1,5 +1,11 @@
 # ngrx-rtk-query
 
+## 21.3.1
+
+### Patch Changes
+
+- [#118](https://github.com/SaulMoro/ngrx-rtk-query/pull/118) [`d9c36ee`](https://github.com/SaulMoro/ngrx-rtk-query/commit/d9c36ee1c6972fb89d03307b2f05a4445b3c0d5a) Thanks [@SaulMoro](https://github.com/SaulMoro)! - Refactor runtime host lifecycle mounting behind an internal core helper.
+
 ## 21.3.0
 
 ### Minor Changes
