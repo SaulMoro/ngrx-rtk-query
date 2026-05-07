@@ -4,7 +4,7 @@ This document records the repository validation strategy. Test authoring guidanc
 
 ## Default Commands
 
-Use `pnpm verify` as the default local validation command after changes. It runs affected lint and affected typecheck, and runs `docs:check` when durable docs or harness files changed.
+Use `pnpm verify` as the default local validation command after changes. It runs affected lint and affected typecheck, runs `docs:check` when durable docs or harness files changed, and checks the OpenCode plugin when `.opencode` files changed.
 
 Use `pnpm verify:full` for behavior, public contract, runtime lifecycle, example, dependency, configuration, or release changes. It adds affected tests and formatting checks.
 

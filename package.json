@@ -66,7 +66,7 @@
     "verify:full": "tools/verify/verify.sh --full --format"
   },
   "lint-staged": {
-    "{*.md,docs/**/*.md,packages/ngrx-rtk-query/**/README.md,tools/verify/**/*,.githooks/*,.codex/**/*,.claude/**/*,.opencode/plugins/**/*,package.json}": "pnpm docs:check",
+    "{*.md,docs/**/*.md,packages/ngrx-rtk-query/**/README.md,tools/verify/**/*,.githooks/*,.codex/**/*,.claude/**/*,.opencode/**/*,package.json}": "pnpm docs:check",
     "*.{ts,html}": "eslint --cache --fix",
     "*.{js,json,css,scss,ts,html}": "prettier --write --ignore-unknown"
   },

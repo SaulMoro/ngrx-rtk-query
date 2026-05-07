@@ -12,16 +12,19 @@ format=false
 base=""
 head="HEAD"
 
-docs_check_required() {
+get_changed_files() {
   local base_ref="$1"
   local head_ref="$2"
-  local changed_files
 
   if [[ -n "${base_ref}" ]]; then
-    changed_files="$(git -c core.fsmonitor=false diff --name-only "${base_ref}...${head_ref}" || true)"
+    git -c core.fsmonitor=false diff --name-only "${base_ref}...${head_ref}" || true
   else
-    changed_files="$(verify_get_worktree_changed_files "${repo_root}" || true)"
+    verify_get_worktree_changed_files "${repo_root}" || true
   fi
+}
+
+docs_check_required() {
+  local changed_files="$1"
 
   if [[ -z "${changed_files}" ]]; then
     return 1
@@ -32,7 +35,25 @@ docs_check_required() {
       AGENTS.md|CLAUDE.md|CONTRIBUTING.md|README.md|package.json|pnpm-lock.yaml)
         return 0
         ;;
-      .githooks/*|.codex/*|.claude/*|.opencode/plugins/*|docs/*|tools/verify/*|packages/ngrx-rtk-query/README.md|packages/ngrx-rtk-query/*/README.md)
+      .githooks/*|.codex/*|.claude/*|.opencode/*|docs/*|tools/verify/*|packages/ngrx-rtk-query/README.md|packages/ngrx-rtk-query/*/README.md)
+        return 0
+        ;;
+    esac
+  done <<< "${changed_files}"
+
+  return 1
+}
+
+opencode_plugin_check_required() {
+  local changed_files="$1"
+
+  if [[ -z "${changed_files}" ]]; then
+    return 1
+  fi
+
+  while IFS= read -r file_path; do
+    case "${file_path}" in
+      .opencode/*)
         return 0
         ;;
     esac
@@ -73,10 +94,17 @@ if [[ "${full}" == true ]]; then
   targets="${targets},test"
 fi
 
+changed_files="$(get_changed_files "${base}" "${head}")"
+
 pnpm nx affected -t "${targets}" "${nx_range_args[@]}" --outputStyle=static
 
-if docs_check_required "${base}" "${head}"; then
+if docs_check_required "${changed_files}"; then
   pnpm docs:check
+fi
+
+if opencode_plugin_check_required "${changed_files}"; then
+  pnpm exec tsc -p .opencode/tsconfig.json
+  pnpm exec eslint '.opencode/plugins/**/*.ts' --no-error-on-unmatched-pattern
 fi
 
 if [[ "${format}" == true ]]; then

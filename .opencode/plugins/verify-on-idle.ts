@@ -426,6 +426,7 @@ const promptAutofix = async ({
   await client.session.prompt({
     path: { id: sessionID },
     body: {
+      noReply: true,
       parts: [
         {
           type: 'text',

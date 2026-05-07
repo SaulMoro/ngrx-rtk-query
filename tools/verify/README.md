@@ -4,7 +4,7 @@ This directory owns repository validation wrappers and documentation harness che
 
 ## Public Surface
 
-- `verify.sh` is the canonical maintainer verification wrapper. It runs affected lint and typecheck by default, can add affected tests and format checks, and conditionally runs docs validation when harness or durable docs changed.
+- `verify.sh` is the canonical maintainer verification wrapper. It runs affected lint and typecheck by default, can add affected tests and format checks, conditionally runs docs validation when harness or durable docs changed, and checks the OpenCode plugin when `.opencode` files changed.
 - `verify-on-stop.sh` is the shared Codex, Claude, and OpenCode stop or idle verifier. It delegates to `verify.sh`, dedupes repeated failures for the same worktree state, and stays silent on success.
 - `_verify-lib.sh` contains shared shell helpers for verification scripts. Source it from scripts in this directory; do not execute it directly.
 - `check-docs.mjs` validates the documentation gradient, local Markdown links, ADR shape, public README sections, and secondary entrypoint README coverage.
