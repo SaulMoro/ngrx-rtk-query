@@ -72,6 +72,14 @@ Noop Store runtime providers should be imported from the noop-store entrypoint:
 import { provideNoopStoreApi } from 'ngrx-rtk-query/noop-store';
 ```
 
+NgRx Signal Store runtime features should be imported from the signal-store entrypoint:
+
+```ts
+import { withApi, withApiState } from 'ngrx-rtk-query/signal-store';
+```
+
+The signal-store entrypoint requires `@ngrx/signals`.
+
 During the deprecation window, applications that do not install `@ngrx/store` can import core APIs from `ngrx-rtk-query/core` to avoid resolving the deprecated root store provider export.
 
 ## Basic Usage
