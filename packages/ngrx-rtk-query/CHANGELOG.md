@@ -1,5 +1,15 @@
 # ngrx-rtk-query
 
+## 21.3.0
+
+### Minor Changes
+
+- [#115](https://github.com/SaulMoro/ngrx-rtk-query/pull/115) [`88733c6`](https://github.com/SaulMoro/ngrx-rtk-query/commit/88733c63efc972535a059a9b91f0fcfee628fa7b) Thanks [@SaulMoro](https://github.com/SaulMoro)! - Deprecate importing `provideStoreApi` from the root entrypoint.
+
+  Import `provideStoreApi` from `ngrx-rtk-query/store` instead. Core APIs such as `createApi` and `fetchBaseQuery` remain available from `ngrx-rtk-query`. Signal Store runtime features remain available from `ngrx-rtk-query/signal-store`.
+
+  This prepares a future major version where the root entrypoint will no longer re-export the NgRx Store provider.
+
 ## 21.2.5
 
 ### Patch Changes
